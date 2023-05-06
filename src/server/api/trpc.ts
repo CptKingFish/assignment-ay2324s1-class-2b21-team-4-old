@@ -38,9 +38,8 @@ const t = initTRPC.context<typeof createTRPCContext>().create({
 
 const isAuth = t.middleware(async ({ ctx, next }) => {
   const { req } = ctx;
-  let token: string | undefined = req.headers.Authorization as
-    | string
-    | undefined;
+  console.log(req.headers);
+  let token: string | undefined = req.headers.authorization;
   if (!token) {
     throw new TRPCError({ code: "BAD_REQUEST" });
   }

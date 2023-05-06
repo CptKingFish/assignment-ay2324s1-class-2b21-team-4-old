@@ -1,9 +1,9 @@
 import React, { createContext } from "react";
 import { type IUser } from "./models/User";
+import { api } from "./utils/api";
 
 interface AppContextType {
-  user: IUser;
-  setUser: React.Dispatch<React.SetStateAction<IUser>>;
+  user: IUser | undefined;
 }
 
 const AppContext = createContext<AppContextType>({} as AppContextType);
@@ -13,13 +13,9 @@ interface AuthProviderProps {
 }
 
 export function AuthProvider({ children }: AuthProviderProps) {
-  const [user, setUser] = React.useState<IUser>({} as IUser);
+  const { data: user } = api.user.getMe.useQuery();
 
-  return (
-    <AppContext.Provider value={{ user, setUser }}>
-      {children}
-    </AppContext.Provider>
-  );
+  return <AppContext.Provider value={{ user }}>{children}</AppContext.Provider>;
 }
 
 export const useGlobalContext = () => {

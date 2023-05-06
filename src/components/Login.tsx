@@ -1,4 +1,5 @@
 import { type FormEventHandler, useState } from "react";
+import { setCookie } from "cookies-next";
 import {
   Flex,
   Box,
@@ -39,8 +40,11 @@ function Login() {
         onSuccess: (data) => {
           console.log(data);
           localStorage.setItem("token", data.token);
-
-          // router.push("/chat").catch(console.error);
+          setCookie("token", data.token, {
+            // expire in 1 day
+            expires: new Date(Date.now() + 86400),
+          });
+          router.push("/chat").catch(console.error);
           window.location.href = "/chat";
           toast({
             title: data.message,
@@ -96,7 +100,7 @@ function Login() {
               onChange={(event) => setPassword(event.target.value)}
             />
           </FormControl>
-          <Button disabled={isLoggingIn} colorScheme="blue" type="submit">
+          <Button isLoading={isLoggingIn} colorScheme="blue" type="submit">
             Login
           </Button>
         </form>

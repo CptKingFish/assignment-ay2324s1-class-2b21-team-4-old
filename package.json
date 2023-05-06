@@ -20,6 +20,7 @@
     "@trpc/react-query": "^10.18.0",
     "@trpc/server": "^10.18.0",
     "bcryptjs": "^2.4.3",
+    "cookies-next": "^2.1.1",
     "framer-motion": "^10.12.6",
     "jsonwebtoken": "^9.0.0",
     "mongoose": "^7.1.0",

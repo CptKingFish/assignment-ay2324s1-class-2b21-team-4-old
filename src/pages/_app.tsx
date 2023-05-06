@@ -1,5 +1,8 @@
 import { type AppType } from "next/app";
 
+import { AuthProvider } from "@/context";
+
+
 import { api } from "@/utils/api";
 
 import { ChakraProvider } from "@chakra-ui/react";
@@ -12,10 +15,12 @@ const AppWrapper = ({ children }: { children: React.ReactNode }) => {
 
 const MyApp: AppType = ({ Component, pageProps }) => {
   return (
-    <AppWrapper>
-      <Component {...pageProps} />
-    </AppWrapper>
-  );
+    <AuthProvider>
+    <ChakraProvider>
+    <Component {...pageProps} />
+  </ChakraProvider>
+  </AuthProvider>
+  )
 };
 
 export default api.withTRPC(MyApp);

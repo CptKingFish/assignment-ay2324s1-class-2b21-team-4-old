@@ -1,30 +1,22 @@
-import React, { createContext, useContext } from "react";
+import React, { createContext } from "react";
+import { type IUser } from "./models/User";
 
 interface AppContextType {
-  auth: Auth | null;
-  setAuth: (auth: Auth | null) => void;
+  user: IUser;
+  setUser: React.Dispatch<React.SetStateAction<IUser>>;
 }
 
-interface Auth {
-  id: number;
-  name: string;
-  email: string;
-}
-
-const AppContext = createContext<AppContextType>({
-  auth: null,
-  setAuth: () => {},
-});
+const AppContext = createContext<AppContextType>({} as AppContextType);
 
 interface AuthProviderProps {
   children: React.ReactNode;
 }
 
 export function AuthProvider({ children }: AuthProviderProps) {
-  const [auth, setAuth] = React.useState<Auth | null>(null);
+  const [user, setUser] = React.useState<IUser>({} as IUser);
 
   return (
-    <AppContext.Provider value={{ auth, setAuth }}>
+    <AppContext.Provider value={{ user, setUser }}>
       {children}
     </AppContext.Provider>
   );

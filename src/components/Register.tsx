@@ -101,7 +101,7 @@ function Register() {
               onChange={(event) => setPassword(event.target.value)}
             />
           </FormControl>
-          <Button disabled={isRegistering} colorScheme="blue" type="submit">
+          <Button isLoading={isRegistering} colorScheme="blue" type="submit">
             Register
           </Button>
         </form>

@@ -1,36 +1,51 @@
 import { NextResponse } from "next/server";
 import type { NextRequest } from "next/server";
-import jwt from "jsonwebtoken";
+// import jwt from "jsonwebtoken";
 import { env } from "./env.mjs";
+import { type IUser } from "./models/User.js";
 
-export function middleware(request: NextRequest) {
+export async function middleware(request: NextRequest) {
   const authRoutes = ["/authenticate"];
   // check jwt validity
-  let token = request.headers.get("Authorization");
-  console.log("elliott", token);
-  let decoded_token;
+  let token = request.cookies.get("token")?.value;
+  let user: undefined | IUser;
   if (!token && !authRoutes.includes(request.nextUrl.pathname)) {
     return NextResponse.redirect(new URL("/authenticate", request.url));
   }
   if (token) {
     token = token.replace("Bearer ", "");
-    const decoded_token = jwt.verify(token, env.JWT_SECRET) as {
-      user_id: string;
-    };
-    if (!decoded_token) {
+    await fetch(`${env.BASE_URL}/api/verify_user`, {
+      method: "POST",
+      headers: {
+        "Content-Type": "application/json",
+      },
+      body: JSON.stringify({ token }),
+    })
+      .then((res) => res.json())
+      .then((data: IUser) => {
+        user = data;
+      })
+      .catch((err) => {
+        console.log(err);
+      });
+
+    // const decoded_token = jwt.verify(token, env.JWT_SECRET) as {
+    //   user_id: string;
+    // };
+    if (!user) {
       return NextResponse.redirect(new URL("/authenticate", request.url));
     }
   }
-  if (decoded_token && authRoutes.includes(request.nextUrl.pathname)) {
+  if (user && authRoutes.includes(request.nextUrl.pathname)) {
     return NextResponse.redirect(new URL("/chat", request.url));
   }
-  if (!decoded_token && authRoutes.includes(request.nextUrl.pathname)) {
+  if (!user && authRoutes.includes(request.nextUrl.pathname)) {
     return NextResponse.next();
   }
-  if (decoded_token && !authRoutes.includes(request.nextUrl.pathname)) {
+  if (user && !authRoutes.includes(request.nextUrl.pathname)) {
     return NextResponse.next();
   }
-  if (!decoded_token && !authRoutes.includes(request.nextUrl.pathname)) {
+  if (!user && !authRoutes.includes(request.nextUrl.pathname)) {
     return NextResponse.redirect(new URL("/authenticate", request.url));
   }
 }

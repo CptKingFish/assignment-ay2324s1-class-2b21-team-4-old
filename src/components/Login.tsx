@@ -37,7 +37,9 @@ function Login() {
       { email, password },
       {
         onSuccess: (data) => {
+          console.log(data);
           localStorage.setItem("token", data.token);
+
           // router.push("/chat").catch(console.error);
           window.location.href = "/chat";
           toast({

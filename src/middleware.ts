@@ -7,7 +7,7 @@ export function middleware(request: NextRequest) {
   const authRoutes = ["/authenticate"];
   // check jwt validity
   let token = request.headers.get("Authorization");
-  console.log("elliott", token);
+  console.log("elliott", request.headers);
   let decoded_token;
   if (!token && !authRoutes.includes(request.nextUrl.pathname)) {
     return NextResponse.redirect(new URL("/authenticate", request.url));

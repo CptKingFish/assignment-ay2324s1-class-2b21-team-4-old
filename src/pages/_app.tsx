@@ -1,6 +1,6 @@
 import { type AppType } from "next/app";
-import { ChakraProvider } from "@chakra-ui/react";
 import { AuthProvider } from "@/context";
+import { Toaster } from "react-hot-toast";
 
 import { api } from "@/utils/api";
 
@@ -9,9 +9,10 @@ import "@/styles/globals.css";
 const MyApp: AppType = ({ Component, pageProps }) => {
   return (
     <AuthProvider>
-      <ChakraProvider>
+      <div data-theme="corporate">
+        <Toaster />
         <Component {...pageProps} />
-      </ChakraProvider>
+      </div>
     </AuthProvider>
   );
 };

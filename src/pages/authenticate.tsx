@@ -2,14 +2,6 @@ import React from "react";
 import { useRouter } from "next/router";
 import Login from "@/components/Login";
 import Register from "@/components/Register";
-import {
-  Tabs,
-  TabList,
-  Tab,
-  TabPanels,
-  TabPanel,
-  AbsoluteCenter,
-} from "@chakra-ui/react";
 
 const Authenticate = () => {
   const router = useRouter();
@@ -31,23 +23,33 @@ const Authenticate = () => {
 
   return (
     <>
-      <AbsoluteCenter>
-        <Tabs variant="enclosed" index={activeTab} onChange={handleTabChange}>
-          <TabList>
-            <Tab>Login</Tab>
-            <Tab>Register</Tab>
-          </TabList>
-
-          <TabPanels>
-            <TabPanel>
-              <Login />
-            </TabPanel>
-            <TabPanel>
-              <Register />
-            </TabPanel>
-          </TabPanels>
-        </Tabs>
-      </AbsoluteCenter>
+      <div className="hero min-h-screen bg-base-200">
+        <div className="hero-content w-1/2 flex-col lg:flex-row-reverse">
+          <div className="card w-full max-w-sm flex-shrink-0 bg-base-100 shadow-2xl">
+            <div className="card-body">
+              <div className="tabs">
+                <a
+                  className={
+                    "tab-bordered tab" + (activeTab == 0 ? " tab-active" : "")
+                  }
+                  onClick={() => handleTabChange(0)}
+                >
+                  Login
+                </a>
+                <a
+                  className={
+                    "tab-bordered tab" + (activeTab == 1 ? " tab-active" : "")
+                  }
+                  onClick={() => handleTabChange(1)}
+                >
+                  Register
+                </a>
+              </div>
+              {activeTab == 0 ? <Login /> : <Register />}
+            </div>
+          </div>
+        </div>
+      </div>
     </>
   );
 };

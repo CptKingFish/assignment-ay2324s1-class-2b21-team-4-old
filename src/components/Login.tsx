@@ -1,15 +1,7 @@
 import { type FormEventHandler, useState } from "react";
 import { setCookie } from "cookies-next";
-import {
-  Flex,
-  Box,
-  Heading,
-  FormControl,
-  FormLabel,
-  Input,
-  Button,
-  useToast,
-} from "@chakra-ui/react";
+
+import toast from "react-hot-toast";
 import { api } from "@/utils/api";
 import { toast_duration } from "@/utils/constants";
 import { useRouter } from "next/router";
@@ -20,18 +12,12 @@ function Login() {
     api.user.login.useMutation();
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
-  const toast = useToast();
 
   const handleSubmit: FormEventHandler<HTMLFormElement> = (event) => {
     event.preventDefault();
     if (!email || !password) return;
     if (password.length < 8) {
-      toast({
-        title: "Password must be at least 8 characters long",
-        status: "error",
-        duration: toast_duration,
-        isClosable: true,
-      });
+      toast.error("Password must be at least 8 characters long");
       return;
     }
     login(
@@ -46,66 +32,52 @@ function Login() {
           });
           router.push("/chat").catch(console.error);
           window.location.href = "/chat";
-          toast({
-            title: data.message,
-            status: "success",
-            duration: toast_duration,
-            isClosable: true,
-          });
+          toast.success(data.message);
         },
         onError: (error) => {
-          toast({
-            title: error.message,
-            status: "error",
-            duration: toast_duration,
-            isClosable: true,
-          });
+          toast.error(error.message);
         },
       }
     );
   };
 
   return (
-    <Flex
-      // height="100vh"
-      backgroundColor="gray.50"
-    >
-      <Box
-        p={8}
-        borderWidth={1}
-        borderRadius={8}
-        boxShadow="lg"
-        backgroundColor="white"
-        minWidth={{ base: "auto", md: "400px" }}
-      >
-        <Heading mb={6}>Login</Heading>
-        <form onSubmit={handleSubmit}>
-          <FormControl mb={4}>
-            <FormLabel>Email address</FormLabel>
-            <Input
-              required
-              type="email"
-              placeholder="Enter your email address"
-              value={email}
-              onChange={(event) => setEmail(event.target.value)}
-            />
-          </FormControl>
-          <FormControl mb={6}>
-            <FormLabel>Password</FormLabel>
-            <Input
-              required
-              type="password"
-              placeholder="Enter your password"
-              value={password}
-              onChange={(event) => setPassword(event.target.value)}
-            />
-          </FormControl>
-          <Button isLoading={isLoggingIn} colorScheme="blue" type="submit">
-            Login
-          </Button>
-        </form>
-      </Box>
-    </Flex>
+    <form onSubmit={handleSubmit}>
+      <div className="form-control">
+        <label className="label">
+          <span className="label-text">Email</span>
+        </label>
+        <input
+          type="email"
+          placeholder="E-mail"
+          className="input-bordered input"
+          onChange={(event: React.ChangeEvent<HTMLInputElement>) =>
+            setEmail(event.target.value)
+          }
+        />
+      </div>
+      <div className="form-control">
+        <label className="label">
+          <span className="label-text">Password</span>
+        </label>
+        <input
+          type="password"
+          placeholder="Password"
+          className="input-bordered input"
+          onChange={(event: React.ChangeEvent<HTMLInputElement>) =>
+            setPassword(event.target.value)
+          }
+        />
+        <label className="label">
+          <a href="#" className="link-hover label-text-alt link">
+            Forgot password?
+          </a>
+        </label>
+      </div>
+      <div className="form-control mt-6">
+        <button className="btn-primary btn">Login</button>
+      </div>
+    </form>
   );
 }
 

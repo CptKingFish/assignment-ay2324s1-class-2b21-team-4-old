@@ -1,6 +1,6 @@
 import { type AppType } from "next/app";
-
 import { AuthProvider } from "@/context";
+import { Toaster } from "react-hot-toast";
 
 import { api } from "@/utils/api";
 
@@ -15,9 +15,10 @@ const AppWrapper = ({ children }: { children: React.ReactNode }) => {
 const MyApp: AppType = ({ Component, pageProps }) => {
   return (
     <AuthProvider>
-      <ChakraProvider>
+      <div data-theme="corporate">
+        <Toaster />
         <Component {...pageProps} />
-      </ChakraProvider>
+      </div>
     </AuthProvider>
   );
 };

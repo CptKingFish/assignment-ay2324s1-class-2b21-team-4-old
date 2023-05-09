@@ -3,7 +3,6 @@ import { setCookie } from "cookies-next";
 
 import toast from "react-hot-toast";
 import { api } from "@/utils/api";
-import { toast_duration } from "@/utils/constants";
 import { useRouter } from "next/router";
 
 function Login() {
@@ -74,7 +73,9 @@ function Login() {
         </label>
       </div>
       <div className="form-control mt-6">
-        <button className="btn-primary btn">Login</button>
+        <button className={`btn-primary btn ${isLoggingIn ? "loading" : ""}`}>
+          Login
+        </button>
       </div>
     </form>
   );

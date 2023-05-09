@@ -13,7 +13,11 @@ interface AuthProviderProps {
 }
 
 export function AuthProvider({ children }: AuthProviderProps) {
-  const { data: user } = api.user.getMe.useQuery();
+  const { data: user } = api.user.getMe.useQuery(undefined, {
+    retry: false,
+    refetchOnWindowFocus: false,
+    cacheTime: 0,
+  });
 
   return <AppContext.Provider value={{ user }}>{children}</AppContext.Provider>;
 }

@@ -14,20 +14,15 @@ export async function middleware(request: NextRequest) {
   }
   if (token) {
     token = token.replace("Bearer ", "");
-    await fetch(`${env.BASE_URL}/api/verify_user`, {
+    const response = await fetch(`${env.BASE_URL}/api/verify_user`, {
       method: "POST",
       headers: {
         "Content-Type": "application/json",
       },
       body: JSON.stringify({ token }),
-    })
-      .then((res) => res.json())
-      .then((data: IUser) => {
-        user = data;
-      })
-      .catch((err) => {
-        console.log(err);
-      });
+    });
+    const data = (await response.json()) as IUser | undefined;
+    user = data;
 
     // const decoded_token = jwt.verify(token, env.JWT_SECRET) as {
     //   user_id: string;

@@ -1,7 +1,7 @@
 import React from "react";
 
 const home = () => {
-  return <div>home</div>;
+  return <button className="btn-primary btn">Go to chat</button>;
 };
 
 export default home;

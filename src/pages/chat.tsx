@@ -7,7 +7,7 @@ const Chat = () => {
   
   return (
     <div>
-      <SideBar/>
+      {/* <SideBar/> */}
     </div>
   );
 };

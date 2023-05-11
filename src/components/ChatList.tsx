@@ -9,16 +9,15 @@ export default function ChatList({ chatInfoArr }: ChatListProps) {
   if (chatInfoArr.length === 0) return null;
   return (
     <>
-      {chatInfoArr.map((chatInfo) => (
-        <li key={chatInfo.id}>
+      {chatInfoArr.map((chatInfo) => (      
           <ChatMenuItem
+            key={chatInfo.id}
             id={chatInfo.id}
             avatarUrl={chatInfo.avatarUrl}
             name={chatInfo.name}
             lastMessage={chatInfo.lastMessage}
             lastMessageTime={chatInfo.lastMessageTime}
-          />
-        </li>
+          />    
       ))}
     </>
   );

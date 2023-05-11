@@ -60,6 +60,7 @@ const chatInfoArr = [
     lastMessage: "Hello, World!",
     lastMessageTime: "9:45 PM",
   },
+
 ];
 
 const teamInfoArr = [
@@ -107,7 +108,7 @@ export default function SideBarNav({
       </style>
       <div className="drawer-side">
         <label htmlFor="my-drawer-2" className="drawer-overlay"></label>
-        <ul className="base-200 menu relative w-80 bg-secondary p-4">
+        <ul className="base-200 menu relative w-80 bg-neutral-content p-4">
           <div>sidebar content</div>
           <div className="tabs mb-4 w-full">
             <a

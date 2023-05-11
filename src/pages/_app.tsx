@@ -6,7 +6,6 @@ import React from "react";
 
 import { api } from "@/utils/api";
 
-import { ChakraProvider } from "@chakra-ui/react";
 import "@/styles/globals.css";
 import { setCookie, deleteCookie } from "cookies-next";
 import SideBarNav from "@/components/SideBarNav";

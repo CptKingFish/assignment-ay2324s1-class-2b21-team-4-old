@@ -28,7 +28,7 @@ const MyApp: AppType = ({ Component, pageProps }) => {
   return (
     <WrappedApp>
       <AuthProvider>
-        <div data-theme="forest">
+        <div data-theme="corporate" className="h-full w-full">
           <Toaster />
           <Component {...pageProps} />
         </div>

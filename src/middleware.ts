@@ -21,17 +21,18 @@ export async function middleware(request: NextRequest) {
       },
       body: JSON.stringify({ token }),
     });
-    const data = (await response.json()) as IUser | undefined;
-    user = data;
-
-    // const decoded_token = jwt.verify(token, env.JWT_SECRET) as {
-    //   user_id: string;
-    // };
-    if (!user) {
+    const data = (await response.json()) as { user?: IUser; message: string };
+    console.log(request.nextUrl.pathname);
+    if (!data.user && authRoutes.includes(request.nextUrl.pathname)) {
+      return NextResponse.next();
+    }
+    if (!data.user) {
       return NextResponse.redirect(new URL("/authenticate", request.url));
     }
+    user = data.user;
   }
   if (user && authRoutes.includes(request.nextUrl.pathname)) {
+    console.log("redirecting to /chat");
     return NextResponse.redirect(new URL("/chat", request.url));
   }
   if (!user && authRoutes.includes(request.nextUrl.pathname)) {

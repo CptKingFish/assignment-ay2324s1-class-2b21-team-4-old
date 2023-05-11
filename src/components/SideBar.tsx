@@ -1,25 +1,23 @@
 import React, { useState } from 'react';
+import TextBox from './TextBox';
 
 
 const Sidebar = () => {
-    const [isOpen, setIsOpen] = useState(true);
+    const [isOpen, setIsOpen] = useState(false);
 
     function handleButtonClick() {
         setIsOpen(!isOpen);
     }
 
     return (
-        <div className="drawer drawer-mobile drawer-end ">
+        <div className="drawer drawer-mobile drawer-end mt-10">
             <input id="my-drawer-2" type="checkbox" className="drawer-toggle" />
             <div className="drawer-content flex flex-col">
                 <div className="navbar bg-base-100">
-                    <div className="flex-1">
-                        <a className="btn btn-ghost normal-case text-xl">daisyUI</a>
-                    </div>
                     <div className="flex-none">
                         <ul className="menu menu-horizontal px-1">
 
-                            <li><button className={"btn btn-outline btn-info " + (isOpen ? "hidden" : "")} onClick={handleButtonClick}>Open Menu</button></li>
+                            <li><button className={"btn btn-glass text-white " + (isOpen ? "hidden" : "")} onClick={handleButtonClick}>Group Chat Name</button></li>
                         </ul>
                     </div>
                 </div>
@@ -28,7 +26,7 @@ const Sidebar = () => {
             <div className="drawer-side">
                 <label htmlFor="my-drawer-2" className="drawer-overlay"></label>
                 <ul className={"items-center content-center border border-white menu p-4 w-80 bg-base-100 text-base-content " + (isOpen ? "" : "hidden")}>
-                    <button className="btn btn-outline btn-info" onClick={handleButtonClick}>Close Menu</button>
+                    <button className="btn btn-glass" onClick={handleButtonClick}>Close Menu</button>
                     <div className="divider"></div>
 
                     <div className="avatar mb-5 btn">

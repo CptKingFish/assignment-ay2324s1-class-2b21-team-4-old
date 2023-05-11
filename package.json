@@ -23,6 +23,7 @@
     "cookies-next": "^2.1.1",
     "daisyui": "^2.51.6",
     "easymde": "^2.18.0",
+    "faker": "^6.6.6",
     "framer-motion": "^10.12.6",
     "jsonwebtoken": "^9.0.0",
     "mongoose": "^7.1.0",
@@ -38,6 +39,7 @@
     "remark-gfm": "^3.0.1",
     "rsuite": "^5.33.0",
     "superjson": "1.12.2",
+    "ws": "^8.13.0",
     "zod": "^3.21.4"
   },
   "devDependencies": {

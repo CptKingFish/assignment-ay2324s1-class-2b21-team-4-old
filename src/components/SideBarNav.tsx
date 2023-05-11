@@ -102,6 +102,9 @@ export default function SideBarNav({
           Open drawer
         </label>
       </div>
+      <style>
+        {` .drawer-side::-webkit-scrollbar { width: 0; background-color: transparent; } `}
+      </style>
       <div className="drawer-side">
         <label htmlFor="my-drawer-2" className="drawer-overlay"></label>
         <ul className="base-200 menu relative w-80 bg-secondary p-4">

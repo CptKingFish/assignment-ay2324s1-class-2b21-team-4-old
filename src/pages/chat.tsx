@@ -4,6 +4,7 @@ import React from "react";
 
 const Chat = () => {
   const { user } = useGlobalContext();
+  
   return (
     <div>
       <SideBar/>

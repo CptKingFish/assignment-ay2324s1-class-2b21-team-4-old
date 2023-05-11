@@ -8,7 +8,7 @@ import { api } from "@/utils/api";
 
 import "@/styles/globals.css";
 import { setCookie, deleteCookie } from "cookies-next";
-import Sidebar from "@/components/Sidebar";
+import SideBarNav from "@/components/SideBarNav";
 
 const WrappedApp = ({ children }: { children: React.ReactNode }) => {
   React.useEffect(() => {
@@ -27,7 +27,7 @@ const WrappedApp = ({ children }: { children: React.ReactNode }) => {
 };
 
 const isAuthPage = (pathname: string) => {
-  const authPages = ["/authenticate"];
+  const authPages = ["/authenticate", "/"];
   return authPages.includes(pathname);
 };
 
@@ -41,7 +41,7 @@ const SidebarWrapper = ({
   if (isAuthPage(pathname)) {
     return <>{children}</>;
   }
-  return <Sidebar>{children}</Sidebar>;
+  return <SideBarNav>{children}</SideBarNav>;
 };
 
 const MyApp: AppType = ({ Component, pageProps }) => {

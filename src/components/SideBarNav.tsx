@@ -1,6 +1,7 @@
 import ChatList from "./ChatList";
 import ChatMenuItem from "./ChatMenuItem";
 import React from "react";
+import TeamList from "./TeamList";
 
 const chatInfoArr = [
   {
@@ -14,6 +15,67 @@ const chatInfoArr = [
     id: "2",
     avatarUrl: "https://i.pravatar.cc/300?img=1",
     name: "John Doe",
+    lastMessage: "Hello, World!",
+    lastMessageTime: "9:45 PM",
+  },
+  {
+    id: "3",
+    avatarUrl: "https://i.pravatar.cc/300?img=1",
+    name: "John Doe",
+    lastMessage: "Hello, World!",
+    lastMessageTime: "9:45 PM",
+  },
+  {
+    id: "4",
+    avatarUrl: "https://i.pravatar.cc/300?img=1",
+    name: "John Doe",
+    lastMessage: "Hello, World!",
+    lastMessageTime: "9:45 PM",
+  },
+  {
+    id: "5",
+    avatarUrl: "https://i.pravatar.cc/300?img=1",
+    name: "John Doe",
+    lastMessage: "Hello, World!",
+    lastMessageTime: "9:45 PM",
+  },
+  {
+    id: "6",
+    avatarUrl: "https://i.pravatar.cc/300?img=1",
+    name: "John Doe",
+    lastMessage: "Hello, World!",
+    lastMessageTime: "9:45 PM",
+  },
+  {
+    id: "7",
+    avatarUrl: "https://i.pravatar.cc/300?img=1",
+    name: "John Doe",
+    lastMessage: "Hello, World!",
+    lastMessageTime: "9:45 PM",
+  },
+  {
+    id: "8",
+    avatarUrl: "https://i.pravatar.cc/300?img=1",
+    name: "John Doe",
+    lastMessage: "Hello, World!",
+    lastMessageTime: "9:45 PM",
+  },
+];
+
+const teamInfoArr = [
+  {
+    id: "1",
+    avatarUrl: "https://i.pravatar.cc/300?img=1",
+    name: "Orlando",
+    lastSender: "John Doe",
+    lastMessage: "Hello, World!",
+    lastMessageTime: "9:45 PM",
+  },
+  {
+    id: "2",
+    avatarUrl: "https://i.pravatar.cc/300?img=1",
+    name: "Proj",
+    lastSender: "Mary Doe",
     lastMessage: "Hello, World!",
     lastMessageTime: "9:45 PM",
   },
@@ -118,7 +180,9 @@ export default function SideBarNav({
             className="input w-full max-w-xs"
           />
           <div>
-            <ChatList chatInfoArr={chatInfoArr} />
+            {activeTab === 0 && <ChatList chatInfoArr={chatInfoArr} />}
+            {activeTab === 1 && <TeamList teamInfoArr={teamInfoArr} />}
+            {activeTab === 2 && null}
           </div>
           <button className="btn-outline glass btn-circle btn absolute bottom-10 right-10">
             <svg

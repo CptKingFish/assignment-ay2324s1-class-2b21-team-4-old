@@ -10,7 +10,7 @@ export default function ChatMenuItem({
   return (
     <div className="mt-4 flex items-center ">
       <div className="online avatar">
-        <div className="w-16 rounded-xl">
+        <div className="w-16 rounded-full">
           {/* <Image src={avatarUrl} alt="chat menu item" width={32} height={32} /> */}
           <img src={avatarUrl} alt="chat menu item" />
         </div>

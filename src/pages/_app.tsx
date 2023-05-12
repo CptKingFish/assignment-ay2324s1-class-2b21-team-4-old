@@ -26,9 +26,9 @@ const WrappedApp = ({ children }: { children: React.ReactNode }) => {
   return <>{children}</>;
 };
 
-const isAuthPage = (pathname: string) => {
-  const authPages = ["/authenticate", "/","/home","/profile"];
-  return authPages.includes(pathname);
+const isPageWithSidebar = (pathname: string) => {
+  const pagesWithSidebar = ["/chat", "/scrum/[id]"];
+  return pagesWithSidebar.includes(pathname);
 };
 
 const SidebarWrapper = ({
@@ -38,10 +38,10 @@ const SidebarWrapper = ({
   children: React.ReactNode;
   pathname: string;
 }) => {
-  if (isAuthPage(pathname)) {
-    return <>{children}</>;
+  if (isPageWithSidebar(pathname)) {
+    return <SideBarNav>{children}</SideBarNav>;
   }
-  return <SideBarNav>{children}</SideBarNav>;
+  return <>{children}</>;
 };
 
 const MyApp: AppType = ({ Component, pageProps }) => {

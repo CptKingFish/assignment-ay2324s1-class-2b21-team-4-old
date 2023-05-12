@@ -5,12 +5,11 @@ import Box from "@/components/Box";
 
 const Chat = () => {
   const { user } = useGlobalContext();
-  const [isOpen, setIsOpen] = React.useState(false)
+  const [isOpen, setIsOpen] = React.useState(false);
   return (
     <>
-    <Box/>
+      <Box />
     </>
-  
   );
 };
 

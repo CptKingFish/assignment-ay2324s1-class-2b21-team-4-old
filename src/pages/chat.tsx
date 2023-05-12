@@ -1,4 +1,5 @@
-import SideBar from "@/components/SideBar";
+import Scrum from "@/components/Scrum";
+import TextBox from "@/components/TextBox";
 import { useGlobalContext } from "@/context";
 import React from "react";
 
@@ -6,8 +7,9 @@ const Chat = () => {
   const { user } = useGlobalContext();
   
   return (
-    <div>
-      <SideBar/>
+    <div className="h-full">
+      <Scrum/>
+      <TextBox/>    
     </div>
   );
 };

@@ -27,7 +27,7 @@ const WrappedApp = ({ children }: { children: React.ReactNode }) => {
 };
 
 const isAuthPage = (pathname: string) => {
-  const authPages = ["/authenticate", "/"];
+  const authPages = ["/authenticate", "/","/home","/profile"];
   return authPages.includes(pathname);
 };
 

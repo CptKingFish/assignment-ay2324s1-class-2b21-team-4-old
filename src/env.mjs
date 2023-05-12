@@ -10,6 +10,10 @@ export const env = createEnv({
     NODE_ENV: z.enum(["development", "test", "production"]),
     MONGO_URL: z.string(),
     JWT_SECRET: z.string(),
+    PUSHER_ClUSTER: z.string(),
+    PUSHER_KEY: z.string(),
+    PUSHER_SECRET: z.string(),
+    PUSHER_APP_ID: z.string(),
     BASE_URL: z.string(),
   },
 
@@ -28,6 +32,10 @@ export const env = createEnv({
    */
   runtimeEnv: {
     NODE_ENV: process.env.NODE_ENV,
+    PUSHER_ClUSTER: process.env.PUSHER_ClUSTER,
+    PUSHER_KEY: process.env.PUSHER_KEY,
+    PUSHER_SECRET: process.env.PUSHER_SECRET,
+    PUSHER_APP_ID: process.env.PUSHER_APP_ID,
     MONGO_URL: process.env.MONGO_URL,
     JWT_SECRET: process.env.JWT_SECRET,
     BASE_URL: process.env.BASE_URL,

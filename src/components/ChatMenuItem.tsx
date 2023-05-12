@@ -8,7 +8,8 @@ export default function ChatMenuItem({
   lastMessageTime,
 }: ChatMenuItemProps) {
   return (
-    <div className="mt-4 flex items-center ">
+  <li className="bordered">
+    <div className="mt-4 flex items-center">
       <div className="online avatar">
         <div className="w-16 rounded-full">
           {/* <Image src={avatarUrl} alt="chat menu item" width={32} height={32} /> */}
@@ -17,11 +18,12 @@ export default function ChatMenuItem({
       </div>
       <div className="ml-2">
         <div className="text-lg font-semibold">{name}</div>
-        <div className="text-sm text-neutral-content">{lastMessage}</div>
+        <div className="text-sm">{lastMessage}</div>
       </div>
-      <div className="ml-auto text-xs text-neutral-content">
+      <div className="ml-auto text-xs">
         {lastMessageTime}
       </div>
     </div>
+  </li>
   );
 }

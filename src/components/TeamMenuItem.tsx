@@ -25,16 +25,16 @@ export default function TeamMenuItem({
         </div>
         <div className="ml-2">
           <div className="text-lg font-semibold">{name}</div>
-          <div className="text-sm text-neutral-content">
-            {lastSender + " " + lastMessage}
+          <div className="text-sm">
+            {lastMessage}
           </div>
         </div>
-        <div className="ml-auto text-xs text-neutral-content">
+        <div className="ml-auto text-xs">
           {lastMessageTime}
         </div>
       </div>
       {collapsed ? null : (
-        <ul className="menu rounded-box w-full self-end bg-base-100 bg-secondary">
+        <ul className="menu rounded-box w-full self-end bg-base-100 bg-primary-content">
           <li>
             <a>Chat</a>
           </li>

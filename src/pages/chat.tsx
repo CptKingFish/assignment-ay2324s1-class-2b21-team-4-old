@@ -1,16 +1,14 @@
-import Scrum from "@/components/Scrum";
-import TextBox from "@/components/TextBox";
+import Link from "next/link";
 import { useGlobalContext } from "@/context";
 import React from "react";
 
 const Chat = () => {
   const { user } = useGlobalContext();
-  
+  const [isOpen, setIsOpen] = React.useState(false)
   return (
-    <div className="h-full">
-      <Scrum/>
-      <TextBox/>    
-    </div>
+    <Link className="btn-primary btn" href="/profile">
+      Profile
+    </Link>
   );
 };
 

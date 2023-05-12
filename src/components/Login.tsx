@@ -23,6 +23,7 @@ function Login() {
       { email, password },
       {
         onSuccess: (data) => {
+          console.log(data);
           localStorage.setItem("token", data.token);
           setCookie("token", data.token, {
             // expire in 1 day

@@ -1,14 +1,14 @@
-import SideBar from "@/components/SideBar";
+import Link from "next/link";
 import { useGlobalContext } from "@/context";
 import React from "react";
 
 const Chat = () => {
   const { user } = useGlobalContext();
-  
+  const [isOpen, setIsOpen] = React.useState(false)
   return (
-    <div>
-      {/* <SideBar/> */}
-    </div>
+    <Link className="btn-primary btn" href="/profile">
+      Profile
+    </Link>
   );
 };
 

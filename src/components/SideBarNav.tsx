@@ -92,7 +92,7 @@ export default function SideBarNav({
     setActiveTab(index);
   };
   return (
-    <div className="drawer-mobile drawer">
+    <div className="drawer-mobile drawer -z-10">
       <input id="my-drawer-2" type="checkbox" className="drawer-toggle" />
       <div className="drawer-content flex flex-col items-center justify-center">
         <div>{children}</div>

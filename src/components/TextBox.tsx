@@ -37,7 +37,6 @@ const onInputHandler = (e: any) => {
     }
 }
 
-
     return (
         <input onInput={onInputHandler} type="text" placeholder="Type here" className="input input-bordered rounded-full input-lg w-full mb-30" />
     )

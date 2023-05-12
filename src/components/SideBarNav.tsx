@@ -2,6 +2,8 @@ import ChatList from "./ChatList";
 import ChatMenuItem from "./ChatMenuItem";
 import React from "react";
 import TeamList from "./TeamList";
+import Profile from "./Profile";
+import Link from "next/link";
 
 const chatInfoArr = [
   {
@@ -109,7 +111,15 @@ export default function SideBarNav({
       <div className="drawer-side">
         <label htmlFor="my-drawer-2" className="drawer-overlay"></label>
         <ul className="base-200 menu relative w-80 bg-neutral-content p-4">
-          <div>sidebar content</div>
+        <div className="avatar">
+  <div className=" content-center w-24 rounded-full ring ring-primary ring-offset-base-100 ring-offset-2">
+    <img src="https://source.unsplash.com/random/?city,night" />
+  </div>
+  
+</div>
+<Link className="btn-primary btn rounded-lg my-5" href="/profile">
+      Profile
+    </Link>
           <div className="tabs mb-4 w-full">
             <a
               className={

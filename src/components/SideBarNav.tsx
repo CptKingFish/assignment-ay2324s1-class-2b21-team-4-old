@@ -2,6 +2,8 @@ import ChatList from "./ChatList";
 import ChatMenuItem from "./ChatMenuItem";
 import React from "react";
 import TeamList from "./TeamList";
+import Profile from "./Profile";
+import Link from "next/link";
 
 const chatInfoArr = [
   {
@@ -60,7 +62,6 @@ const chatInfoArr = [
     lastMessage: "Hello, World!",
     lastMessageTime: "9:45 PM",
   },
-
 ];
 
 const teamInfoArr = [
@@ -95,7 +96,7 @@ export default function SideBarNav({
     <div className="drawer-mobile drawer -z-10">
       <input id="my-drawer-2" type="checkbox" className="drawer-toggle" />
       <div className="drawer-content flex flex-col items-center justify-center">
-        <div>{children}</div>
+        {children}
         <label
           htmlFor="my-drawer-2"
           className="btn-primary drawer-button btn lg:hidden"
@@ -109,7 +110,14 @@ export default function SideBarNav({
       <div className="drawer-side">
         <label htmlFor="my-drawer-2" className="drawer-overlay"></label>
         <ul className="base-200 menu relative w-80 bg-neutral-content p-4">
-          <div>sidebar content</div>
+          <div className="avatar">
+            <div className=" w-24 content-center rounded-full ring ring-primary ring-offset-2 ring-offset-base-100">
+              <img src="https://source.unsplash.com/random/?city,night" />
+            </div>
+          </div>
+          <Link className="btn-primary btn my-5 rounded-lg" href="/profile">
+            Profile
+          </Link>
           <div className="tabs mb-4 w-full">
             <a
               className={

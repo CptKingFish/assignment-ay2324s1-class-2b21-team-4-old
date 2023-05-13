@@ -73,8 +73,3 @@ export default function UserSideBar() {
                     </svg>
                         Leave Group</div>
                 </ul>
-
-            </div>
-        </>
-    );
-}

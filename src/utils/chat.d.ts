@@ -1,4 +1,4 @@
-export interface ChatMenuItemProps {
+interface ChatMenuItemProps {
   id: string;
   avatarUrl: string;
   name: string;
@@ -6,11 +6,18 @@ export interface ChatMenuItemProps {
   lastMessageTime: string;
 }
 
-export interface TeamMenuItemProps {
+interface TeamMenuItemProps {
   id: string;
   avatarUrl: string;
   name: string;
   lastSender: string;
   lastMessage: string;
   lastMessageTime: string;
+}
+
+interface Message {
+  id: string;
+  senderId: string;
+  text: string;
+  timestamp: number;
 }

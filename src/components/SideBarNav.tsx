@@ -97,12 +97,12 @@ export default function SideBarNav({
       <input id="my-drawer-2" type="checkbox" className="drawer-toggle" />
       <div className="drawer-content flex flex-col">
         <div>{children}</div>
-        <label
+        {/* <label
           htmlFor="my-drawer-2"
           className="btn-primary drawer-button btn lg:hidden"
         >
           Open drawer
-        </label>
+        </label> */}
       </div>
       <style>
         {` .drawer-side::-webkit-scrollbar { width: 0; background-color: transparent; } `}

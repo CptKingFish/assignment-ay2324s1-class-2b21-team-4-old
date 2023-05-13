@@ -2,7 +2,7 @@ import React from "react";
 import TaskCard from "./TaskCard";
 import IconButton from "./IconButton";
 
-const users = [
+export const users = [
   {
     id: 1,
     name: "Elliott",

@@ -3,6 +3,7 @@ import { useRouter } from "next/router";
 import Tasks from "@/components/Tasks";
 import Backlog from "@/components/Backlog";
 import AllTasks from "@/components/AllTasks";
+import ProjectFiles from "@/components/ProjectFiles";
 
 const Scrum = () => {
   const router = useRouter();
@@ -26,26 +27,33 @@ const Scrum = () => {
         <div className="tabs mt-6">
           <a
             onClick={() => setActiveTab(0)}
-            className={`tab-lifted tab ${activeTab === 0 ? "tab-active" : ""}`}
+            className={`tab tab-lifted ${activeTab === 0 ? "tab-active" : ""}`}
           >
             Tasks
           </a>
           <a
             onClick={() => setActiveTab(1)}
-            className={`tab-lifted tab ${activeTab === 1 ? "tab-active" : ""}`}
+            className={`tab tab-lifted ${activeTab === 1 ? "tab-active" : ""}`}
           >
             Backlog
           </a>
           <a
             onClick={() => setActiveTab(2)}
-            className={`tab-lifted tab ${activeTab === 2 ? "tab-active" : ""}`}
+            className={`tab tab-lifted ${activeTab === 2 ? "tab-active" : ""}`}
           >
             All Tasks
+          </a>
+          <a
+            onClick={() => setActiveTab(3)}
+            className={`tab tab-lifted ${activeTab === 3 ? "tab-active" : ""}`}
+          >
+            Project Files
           </a>
         </div>
         {activeTab === 0 && <Tasks />}
         {activeTab === 1 && <Backlog />}
         {activeTab === 2 && <AllTasks />}
+        {activeTab === 3 && <ProjectFiles />}
       </div>
     </div>
   );

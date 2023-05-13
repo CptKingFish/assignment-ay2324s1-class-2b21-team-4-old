@@ -6,7 +6,7 @@ import UserSideBar from "@/components/UserSideBar";
 
 const Chat = () => {
   const { user } = useGlobalContext();
-  const [isOpen, setIsOpen] = React.useState(false)
+  const [isOpen, setIsOpen] = React.useState(false);
   return (
     <div className="drawer drawer-end drawer-mobile">
       <input id="my-drawer-4" type="checkbox" className="drawer-toggle" />

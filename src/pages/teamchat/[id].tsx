@@ -1,6 +1,7 @@
 import React from "react";
 import { useGlobalContext } from "@/context";
-import { pusherClient } from "@/utils/pusherConfig";
+// import { pusherClient } from "@/utils/pusherConfig";
+import { pusherClientConstructor } from "@/utils/pusherConfig";
 import TopNav from "@/components/TopNav";
 import ChatBubbleMe from "@/components/ChatBubbleMe";
 import ChatBubbleOther from "@/components/ChatBubbleOther";
@@ -17,6 +18,10 @@ const TeamChat = () => {
   }, []);
 
   React.useEffect(() => {
+    if (!user) return;
+    const pusherClient = pusherClientConstructor(user?._id);
+    console.log("pusherClient", pusherClient);
+
     pusherClient.subscribe(channelCode);
 
     const messageHandler = (message: Message) => {

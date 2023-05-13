@@ -17,15 +17,27 @@ export const pusherServer = new PusherServer({
   useTLS: true,
 });
 
-export const pusherClient = new PusherClient(
-  process.env.NEXT_PUBLIC_PUSHER_KEY || "",
-  {
+// export const pusherClient = new PusherClient(
+//   process.env.NEXT_PUBLIC_PUSHER_KEY || "",
+//   {
+//     cluster: process.env.NEXT_PUBLIC_PUSHER_CLUSTER || "",
+//     authEndpoint: "/api/pusher/auth",
+//     auth: {
+//       params: {
+//         user_id: "6455f7e7e64e1433ed9e8c94",
+//       },
+//     },
+//   }
+// );
+
+export const pusherClientConstructor = (userId: string) => {
+  return new PusherClient(process.env.NEXT_PUBLIC_PUSHER_KEY || "", {
     cluster: process.env.NEXT_PUBLIC_PUSHER_CLUSTER || "",
     authEndpoint: "/api/pusher/auth",
     auth: {
       params: {
-        user_id: "6455f7e7e64e1433ed9e8c94",
+        user_id: userId,
       },
     },
-  }
-);
+  });
+};

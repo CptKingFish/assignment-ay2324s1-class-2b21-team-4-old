@@ -14,13 +14,6 @@ interface ExtendedNextApiRequest extends NextApiRequest {
 }
 
 const handler = async (req: ExtendedNextApiRequest, res: NextApiResponse) => {
-  res.setHeader("Access-Control-Allow-Origin", "http://localhost:3000");
-  res.setHeader("Access-Control-Allow-Methods", "GET, POST, OPTIONS");
-  res.setHeader(
-    "Access-Control-Allow-Headers",
-    "Origin, X-Requested-With, Content-Type, Accept"
-  );
-
   console.log("message request received");
 
   mongoose.connect(env.MONGO_URL).catch((err) => console.log(err));
@@ -33,8 +26,7 @@ const handler = async (req: ExtendedNextApiRequest, res: NextApiResponse) => {
     const timestamp = Date.now();
 
     const messageData: Message = {
-      // eslint-disable-next-line @typescript-eslint/no-unsafe-call
-      id: uuidv4() as string,
+      id: uuidv4(),
       senderId: user_id,
       text: text,
       timestamp: timestamp,

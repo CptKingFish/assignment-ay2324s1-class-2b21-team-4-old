@@ -3,16 +3,10 @@ import { type Task, type User } from "./Tasks";
 import IconButton from "./IconButton";
 // import SimpleMDE from "react-simplemde-editor";
 import "rsuite/dist/rsuite.css";
-import "easymde/dist/easymde.min.css";
 import CustomModal from "./Modal";
 import { TagPicker } from "rsuite";
-import dynamic from "next/dynamic";
-const SimpleMDE = dynamic(
-  () => {
-    return import("react-simplemde-editor").then((mod) => mod.default);
-  },
-  { ssr: false }
-);
+import MDEditor from "./MDEditor";
+import TaskCodeSnippets from "./TaskCodeSnippets";
 
 type Props = {
   task: Task;
@@ -21,7 +15,7 @@ type Props = {
 
 const TaskCard = ({ task, users }: Props) => {
   const [modalOpen, setModalOpen] = React.useState(false);
-  const [markdown, setMarkdown] = React.useState("");
+  const [activeTab, setActiveTab] = React.useState(0);
   return (
     <>
       <div
@@ -122,7 +116,7 @@ const TaskCard = ({ task, users }: Props) => {
         </div>
       </div>
       <CustomModal modalOpen={modalOpen} setModalOpen={setModalOpen}>
-        <div className="w-[60vw] text-black">
+        <div className="h-[80vh] w-[60vw] text-black">
           <div className="flex items-center justify-between gap-4">
             <h1 className="text-2xl font-bold">{task.text}</h1>
             <IconButton onClick={() => setModalOpen(false)}>
@@ -164,7 +158,7 @@ const TaskCard = ({ task, users }: Props) => {
                 <span>Status</span>
               </div>
               <div className="flex flex-[10] justify-start">
-                <span className=" rounded-full bg-blue-400 px-[10px] py-[4px] font-semibold text-blue-900">
+                <span className=" rounded-md bg-blue-500 px-[10px] py-[4px] font-semibold text-white">
                   {task.progress}
                 </span>
               </div>
@@ -205,12 +199,23 @@ const TaskCard = ({ task, users }: Props) => {
               </div>
             </div>
           </div>
-          <div className="mt-4">
-            <SimpleMDE
-              style={{ height: "100%" }}
-              value={markdown}
-              onChange={(e) => setMarkdown(e)}
-            />
+          <div className="tabs tabs-boxed mt-2 bg-white">
+            <a
+              className={`tab ${activeTab === 0 ? "tab-active" : ""}`}
+              onClick={() => setActiveTab(0)}
+            >
+              Text Editor
+            </a>
+            <a
+              className={`tab ${activeTab === 1 ? "tab-active" : ""}`}
+              onClick={() => setActiveTab(1)}
+            >
+              Code Snippets
+            </a>
+          </div>
+          <div className="mt-2">
+            {activeTab === 0 && <MDEditor />}
+            {activeTab === 1 && <TaskCodeSnippets />}
           </div>
         </div>
       </CustomModal>

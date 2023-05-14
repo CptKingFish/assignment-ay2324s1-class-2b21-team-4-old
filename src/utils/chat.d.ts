@@ -1,3 +1,5 @@
+import type { ObjectId } from "mongoose";
+
 interface ChatMenuItemProps {
   id: string;
   avatarUrl: string;
@@ -16,8 +18,20 @@ interface TeamMenuItemProps {
 }
 
 interface Message {
-  id: string;
-  senderId: string;
+  _id: ObjectId;
+  sender: {
+    _id: ObjectId;
+    username: string;
+  };
   text: string;
   timestamp: number;
+}
+
+interface ChatRoom {
+  id: string;
+  name: string;
+  avatarUrl?: string;
+  type: "personal" | "team";
+  messages: Message[];
+  participants: string[];
 }

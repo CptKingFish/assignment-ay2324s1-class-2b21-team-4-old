@@ -1,15 +1,22 @@
 import Image from "next/image";
 import React from "react";
 import type { TeamMenuItemProps } from "@/utils/chat";
+import { useRouter } from "next/router";
 
 export default function TeamMenuItem({
+  id,
   avatarUrl,
   name,
   lastSender,
   lastMessage,
   lastMessageTime,
 }: TeamMenuItemProps) {
+  const router = useRouter();
   const [collapsed, setCollapsed] = React.useState(true);
+
+  const handleChatBtnClick = () => {
+    router.push(`/teamchat/${id}`).catch(console.error);
+  };
 
   return (
     <>
@@ -25,18 +32,14 @@ export default function TeamMenuItem({
         </div>
         <div className="ml-2">
           <div className="text-lg font-semibold">{name}</div>
-          <div className="text-sm">
-            {lastMessage}
-          </div>
+          <div className="text-sm">{lastMessage}</div>
         </div>
-        <div className="ml-auto text-xs">
-          {lastMessageTime}
-        </div>
+        <div className="ml-auto text-xs">{lastMessageTime}</div>
       </div>
       {collapsed ? null : (
         <ul className="menu rounded-box w-full self-end bg-base-100 bg-primary-content">
           <li>
-            <a>Chat</a>
+            <a onClick={handleChatBtnClick}>Chat</a>
           </li>
           <li className="bordered">
             <a>Scrum</a>

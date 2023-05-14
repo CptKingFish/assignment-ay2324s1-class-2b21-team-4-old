@@ -47,29 +47,43 @@ const ChatInput = ({ channelCode }: ChatInputProps) => {
   };
 
   // const handleSubmit = async (e: React.FormEvent<HTMLFormElement>) => {
+  //   e.stopPropagation();
   //   e.preventDefault();
-  //   void sendMessage();
+  //   await sendMessage();
   // };
-  return (
-    <div className="fixed bottom-0 left-0 right-0 z-10 z-10 bg-white">
-      {/* <form className="flex items-center p-3"> */}
-      <input
-        type="text"
-        placeholder="Type your message"
-        className="flex-1 rounded-md border-2 border-gray-200 p-2 focus:outline-none focus:ring-2 focus:ring-blue-500"
-        value={input}
-        onChange={(e) => setInput(e.target.value)}
-      />
-      <button
-        onClick={() => {
-          console.log("sendMessage");
 
-          void sendMessage();
-        }}
-        className="ml-2 rounded-md bg-blue-500 px-4 py-2 font-bold text-white hover:bg-blue-600"
-      >
-        Send
-      </button>
+  // detect enter press on input
+  const handleKeyDown = (e: React.KeyboardEvent<HTMLInputElement>) => {
+    console.log(e.key);
+
+    if (e.key === "Enter") {
+      e.preventDefault();
+      void sendMessage();
+    }
+  };
+
+  const handleSend = () => {
+    void sendMessage();
+  };
+  return (
+    <div className="z-10 bg-white">
+      {/* <form className="flex items-center p-3" onSubmit={void handleSubmit}> */}
+      <div className="flex items-center p-3">
+        <input
+          type="text"
+          placeholder="Type your message"
+          className="flex-1 rounded-md border-2 border-gray-200 p-2 focus:outline-none focus:ring-2 focus:ring-blue-500"
+          value={input}
+          onChange={(e) => setInput(e.target.value)}
+          onKeyDown={handleKeyDown}
+        />
+        <button
+          onClick={handleSend}
+          className="ml-2 rounded-md bg-blue-500 px-4 py-2 font-bold text-white hover:bg-blue-600"
+        >
+          Send
+        </button>
+      </div>
       {/* </form> */}
     </div>
   );

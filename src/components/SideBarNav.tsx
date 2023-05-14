@@ -4,6 +4,11 @@ import React from "react";
 import TeamList from "./TeamList";
 import Profile from "./Profile";
 import Link from "next/link";
+import { api } from "@/utils/api";
+import { useGlobalContext } from "@/context";
+// import Chatroom from "@/models/Chatroom";
+import { ChatRoom } from "@/utils/chat";
+import { IChatroom } from "@/models/Chatroom";
 
 const chatInfoArr = [
   {
@@ -88,15 +93,31 @@ export default function SideBarNav({
 }: {
   children: React.ReactNode;
 }) {
+  const { user } = useGlobalContext();
+  const [chatrooms, setChatrooms] = React.useState<IChatroom[]>([]);
   const [activeTab, setActiveTab] = React.useState(0);
   const handleTabChange = (index: number) => {
     setActiveTab(index);
   };
+  const { data: chatroomsData, isLoading } = api.chat.getChatrooms.useQuery();
+
+  React.useEffect(() => {
+    if (isLoading || !chatroomsData) return;
+    setChatrooms(chatroomsData);
+  }, [isLoading, chatroomsData]);
+
+  // get chatrooms with the type of team
+  const teamChatrooms: IChatroom[] = React.useMemo(() => {
+    return chatrooms.filter((chatroom: IChatroom) => chatroom.type === "team");
+  }, [chatrooms]);
+
+  console.log("teamChatrooms", teamChatrooms);
+
   return (
     <div className="drawer-mobile drawer -z-10">
       <input id="my-drawer-2" type="checkbox" className="drawer-toggle" />
       <div className="drawer-content flex flex-col">
-        <div>{children}</div>
+        {children}
         {/* <label
           htmlFor="my-drawer-2"
           className="btn-primary drawer-button btn lg:hidden"
@@ -193,7 +214,7 @@ export default function SideBarNav({
           />
           <div>
             {activeTab === 0 && <ChatList chatInfoArr={chatInfoArr} />}
-            {activeTab === 1 && <TeamList teamInfoArr={teamInfoArr} />}
+            {activeTab === 1 && <TeamList teamChatrooms={teamChatrooms} />}
             {activeTab === 2 && null}
           </div>
           <button className="btn-outline glass btn-circle btn absolute bottom-10 right-10">

@@ -1,8 +1,13 @@
 export default function TopNav() {
   return (
-    <div className="navbar  bg-base-300">
+    <div className="navbar bg-base-300">
+      <div className="avatar pl-5">
+        <div className="w-16 rounded-xl">
+          <img src="/images/stock/photo-1534528741775-53994a69daeb.jpg" />
+        </div>
+      </div>
       <div className="flex-1">
-        <a className="btn-ghost btn text-xl normal-case">daisyUI</a>
+        <span className="ms-5 text-xl normal-case">Test Team</span>
       </div>
       <div className="flex-none gap-2">
         <div className="form-control"></div>

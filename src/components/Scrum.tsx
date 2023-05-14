@@ -1,5 +1,5 @@
 import React, { useState } from 'react';
-import TextBox from './TextBox';
+
 
 const Scrum = () => {
   const [isOpen, setIsOpen] = useState(false);
@@ -81,9 +81,6 @@ const Scrum = () => {
             {/* Render chat messages here */}
           </div>
           {/* Input box */}
-          <div className="p-4 border-t border-base-200">
-            <TextBox />
-          </div>
         </ul>
       </div>
     </div>

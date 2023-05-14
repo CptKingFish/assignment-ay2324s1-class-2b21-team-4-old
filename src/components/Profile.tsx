@@ -1,6 +1,5 @@
 export default function Profile() {
 
-
     return (
         <>
             <input id="my-drawer-2" type="checkbox" className="drawer-toggle" />

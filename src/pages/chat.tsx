@@ -1,19 +1,15 @@
 
 import React from "react";
-<<<<<<< HEAD
 import pusher from "../server/api/pusherconfig";
-import ChatBubble from "@/components/ChatBubble";
 import { useGlobalContext } from "@/context";
+import UserSideBar from "@/components/UserSideBar";
 
 interface ChatMessage {
   senderId: string;
   receiverId: string;
   message: string;
 }
-=======
-import Box from "@/components/Box";
-import UserSideBar from "@/components/UserSideBar";
->>>>>>> f27be0c41df993ea48d3ade83ce47587f8586bd6
+
 
 const Chat = () => {
   const [messages, setMessages] = React.useState([]); // Initialize messages as an empty array
@@ -23,7 +19,6 @@ const Chat = () => {
   
   const currentId = user?._id;
 
-  console.log('pusher', pusher)
 
   // React.useEffect(() => {
   //   const channel = pusher.subscribe(`chat-${currentId}`);
@@ -61,7 +56,6 @@ const Chat = () => {
 
 
   return (
-<<<<<<< HEAD
     <>
       <div className="relative flex h-full w-4/5 flex-col justify-between ">
         <div className="navbar bg-base-100">
@@ -81,7 +75,9 @@ const Chat = () => {
           </div>
         </div>
 
-        {messages != undefined ? (
+       {/* messages go here */}
+
+        {/* {messages != undefined ? (
           <div className="chat-container">
             {messages.map((message, index) => (
               <ChatBubble key={index} {...message} />
@@ -103,7 +99,7 @@ const Chat = () => {
               </div>
             </div>
           </div>
-        )}
+        )} */}
 
         <div className="flex items-end justify-center bottom-0 mb-10">
           <input
@@ -114,18 +110,9 @@ const Chat = () => {
           />
         </div>
       </div>
-    </>
-=======
-    <div className="drawer drawer-end drawer-mobile">
-      <input id="my-drawer-4" type="checkbox" className="drawer-toggle" />
-      <div className="drawer-content">
-        <Box />
-      </div>
+
       <UserSideBar/>
-    </div>
-
-
->>>>>>> f27be0c41df993ea48d3ade83ce47587f8586bd6
+    </>
   );
 };
 

@@ -1,7 +1,13 @@
 import Link from "next/link";
 import GroupParticipants from "./GroupParticipants";
 import GroupParticipantModal from "./GroupParticipantsModal";
-export default function UserSideBar() {
+import React from "react";
+
+interface UserSideBarProps{
+    isOpen:boolean;
+    handleDrawerToggle:()=>void;
+}
+ const UserSideBar:React.FC<UserSideBarProps> = ({isOpen,handleDrawerToggle}) => {
     const participants = [
         { key: '1', name: 'You', imageUrl: '', admin: false },
         { key: '2', name: 'Tim', imageUrl: '', admin: true },
@@ -19,21 +25,21 @@ export default function UserSideBar() {
         { key: '14', name: 'Tim', imageUrl: '', admin: true },
         { key: '15', name: 'Elliott', imageUrl: '', admin: false },
         { key: '16', name: 'Sithu', imageUrl: '', admin: false },
-      ];
+    ];
 
     return (
         <>
             <input type="checkbox" id="my-modal-3" className="modal-toggle" />
-            <div className="modal">
+            <label htmlFor="my-modal-3" className="modal">
                 <div className="modal-box relative">
-                    <GroupParticipantModal participants={participants}/>
+                    <GroupParticipantModal participants={participants} />
                 </div>
-            </div>
+            </label>
             <div className="drawer-side">
                 <label htmlFor="my-drawer-2" className="drawer-overlay"></label>
-                <ul className="menu w-80 bg-base-100 text-base-content">
+                <ul className={`menu w-80 bg-base-100 text-base-content  ${isOpen ? '' : 'hidden'}`}>
                     <div className="flex flex-wrap bg-base-200 p-5">
-                        <button className="">
+                        <button className="" onClick={handleDrawerToggle}>
                             <svg xmlns="http://www.w3.org/2000/svg" className="h-6 w-6" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M6 18L18 6M6 6l12 12" /></svg>
                         </button>
                         <li className=" ms-5">Group Info</li>
@@ -47,10 +53,10 @@ export default function UserSideBar() {
                         <div className="mt-2 font-bold">ADES</div>
                         <div className="mt-2">Group | {participants.length} participants</div>
                     </div>
-                    <div className="divider"></div>
+                    <div className="divider mx-2"></div>
                     <div className="flex flex-wrap">
                         <li className="mx-2">{participants.length} Participants</li>
-                        <label htmlFor = "my-modal-3" className = "cursor-pointer">
+                        <label htmlFor="my-modal-3" className="cursor-pointer">
                             <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" strokeWidth={1.5} stroke="currentColor" className="w-3 h-3">
                                 <path strokeLinecap="round" strokeLinejoin="round" d="M21 21l-5.197-5.197m0 0A7.5 7.5 0 105.196 5.196a7.5 7.5 0 0010.607 10.607z" />
                             </svg>
@@ -78,3 +84,5 @@ export default function UserSideBar() {
         </>
     );
 }
+
+export default UserSideBar;

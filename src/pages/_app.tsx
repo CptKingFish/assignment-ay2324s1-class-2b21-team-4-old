@@ -27,7 +27,12 @@ const WrappedApp = ({ children }: { children: React.ReactNode }) => {
 };
 
 const isPageWithSidebar = (pathname: string) => {
-  const pagesWithSidebar = ["/chat", "/scrum/[id]"];
+  const pagesWithSidebar = [
+    "/chat",
+    "/scrum/[id]",
+    "/teamchat/[id]",
+    "/teamchat",
+  ];
   return pagesWithSidebar.includes(pathname);
 };
 

@@ -1,13 +1,17 @@
 interface ChatBubbleMeProps {
   senderId: string;
   text: string;
-  timestamp: string;
+  senderName: string;
+  time: string;
+  date: string;
 }
 
 export default function ChatBubbleMe({
   senderId,
   text,
-  timestamp,
+  senderName,
+  time,
+  date,
 }: ChatBubbleMeProps) {
   // id: uuidv4() as string,
   //   senderId: user_id,
@@ -21,11 +25,12 @@ export default function ChatBubbleMe({
         </div>
       </div>
       <div className="chat-header">
-        {senderId}
-        <time className="text-xs opacity-50">12:46</time>
+        <span className="mr-2"> {senderName}</span>
+
+        <time className="text-xs opacity-50">{time}</time>
       </div>
       <div className="chat-bubble">{text}</div>
-      <div className="chat-footer opacity-50">Seen at 12:46</div>
+      <div className="chat-footer opacity-50">{date}</div>
     </div>
   );
 }

@@ -7,8 +7,10 @@ import Link from "next/link";
 import { api } from "@/utils/api";
 import { useGlobalContext } from "@/context";
 // import Chatroom from "@/models/Chatroom";
+import { toast } from "react-hot-toast";
 import { ChatRoom } from "@/utils/chat";
 import { IChatroom } from "@/models/Chatroom";
+import CustomModal from "./Modal";
 
 const chatInfoArr = [
   {
@@ -100,6 +102,11 @@ export default function SideBarNav({
     setActiveTab(index);
   };
   const { data: chatroomsData, isLoading } = api.chat.getChatrooms.useQuery();
+  const [openAddChatroomModal, setOpenAddChatroomModal] = React.useState(false);
+
+  const [chatroomName, setChatroomName] = React.useState("");
+  const { mutate: createChatroom, isLoading: isLoadingChatroomCreate } =
+    api.chat.createChatroom.useMutation();
 
   React.useEffect(() => {
     if (isLoading || !chatroomsData) return;
@@ -111,13 +118,81 @@ export default function SideBarNav({
     return chatrooms.filter((chatroom: IChatroom) => chatroom.type === "team");
   }, [chatrooms]);
 
-  console.log("teamChatrooms", teamChatrooms);
-
   return (
     <div className="drawer-mobile drawer -z-10">
       <input id="my-drawer-2" type="checkbox" className="drawer-toggle" />
       <div className="drawer-content flex flex-col">
         {children}
+        <CustomModal
+          modalOpen={openAddChatroomModal}
+          setModalOpen={setOpenAddChatroomModal}
+        >
+          <form
+            className="flex min-w-[400px] flex-col gap-3"
+            onSubmit={(e) => {
+              e.preventDefault();
+              createChatroom(
+                { chatroom_name: chatroomName, type: "team" },
+                {
+                  onSuccess: (data) => {
+                    console.log(data);
+
+                    setOpenAddChatroomModal(false);
+                    toast.success("Chatroom created successfully");
+                  },
+                  onError: (error) => {
+                    toast.error(error.message);
+                  },
+                }
+              );
+            }}
+          >
+            <h3>Create new team</h3>
+            <input
+              type="text"
+              // value={formData.name}
+              required
+              onChange={(e) => {
+                setChatroomName(e.target.value);
+              }}
+              placeholder="Name"
+              className="input w-full rounded-md  border border-gray-300 bg-white shadow-sm outline-none focus:border-primary focus:outline-none"
+            />
+            {/* <select
+              value={formData.status}
+              required
+              onChange={(e) => {
+                setFormData({ ...formData, status: e.target.value });
+              }}
+              className="select w-full max-w-xs rounded-md  border border-gray-300 bg-white shadow-sm outline-none focus:border-primary focus:outline-none"
+            >
+              <option disabled>Status</option>
+              <option value={PROGRESS.Todo}>{PROGRESS.Todo}</option>
+              <option value={PROGRESS.In_Progress}>
+                {PROGRESS.In_Progress}
+              </option>
+              <option value={PROGRESS.Done}>{PROGRESS.Done}</option>
+            </select> */}
+            {/* <textarea
+            className="textarea w-full max-w-xs rounded-md  border border-gray-300 bg-white shadow-sm outline-none focus:border-primary focus:outline-none"
+            name="description"
+            id="description"
+            cols={30}
+            placeholder="Description"
+            value={formData.description}
+            onChange={(e) => {
+              setFormData({ ...formData, description: e.target.value });
+            }}
+          ></textarea> */}
+
+            <button
+              className={`btn-success h-10 w-full rounded-md  border border-gray-300 bg-white shadow-sm outline-none focus:border-primary focus:outline-none`}
+              // className={`btn-success btn ${isCreatingTask ? "loading" : ""}`}
+            >
+              Create
+            </button>
+          </form>
+        </CustomModal>
         {/* <label
           htmlFor="my-drawer-2"
           className="btn-primary drawer-button btn lg:hidden"
@@ -142,7 +217,7 @@ export default function SideBarNav({
           <div className="tabs mb-4 w-full">
             <a
               className={
-                "tab tab-bordered w-1/3 " +
+                "tab-bordered tab w-1/3 " +
                 (activeTab === 0 ? " tab-active" : "")
               }
               onClick={() => handleTabChange(0)}
@@ -164,7 +239,7 @@ export default function SideBarNav({
             </a>
             <a
               className={
-                "tab tab-bordered w-1/3 " +
+                "tab-bordered tab w-1/3 " +
                 (activeTab === 1 ? " tab-active" : "")
               }
               onClick={() => handleTabChange(1)}
@@ -186,7 +261,7 @@ export default function SideBarNav({
             </a>
             <a
               className={
-                "tab tab-bordered w-1/3 " +
+                "tab-bordered tab w-1/3 " +
                 (activeTab === 2 ? " tab-active" : "")
               }
               onClick={() => handleTabChange(2)}
@@ -217,7 +292,12 @@ export default function SideBarNav({
             {activeTab === 1 && <TeamList teamChatrooms={teamChatrooms} />}
             {activeTab === 2 && null}
           </div>
-          <button className="btn-outline glass btn-circle btn absolute bottom-10 right-10">
+          <button
+            className="btn-outline glass btn-circle btn absolute bottom-10 right-10"
+            onClick={() => {
+              setOpenAddChatroomModal(true);
+            }}
+          >
             <svg
               xmlns="http://www.w3.org/2000/svg"
               fill="none"

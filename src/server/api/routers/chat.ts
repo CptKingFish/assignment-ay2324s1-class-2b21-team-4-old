@@ -11,6 +11,8 @@ import Chatroom from "@/models/Chatroom";
 import jwt from "jsonwebtoken";
 import { TRPCError } from "@trpc/server";
 import { env } from "@/env.mjs";
+import { m } from "framer-motion";
+import mongoose, { ObjectId } from "mongoose";
 
 export const chatRouter = createTRPCRouter({
   getMessages: privateProcedure
@@ -37,22 +39,41 @@ export const chatRouter = createTRPCRouter({
       }
       return chatroom.messages;
     }),
-  getChatrooms: privateProcedure
-    // .input(
-    //   z.object({
-    //     user_id: z.string(),
-    //   })
-    // )
-    .query(async ({ ctx }) => {
-      // const { user_id } = input;
-      const { user } = ctx;
-      console.log(user._id.toString());
-      const chatrooms = await Chatroom.find({
-        participants: user._id,
-      }).slice("messages", -1);
+  createChatroom: privateProcedure
+    .input(
+      z.object({
+        chatroom_name: z.string(),
+        type: z.enum(["team", "private"]),
+      })
+    )
+    .mutation(async ({ input, ctx }) => {
+      console.log(input);
 
-      return chatrooms;
+      const { chatroom_name, type } = input;
+      const { user } = ctx;
+
+      const chatroom = await Chatroom.create({
+        name: chatroom_name,
+        participants: [new mongoose.Types.ObjectId(user._id)],
+        messages: [],
+        type: type,
+      });
+
+      console.log(chatroom);
+
+      return chatroom;
     }),
+
+  getChatrooms: privateProcedure.query(async ({ ctx }) => {
+    // const { user_id } = input;
+    const { user } = ctx;
+    console.log(user._id.toString());
+    const chatrooms = await Chatroom.find({
+      participants: user._id,
+    }).slice("messages", -1);
+
+    return chatrooms;
+  }),
   getUsernamesFromChatroom: privateProcedure
     .input(
       z.object({

@@ -1,11 +1,25 @@
 import React from "react";
-import TextBox from "./TextBox";
-import Header from "./Header";
+
 
 const Box = () => {
+
+
   return (
     <div className="h-full w-full">
-    <Header/>
+       <div className="navbar bg-base-100">
+      <div className="flex-1">
+        <a className="text-xl normal-case">Name of Person</a>
+      </div>
+      <div className="flex-none">
+        <div className="dropdown-end dropdown">
+          <label tabIndex={0} className="btn-ghost btn-circle avatar btn">
+            <div className="w-10 rounded-full">
+              <img src="https://source.unsplash.com/random/?city,night" />
+            </div>
+          </label>
+        </div>
+      </div>
+    </div>
       <div className="chat chat-start">
         <div className="chat-image avatar">
           <div className="w-10 rounded-full">
@@ -32,7 +46,8 @@ const Box = () => {
         <div className="chat-bubble">I hate you!</div>
         <div className="chat-footer opacity-50">Seen at 12:46</div>
       </div>
-      <TextBox />
+      <input type="text" placeholder="Type here" className="input input-bordered rounded-full input-lg w-5/6 mb-30" />
+
     </div>
   );
 };

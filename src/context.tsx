@@ -14,6 +14,7 @@ interface AuthProviderProps {
 }
 
 export function AuthProvider({ children }: AuthProviderProps) {
+
   const { data: user, isLoading: isLoadingUser } = api.user.getMe.useQuery(
     undefined,
     {

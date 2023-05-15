@@ -4,7 +4,7 @@ import GroupParticipants from './GroupParticipants';
 interface GroupParticipantModalProps {
   participants: {
     key: string | number;
-    name: string;
+    username: string;
     imageUrl: string;
     admin: boolean;
   }[];
@@ -18,7 +18,7 @@ const GroupParticipantModal: React.FC<GroupParticipantModalProps> = ({ participa
   };
 
   const filteredParticipants = participants.filter((participant) =>
-    participant.name.toLowerCase().includes(searchQuery.toLowerCase())
+    participant.username.toLowerCase().includes(searchQuery.toLowerCase())
   );
 
   return (
@@ -42,21 +42,23 @@ const GroupParticipantModal: React.FC<GroupParticipantModalProps> = ({ participa
             onChange={handleSearchChange}
           />
         </div>
-        {participants.map((participant) => {
-          const isFiltered = !filteredParticipants.includes(participant);
-          if (!isFiltered) {
-            return (
-              <React.Fragment key={participant.key}>
-                <GroupParticipants
-                  name={participant.name}
-                  imageUrl={participant.imageUrl}
-                  admin={participant.admin}
-                />
-              </React.Fragment>
-            );
-          }
-          return null;
-        })}
+        <div className="overflow-visible">
+          {participants.map((participant) => {
+            const isFiltered = !filteredParticipants.includes(participant);
+            if (!isFiltered) {
+              return (
+                <React.Fragment key={participant.key}>
+                  <GroupParticipants
+                    name={participant.username}
+                    imageUrl={participant.imageUrl}
+                    admin={participant.admin}
+                  />
+                </React.Fragment>
+              );
+            }
+            return null;
+          })}
+        </div>
       </div>
     </>
   );

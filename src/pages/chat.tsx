@@ -22,7 +22,7 @@ const Chat = () => {
 
       </div>
 
-      <UserSideBar isOpen={isOpen} handleDrawerToggle={handleDrawerToggle} />
+      <UserSideBar isOpen={isOpen} handleDrawerToggle={handleDrawerToggle} participants = {[]}/>
     </div>
 
 

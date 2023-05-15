@@ -53,4 +53,31 @@ export const chatRouter = createTRPCRouter({
 
       return chatrooms;
     }),
+  getUsernamesFromChatroom: privateProcedure
+    .input(
+      z.object({
+        chatroom_id: z.string(),
+      })
+    )
+    .query(async ({ input, ctx }) => {
+      const { chatroom_id } = input;
+      const { user } = ctx;
+      const chatroom = await Chatroom.findById(chatroom_id);
+      if (!chatroom) {
+        throw new TRPCError({
+          code: "BAD_REQUEST",
+          message: "Chatroom not found",
+        });
+      }
+      if (!chatroom.participants.includes(user._id)) {
+        throw new TRPCError({
+          code: "BAD_REQUEST",
+          message: "Unauthorized",
+        });
+      }
+      const usernames = await User.find({
+        _id: { $in: chatroom.participants },
+      }).select("username");
+      return usernames;
+    }),
 });

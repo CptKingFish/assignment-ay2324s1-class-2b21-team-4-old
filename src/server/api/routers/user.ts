@@ -97,4 +97,21 @@ export const userRouter = createTRPCRouter({
         code: "SUCCESS",
       };
     }),
+    getUsername: publicProcedure
+    .input(
+      z.object({
+        user_id: z.string(),
+      })
+    )
+    .query(async ({ input }) => {
+      const { user_id } = input;
+      const user = await User.findById(user_id).select("username");
+      if (!user) {
+        throw new TRPCError({
+          code: "BAD_REQUEST",
+          message: "User not found",
+        });
+      }
+      return user;
+    }),
 });

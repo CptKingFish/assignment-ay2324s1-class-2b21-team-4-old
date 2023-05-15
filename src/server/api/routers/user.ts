@@ -97,4 +97,21 @@ export const userRouter = createTRPCRouter({
         code: "SUCCESS",
       };
     }),
+  getAllUsersByChatId: publicProcedure
+    .input(
+      z.object({
+        chat_id: z.string().nullable(),
+      })
+    )
+    .query(async ({ input }) => {
+      if (input.chat_id === null) {
+        throw new TRPCError({
+          code: "BAD_REQUEST",
+          message: "chat_id is required",
+        });
+      }
+      // todo: check if user is in chat
+      const users = await User.find({});
+      return users;
+    }),
 });

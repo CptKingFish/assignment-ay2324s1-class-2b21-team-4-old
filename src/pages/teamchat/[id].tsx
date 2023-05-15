@@ -7,29 +7,28 @@ import ChatBubbleMe from "@/components/ChatBubbleMe";
 import ChatBubbleOther from "@/components/ChatBubbleOther";
 import ChatInput from "@/components/ChatInput";
 import { Router, useRouter } from "next/router";
-import { Participant } from "@/utils/participant";
+import ChatBody from "@/components/ChatBody";
 import { Message } from "@/utils/chat";
 import { api } from "@/utils/api";
-import { formatTimestampToTime } from "@/utils/helper";
 import UserSideBar from "@/components/UserSideBar";
 
 const TeamChat = () => {
   const router = useRouter();
   const { user } = useGlobalContext();
   const [messages, setMessages] = React.useState<Message[]>([]);
-  const [users,setUsers] = React.useState<Object[]>([]);
+  const [users, setUsers] = React.useState<Object[]>([]);
   // const [showDownButton, setShowDownButton] = React.useState(false);
   const {
-    data: messageData,
+    data: chatroomData,
     refetch,
     isLoading,
-  } = api.chat.getMessages.useQuery({
+  } = api.chat.getMessagesAndChatroomInfo.useQuery({
     chatroom_id: router.query.id as string,
   });
 
-  const {data:userRaw} = api.chat.getUsernamesFromChatroom.useQuery({
-    chatroom_id:router.query.id as string,
-  })
+  const { data: userRaw } = api.chat.getUsernamesFromChatroom.useQuery({
+    chatroom_id: router.query.id as string,
+  });
 
   const [isOpen, setIsOpen] = React.useState(true);
 
@@ -63,10 +62,14 @@ const TeamChat = () => {
   // };
 
   useEffect(() => {
-    if (isLoading || !messageData) return;
-    setMessages(messageData.reverse());
-    setUsers((userRaw||[]).map((user)=>{return {key:user._id,username:user.username}}))
-  }, [isLoading, messageData]);
+    if (isLoading || !chatroomData) return;
+    setMessages(chatroomData.messages);
+    setUsers(
+      (userRaw || []).map((user) => {
+        return { key: user._id, username: user.username };
+      })
+    );
+  }, [isLoading, chatroomData, userRaw]);
 
   const channelCode = React.useMemo(() => {
     return "presence-" + (router.query.id as string);
@@ -94,18 +97,7 @@ const TeamChat = () => {
     };
   }, [user, channelCode]);
 
-  const scrollDownRef = React.useRef<HTMLDivElement | null>(null);
-
-  const formatTimeStampToDate = (timestamp: number) => {
-    const date = new Date(parseInt(timestamp.toString()));
-
-    return date.toLocaleString("default", {
-      weekday: "long",
-      month: "long",
-      day: "numeric",
-      year: "numeric",
-    });
-  };
+  // const scrollDownRef = React.useRef<HTMLDivElement | null>(null);
 
   // const scrollToBottom = () => {
   //   scrollDownRef.current?.scrollIntoView({ behavior: "smooth" });
@@ -113,14 +105,14 @@ const TeamChat = () => {
 
   return (
     <>
-      <TopNav />
-      <div className="drawer drawer-end drawer-mobile">
-
+      <TopNav
+        chatroom_name={chatroomData?.name || ""}
+        openSidebarDetails={handleDrawerToggle}
+      />
+      <div className="drawer-mobile drawer drawer-end">
         <input id="my-drawer-4" type="checkbox" className="drawer-toggle" />
 
-        <div className="drawer-content flex flex-no-wrap">
-
-
+        <div className="flex-no-wrap drawer-content flex">
           {/* {showDownButton && (
             <div className="fixed bottom-10 right-4 z-50">
               <button
@@ -134,41 +126,26 @@ const TeamChat = () => {
 
           <div className="relative flex h-full max-h-[calc(100vh-6rem)] flex-1 flex-col">
             <div className="scrollbar-thumb-blue scrollbar-thumb-rounded scrollbar-track-blue-lighter scrollbar-w-2 scrolling-touch flex h-full flex-1 flex-col-reverse gap-4 overflow-y-auto p-3 pb-16">
-              <div ref={scrollDownRef} />
-              {messages?.map((message) => {
-                if (message.sender._id.toString() === user?._id) {
-                  return (
-                    <ChatBubbleMe
-                      key={message._id.toString()}
-                      senderId={message.sender._id.toString()}
-                      senderName={message.sender.username}
-                      text={message.text}
-                      time={formatTimestampToTime(message.timestamp)}
-                      date={formatTimeStampToDate(message.timestamp)}
-                    />
-                  );
-                } else {
-                  return (
-                    <ChatBubbleOther
-                      key={message._id.toString()}
-                      senderId={message.sender._id.toString()}
-                      senderName={message.sender.username}
-                      text={message.text}
-                      time={formatTimestampToTime(message.timestamp)}
-                      date={formatTimeStampToDate(message.timestamp)}
-                    />
-                  );
-                }
-              })}
+              <ChatBody messages={messages} />
             </div>
-
             <ChatInput channelCode={channelCode} />
           </div>
-          <button className={` h-screen items-center justify-center bg-base-200 text-white text-4xl px-2 ${isOpen ? 'hidden' : ''}`} onClick={handleDrawerToggle}>
+
+          {/*
+         <button
+            className={` h-screen items-center justify-center bg-base-200 px-2 text-4xl text-white ${
+              isOpen ? "hidden" : ""
+            }`}
+            onClick={handleDrawerToggle}
+          >
             {"<"}
-          </button>
+          </button> */}
         </div>
-        <UserSideBar isOpen={isOpen} handleDrawerToggle={handleDrawerToggle} participants={users} />
+        <UserSideBar
+          isOpen={isOpen}
+          handleDrawerToggle={handleDrawerToggle}
+          participants={users}
+        />
       </div>
     </>
   );

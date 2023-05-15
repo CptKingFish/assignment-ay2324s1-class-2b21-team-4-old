@@ -15,7 +15,7 @@ import { m } from "framer-motion";
 import mongoose, { ObjectId } from "mongoose";
 
 export const chatRouter = createTRPCRouter({
-  getMessages: privateProcedure
+  getMessagesAndChatroomInfo: privateProcedure
     .input(
       z.object({
         chatroom_id: z.string(),
@@ -37,7 +37,10 @@ export const chatRouter = createTRPCRouter({
           message: "Unauthorized",
         });
       }
-      return chatroom.messages;
+
+      chatroom.messages.reverse();
+
+      return chatroom;
     }),
   createChatroom: privateProcedure
     .input(
@@ -59,15 +62,11 @@ export const chatRouter = createTRPCRouter({
         type: type,
       });
 
-      console.log(chatroom);
-
       return chatroom;
     }),
 
   getChatrooms: privateProcedure.query(async ({ ctx }) => {
-    // const { user_id } = input;
     const { user } = ctx;
-    console.log(user._id.toString());
     const chatrooms = await Chatroom.find({
       participants: user._id,
     }).slice("messages", -1);

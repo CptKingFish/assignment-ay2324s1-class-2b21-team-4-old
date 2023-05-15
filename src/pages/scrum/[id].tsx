@@ -1,16 +1,33 @@
 import React from "react";
 import { useRouter } from "next/router";
-import Tasks from "@/components/Tasks";
+import ActiveTasks from "@/components/ActiveTasks";
 import Backlog from "@/components/Backlog";
 import AllTasks from "@/components/AllTasks";
 import ProjectFiles from "@/components/ProjectFiles";
+import { api } from "@/utils/api";
+import useLogger from "@/hooks/useChangeLog";
 
 const Scrum = () => {
   const router = useRouter();
   const [activeTab, setActiveTab] = React.useState(0);
-  const { id } = router.query;
+  const { data: users } = api.user.getAllUsersByChatId.useQuery(
+    { chat_id: router.query.id as string },
+    { enabled: !!router.query.id }
+  );
+  const { data: scrum, isLoading } = api.scrum.getScrumByChatId.useQuery(
+    {
+      chat_id: router.query.id as string | null,
+    },
+    {
+      enabled: !!router.query.id,
+    }
+  );
+  if (!isLoading && !scrum) {
+    router.push("/chat").catch(console.error);
+  }
+  useLogger(scrum, "scrum");
   return (
-    <div className="h-full w-full bg-white">
+    <div className="relative h-full w-full bg-white">
       <div className="mx-auto p-8 md:max-w-5xl">
         <div className="flex items-center gap-4">
           <h2 className="font-bold">Project Swifty </h2>
@@ -27,33 +44,33 @@ const Scrum = () => {
         <div className="tabs mt-6">
           <a
             onClick={() => setActiveTab(0)}
-            className={`tab tab-lifted ${activeTab === 0 ? "tab-active" : ""}`}
+            className={`tab-lifted tab ${activeTab === 0 ? "tab-active" : ""}`}
           >
-            Tasks
+            Active Tasks
           </a>
           <a
             onClick={() => setActiveTab(1)}
-            className={`tab tab-lifted ${activeTab === 1 ? "tab-active" : ""}`}
+            className={`tab-lifted tab ${activeTab === 1 ? "tab-active" : ""}`}
           >
             Backlog
           </a>
           <a
             onClick={() => setActiveTab(2)}
-            className={`tab tab-lifted ${activeTab === 2 ? "tab-active" : ""}`}
+            className={`tab-lifted tab ${activeTab === 2 ? "tab-active" : ""}`}
           >
             All Tasks
           </a>
           <a
             onClick={() => setActiveTab(3)}
-            className={`tab tab-lifted ${activeTab === 3 ? "tab-active" : ""}`}
+            className={`tab-lifted tab ${activeTab === 3 ? "tab-active" : ""}`}
           >
             Project Files
           </a>
         </div>
-        {activeTab === 0 && <Tasks />}
-        {activeTab === 1 && <Backlog />}
+        {activeTab === 0 && <ActiveTasks users={users || []} scrum={scrum} />}
+        {activeTab === 1 && <Backlog scrum={scrum} users={users || []} />}
         {activeTab === 2 && <AllTasks />}
-        {activeTab === 3 && <ProjectFiles />}
+        {activeTab === 3 && <ProjectFiles users={users || []} />}
       </div>
     </div>
   );

@@ -1,7 +1,7 @@
 import React from "react";
-import { users } from "./Tasks";
 import IconButton from "./IconButton";
 import Dropzone from "react-dropzone";
+import { IUser } from "@/models/User";
 
 const FILES = [
   {
@@ -9,7 +9,7 @@ const FILES = [
     name: "index.html",
     url: "https://www.w3schools.com/html/mov_bbb.mp4",
     type: "file",
-    author: 1,
+    author: "6455e852383957836ede8877",
     timestamp: 1587915010000,
   },
   {
@@ -17,7 +17,7 @@ const FILES = [
     name: "index.css",
     type: "file",
     url: "https://www.w3schools.com/html/mov_bbb.mp4",
-    author: 3,
+    author: "6455e852383957836ede8877",
     timestamp: 1587915010000,
   },
 ];
@@ -29,7 +29,7 @@ const convertFileSize = (bytes: number) => {
   return `${Math.round(bytes / Math.pow(1024, i))} ${sizes[i] ?? ""}`;
 };
 
-const ProjectFiles = () => {
+const ProjectFiles = ({ users }: { users: IUser[] }) => {
   const [uploadedFiles, setUploadedFiles] = React.useState<File[]>([]);
   return (
     <div className="mt-4">
@@ -99,7 +99,9 @@ const ProjectFiles = () => {
         </thead>
         <tbody>
           {FILES.map((file) => {
-            const user = users.find((user) => user.id === file.author);
+            const user = users.find(
+              (user) => user._id.toString() === file.author
+            );
             if (!user) return null;
             return (
               <tr key={file.id}>
@@ -132,15 +134,28 @@ const ProjectFiles = () => {
                 <td>
                   <div className="flex items-center gap-4">
                     <div className="avatar">
-                      <div className="h-12 w-12 rounded-md">
-                        <img
-                          src={user.profile_img}
-                          alt="Avatar Tailwind CSS Component"
-                        />
-                      </div>
+                      {!user.avatar ? (
+                        <div className="placeholder avatar" key={user._id}>
+                          <div
+                            className="justiy-center w-6 items-center rounded-full bg-neutral-focus text-neutral-content"
+                            style={{ lineHeight: "1.5rem" }}
+                          >
+                            <span className="m-0 p-0 text-xl">
+                              {user.username[0]}
+                            </span>
+                          </div>
+                        </div>
+                      ) : (
+                        <div className="h-12 w-12 rounded-md">
+                          <img
+                            src={user?.avatar}
+                            alt="Avatar Tailwind CSS Component"
+                          />
+                        </div>
+                      )}
                     </div>
                     <span className="text-md font-semibold text-gray-500">
-                      {user.name}
+                      {user.username}
                     </span>
                   </div>
                 </td>

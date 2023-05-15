@@ -97,21 +97,21 @@ export const userRouter = createTRPCRouter({
         code: "SUCCESS",
       };
     }),
-    getUsername: publicProcedure
+  getAllUsersByChatId: publicProcedure
     .input(
       z.object({
-        user_id: z.string(),
+        chat_id: z.string().nullable(),
       })
     )
     .query(async ({ input }) => {
-      const { user_id } = input;
-      const user = await User.findById(user_id).select("username");
-      if (!user) {
+      if (input.chat_id === null) {
         throw new TRPCError({
           code: "BAD_REQUEST",
-          message: "User not found",
+          message: "chat_id is required",
         });
       }
-      return user;
+      // todo: check if user is in chat
+      const users = await User.find({});
+      return users;
     }),
 });

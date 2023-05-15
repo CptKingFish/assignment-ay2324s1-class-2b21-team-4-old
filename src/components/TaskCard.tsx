@@ -129,12 +129,16 @@ const TaskCard = ({
                               const curr_tasks = aggregatedTasks?.get(
                                 task.status
                               ) as ITask[];
-                              for (const task of curr_tasks) {
-                                if (task._id === task._id) {
-                                  task.backlog = true;
+                              if (!curr_tasks) {
+                                aggregatedTasks?.set(task.status, [task]);
+                              } else {
+                                for (const task of curr_tasks) {
+                                  if (task._id === task._id) {
+                                    task.backlog = true;
+                                  }
                                 }
+                                aggregatedTasks?.set(task.status, curr_tasks);
                               }
-                              aggregatedTasks?.set(task.status, curr_tasks);
 
                               changeBacklog(
                                 {

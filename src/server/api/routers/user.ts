@@ -10,6 +10,7 @@ import User from "@/models/User";
 import jwt from "jsonwebtoken";
 import { TRPCError } from "@trpc/server";
 import { env } from "@/env.mjs";
+import ProfileChangeEmail from "@/components/ProfileChangeEmail";
 
 export const userRouter = createTRPCRouter({
   getMe: privateProcedure.query(({ ctx }) => {
@@ -113,5 +114,90 @@ export const userRouter = createTRPCRouter({
       // todo: check if user is in chat
       const users = await User.find({});
       return users;
+    }),
+  changeOwnUsername: privateProcedure
+    .input(
+      z.object({
+        username: z.string(),
+      })
+    )
+    .mutation(async ({ input, ctx }) => {
+      
+      const response = await User.findByIdAndUpdate(
+        ctx.user._id,
+        {
+          username: input.username,
+        },
+        { new: true }
+      );
+      return response;
+    }),
+  changeOwnEmail: privateProcedure
+    .input(
+      z.object({
+        email: z.string().email(),
+      })
+    )
+    .mutation(async ({ input, ctx }) => {
+      if (!input.email.toLowerCase()
+      .match(
+        /^(([^<>()[\]\\.,;:\s@"]+(\.[^<>()[\]\\.,;:\s@"]+)*)|.(".+"))@((\[[0-9]{1,3}\.[0-9]{1,3}\.[0-9]{1,3}\.[0-9]{1,3}\])|(([a-zA-Z\-0-9]+\.)+[a-zA-Z]{2,}))$/
+      )){
+        throw new TRPCError({
+          code: "BAD_REQUEST",
+          message: "Invalid email!",
+        });
+      }
+
+      if (input.email.toLowerCase().includes("+")) {
+        throw new TRPCError({
+          code: "BAD_REQUEST",
+          message: "Don't use an email alias!",
+        });
+      }
+      const response = await User.findByIdAndUpdate(
+        ctx.user._id,
+        {
+          email: input.email,
+        },
+        { new: true }
+      );
+
+      return response;
+    }),
+  changeOwnPassword: privateProcedure
+    .input(
+      z.object({
+        oldPassword: z.string().min(8),
+        newPassword: z.string().min(8),
+      })
+    )
+    .mutation(async ({ input, ctx }) => {
+      const response = await User.findById(ctx.user._id);
+      if (!response) {
+        throw new TRPCError({
+          code: "BAD_REQUEST",
+          message: "User not found",
+        });
+      }
+      const isPasswordValid = await bcrypt.compare(
+        input.oldPassword,
+        response.password
+      );
+      if (!isPasswordValid) {
+        throw new TRPCError({
+          code: "BAD_REQUEST",
+          message: "Invalid credentials",
+        });
+      }
+      const hashedPassword = await bcrypt.hash(input.newPassword, 12);
+      const updatedUser = await User.findByIdAndUpdate(
+        ctx.user._id,
+        {
+          password: hashedPassword,
+        },
+        { new: true }
+      );
+      return updatedUser;
     }),
 });

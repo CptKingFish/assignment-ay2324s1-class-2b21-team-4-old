@@ -19,9 +19,29 @@ export default function RequestNotification({
   handleRemoveNotification,
 }: RequestNotificationProps) {
   const {
+    mutate: acceptFriendRequest,
+    isLoading: isLoadingAcceptFriendRequest,
+  } = api.notification.acceptFriendRequest.useMutation();
+
+  const {
     mutate: declineFriendRequest,
     isLoading: isLoadingDeclineFriendRequest,
   } = api.notification.declineFriendRequest.useMutation();
+
+  const handleAcceptBtn = () => {
+    acceptFriendRequest(
+      { notification_id: notification_id },
+      {
+        onSuccess: () => {
+          handleRemoveNotification(notification_id);
+          toast.success("Friend request accepted.");
+        },
+        onError: (error) => {
+          toast.error(error.message);
+        },
+      }
+    );
+  };
 
   const handleDeclineBtn = () => {
     declineFriendRequest(
@@ -53,7 +73,12 @@ export default function RequestNotification({
         <div className="ml-auto text-xs">{time}</div>
       </div>
       <div className="mx-3 mt-5 flex justify-center">
-        <button className="btn-primary btn mr-1 w-1/2">Accept</button>
+        <button
+          className="btn-primary btn mr-1 w-1/2"
+          onClick={handleAcceptBtn}
+        >
+          Accept
+        </button>
         <button
           className="btn-secondary btn ml-1 w-1/2"
           onClick={handleDeclineBtn}

@@ -150,6 +150,14 @@ export default function SideBarNav({
     return chatrooms.filter((chatroom: IChatroom) => chatroom.type === "team");
   }, [chatrooms]);
 
+  // get chatrooms with the type of private
+
+  const privateChatrooms: IChatroom[] = React.useMemo(() => {
+    return chatrooms.filter(
+      (chatroom: IChatroom) => chatroom.type === "private"
+    );
+  }, [chatrooms]);
+
   // remove notification with _id
 
   const handleRemoveNotification = (notification_id: string) => {
@@ -274,7 +282,9 @@ export default function SideBarNav({
             className="input w-full max-w-xs"
           />
           <div className="flex-1">
-            {activeTab === 0 && <ChatList chatInfoArr={chatInfoArr} />}
+            {activeTab === 0 && (
+              <ChatList privateChatrooms={privateChatrooms} />
+            )}
             {activeTab === 1 && <TeamList teamChatrooms={teamChatrooms} />}
             {activeTab === 2 && (
               <NotificationList
@@ -283,27 +293,29 @@ export default function SideBarNav({
               />
             )}
           </div>
-          <button
-            className="btn-outline glass btn-circle btn-lg btn sticky bottom-10"
-            onClick={() => {
-              setOpenAddChatroomModal(true);
-            }}
-          >
-            <svg
-              xmlns="http://www.w3.org/2000/svg"
-              fill="none"
-              viewBox="0 0 24 24"
-              strokeWidth={1.5}
-              stroke="currentColor"
-              className="h-6 w-6"
+          {activeTab !== 2 && (
+            <button
+              className="btn-outline glass btn-circle btn-lg btn sticky bottom-10"
+              onClick={() => {
+                setOpenAddChatroomModal(true);
+              }}
             >
-              <path
-                strokeLinecap="round"
-                strokeLinejoin="round"
-                d="M12 4.5v15m7.5-7.5h-15"
-              />
-            </svg>
-          </button>
+              <svg
+                xmlns="http://www.w3.org/2000/svg"
+                fill="none"
+                viewBox="0 0 24 24"
+                strokeWidth={1.5}
+                stroke="currentColor"
+                className="h-6 w-6"
+              >
+                <path
+                  strokeLinecap="round"
+                  strokeLinejoin="round"
+                  d="M12 4.5v15m7.5-7.5h-15"
+                />
+              </svg>
+            </button>
+          )}
         </ul>
       </div>
     </div>

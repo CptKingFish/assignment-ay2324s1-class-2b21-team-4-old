@@ -11,11 +11,6 @@ export default function TeamList({
 }: {
   teamChatrooms: IChatroom[];
 }) {
-  // format timestamp into time
-  // const formatTimestampToTime = (timestamp: string) => {
-  //   const date = new Date(timestamp);
-  //   return date.getHours().toString() + ":" + date.getMinutes().toString();
-  // };
   if (teamChatrooms.length === 0) return null;
   return (
     <>

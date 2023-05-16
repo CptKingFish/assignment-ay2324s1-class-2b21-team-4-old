@@ -1,12 +1,9 @@
 import React, { useEffect } from "react";
 import { useGlobalContext } from "@/context";
-// import { pusherClient } from "@/utils/pusherConfig";
 import { pusherClientConstructor } from "@/utils/pusherConfig";
 import TopNav from "@/components/TopNav";
-import ChatBubbleMe from "@/components/ChatBubbleMe";
-import ChatBubbleOther from "@/components/ChatBubbleOther";
 import ChatInput from "@/components/ChatInput";
-import { Router, useRouter } from "next/router";
+import { useRouter } from "next/router";
 import ChatBody from "@/components/ChatBody";
 import { Message } from "@/utils/chat";
 import { api } from "@/utils/api";
@@ -109,7 +106,7 @@ const TeamChat = () => {
         chatroom_name={chatroomData?.name || ""}
         openSidebarDetails={handleDrawerToggle}
       />
-      <div className="drawer-mobile drawer drawer-end">
+      <div className="drawer drawer-mobile drawer-end">
         <input id="my-drawer-4" type="checkbox" className="drawer-toggle" />
 
         <div className="flex-no-wrap drawer-content flex">

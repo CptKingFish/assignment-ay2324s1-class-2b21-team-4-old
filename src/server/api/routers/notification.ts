@@ -130,4 +130,49 @@ export const notificationRouter = createTRPCRouter({
 
       return notification;
     }),
+  acceptFriendRequest: privateProcedure
+    .input(
+      z.object({
+        notification_id: z.string(),
+      })
+    )
+    .mutation(async ({ input, ctx }) => {
+      const { notification_id } = input;
+      const { user } = ctx;
+
+      const notification = await Notification.findById(notification_id);
+
+      if (!notification) {
+        throw new TRPCError({
+          code: "BAD_REQUEST",
+          message: "Notification does not exist",
+        });
+      }
+
+      if (notification.receiver_id.toString() !== user._id.toString()) {
+        throw new TRPCError({
+          code: "BAD_REQUEST",
+          message: "You cannot accept this friend request",
+        });
+      }
+
+      if (notification.type !== "friend_request") {
+        throw new TRPCError({
+          code: "BAD_REQUEST",
+          message: "Notification is not of type friend request",
+        });
+      }
+
+      // delete notification
+      await Notification.findByIdAndDelete(notification_id);
+
+      const chatroom = await Chatroom.create({
+        name: null,
+        type: "private",
+        messages: [],
+        participants: [user._id, notification.sender_id],
+      });
+
+      return chatroom;
+    }),
 });

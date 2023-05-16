@@ -217,6 +217,7 @@ export default function SideBarNav({
             {activeTab === 1 && <TeamList teamChatrooms={teamChatrooms} />}
             {activeTab === 2 && null}
           </div>
+        
           <button className="btn-outline glass btn-circle btn absolute bottom-10 right-10">
             <svg
               xmlns="http://www.w3.org/2000/svg"

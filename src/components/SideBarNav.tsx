@@ -142,7 +142,7 @@ export default function SideBarNav({
           <div className="tabs mb-4 w-full">
             <a
               className={
-                "tab-bordered tab w-1/3 " +
+                "tab tab-bordered w-1/3 " +
                 (activeTab === 0 ? " tab-active" : "")
               }
               onClick={() => handleTabChange(0)}
@@ -164,7 +164,7 @@ export default function SideBarNav({
             </a>
             <a
               className={
-                "tab-bordered tab w-1/3 " +
+                "tab tab-bordered w-1/3 " +
                 (activeTab === 1 ? " tab-active" : "")
               }
               onClick={() => handleTabChange(1)}
@@ -186,7 +186,7 @@ export default function SideBarNav({
             </a>
             <a
               className={
-                "tab-bordered tab w-1/3 " +
+                "tab tab-bordered w-1/3 " +
                 (activeTab === 2 ? " tab-active" : "")
               }
               onClick={() => handleTabChange(2)}

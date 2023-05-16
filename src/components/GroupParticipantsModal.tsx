@@ -4,7 +4,7 @@ import GroupParticipants from './GroupParticipants';
 interface GroupParticipantModalProps {
   participants: {
     key: string | number;
-    name: string;
+    username: string;
     imageUrl: string;
     admin: boolean;
   }[];
@@ -18,38 +18,47 @@ const GroupParticipantModal: React.FC<GroupParticipantModalProps> = ({ participa
   };
 
   const filteredParticipants = participants.filter((participant) =>
-    participant.name.toLowerCase().includes(searchQuery.toLowerCase())
+    participant.username.toLowerCase().includes(searchQuery.toLowerCase())
   );
 
   return (
     <>
-      <label htmlFor="my-modal-3" className="btn btn-sm btn-circle absolute right-2 top-2">
-        ✕
-      </label>
+      <div className="flex flex-wrap bg-base-200 p-2">
+        <label htmlFor="my-modal-3" className="btn btn-sm btn-circle">
+          ✕
+        </label>
+        <div className="ms-5 font-bold">
+          Search Participants
+        </div>
+      </div>
+
       <div className="mt-5">
-        <div className="mb-4">
+        <div className="mb-4 px-3">
           <input
             type="text"
-            className="w-full px-4 py-2 border rounded shadow-sm focus:outline-none focus:ring-blue-500 focus:border-blue-500"
-            placeholder="Search participants"
+            className="w-full px-4 py-2 border rounded shadow-sm focus:outline-none focus:ring-blue-500 focus:border-blue-500 me-5"
+            placeholder="Name"
             value={searchQuery}
             onChange={handleSearchChange}
           />
         </div>
-        {participants.map((participant) => {
-          const isFiltered = !filteredParticipants.includes(participant);
-          if (!isFiltered) {
-            return (
-              <GroupParticipants
-                key={participant.key}
-                name={participant.name}
-                imageUrl={participant.imageUrl}
-                admin={participant.admin}
-              />
-            );
-          }
-          return null;
-        })}
+        <div className="overflow-visible">
+          {participants.map((participant) => {
+            const isFiltered = !filteredParticipants.includes(participant);
+            if (!isFiltered) {
+              return (
+                <React.Fragment key={participant.key}>
+                  <GroupParticipants
+                    name={participant.username}
+                    imageUrl={participant.imageUrl}
+                    admin={participant.admin}
+                  />
+                </React.Fragment>
+              );
+            }
+            return null;
+          })}
+        </div>
       </div>
     </>
   );

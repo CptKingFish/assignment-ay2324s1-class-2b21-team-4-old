@@ -5,8 +5,8 @@ import IconButton from "./IconButton";
 import { toast } from "react-hot-toast";
 import { javascript } from "@codemirror/lang-javascript";
 import CodeMirror from "@uiw/react-codemirror";
-
-type Props = {};
+import { type ITask } from "@/models/Task";
+import { api } from "@/utils/api";
 
 const SNIPPETS = [
   {
@@ -33,21 +33,25 @@ const SNIPPETS = [
   },
 ];
 
-const TaskCodeSnippets = (props: Props) => {
+const TaskCodeSnippets = ({ task }: { task: ITask }) => {
+  const { mutate: createSnippet, isLoading: isCreatingSnippet } =
+    api.scrum.createCodeSnippet.useMutation();
+  const { mutate: deleteSnippet } = api.scrum.deleteCodeSnippet.useMutation();
   const [modalOpen, setModalOpen] = React.useState(false);
-  const [activeSnippet, setActiveSnippet] = React.useState(SNIPPETS[0]);
+  const [activeSnippet, setActiveSnippet] = React.useState(task.snippets[0]);
   const [addSnippetModalOpen, setAddSnippetModalOpen] = React.useState(false);
   const [formData, setFormData] = React.useState({
     name: "",
     language: "javascript",
     content: "",
+    description: "",
   });
   return (
     <>
       <div className="flex flex-wrap items-center gap-4">
-        {SNIPPETS.map((snippet) => (
+        {task.snippets.map((snippet) => (
           <div
-            key={snippet.id}
+            key={snippet._id}
             className="text-md flex cursor-pointer flex-col gap-3 rounded-sm p-3 shadow-sm outline outline-1 outline-[#dcdfe4]"
             onClick={() => {
               setActiveSnippet(snippet);
@@ -62,13 +66,13 @@ const TaskCodeSnippets = (props: Props) => {
             xmlns="http://www.w3.org/2000/svg"
             fill="none"
             viewBox="0 0 24 24"
-            stroke-width="1.5"
+            strokeWidth="1.5"
             stroke="currentColor"
             className="h-6 w-6"
           >
             <path
-              stroke-linecap="round"
-              stroke-linejoin="round"
+              strokeLinecap="round"
+              strokeLinejoin="round"
               d="M12 9v6m3-3H9m12 0a9 9 0 11-18 0 9 9 0 0118 0z"
             />
           </svg>
@@ -77,14 +81,15 @@ const TaskCodeSnippets = (props: Props) => {
       <CustomModal modalOpen={modalOpen} setModalOpen={setModalOpen}>
         {activeSnippet && (
           <>
-            <div className="flex items-center gap-2">
+            <div className="flex items-center">
               <h4>{activeSnippet.name}</h4>
               <IconButton
+                className="ml-4"
                 onClick={() => {
                   // copy to clipboard
                   toast.success("Copied to clipboard");
                   navigator.clipboard
-                    .writeText(activeSnippet.content)
+                    .writeText(activeSnippet.snippet)
                     .catch(console.error);
                 }}
               >
@@ -103,7 +108,43 @@ const TaskCodeSnippets = (props: Props) => {
                   />
                 </svg>
               </IconButton>
+              <IconButton
+                onClick={() => {
+                  const confirm = window.confirm(
+                    "Are you sure you want to delete this snippet?"
+                  );
+                  if (!confirm) return;
+                  deleteSnippet(
+                    { snippet_id: activeSnippet._id },
+                    {
+                      onSuccess: () => {
+                        toast.success("Snippet deleted");
+                        setModalOpen(false);
+                        task.snippets = task.snippets.filter(
+                          (snippet) => snippet._id !== activeSnippet._id
+                        );
+                      },
+                    }
+                  );
+                }}
+              >
+                <svg
+                  xmlns="http://www.w3.org/2000/svg"
+                  fill="none"
+                  viewBox="0 0 24 24"
+                  strokeWidth={1.5}
+                  stroke="currentColor"
+                  className="h-6 w-6 text-red-600"
+                >
+                  <path
+                    strokeLinecap="round"
+                    strokeLinejoin="round"
+                    d="M14.74 9l-.346 9m-4.788 0L9.26 9m9.968-3.21c.342.052.682.107 1.022.166m-1.022-.165L18.16 19.673a2.25 2.25 0 01-2.244 2.077H8.084a2.25 2.25 0 01-2.244-2.077L4.772 5.79m14.456 0a48.108 48.108 0 00-3.478-.397m-12 .562c.34-.059.68-.114 1.022-.165m0 0a48.11 48.11 0 013.478-.397m7.5 0v-.916c0-1.18-.91-2.164-2.09-2.201a51.964 51.964 0 00-3.32 0c-1.18.037-2.09 1.022-2.09 2.201v.916m7.5 0a48.667 48.667 0 00-7.5 0"
+                  />
+                </svg>
+              </IconButton>
             </div>
+            <p>{activeSnippet.description || ""}</p>
             <SyntaxHighlighter
               customStyle={{
                 width: "100%",
@@ -115,7 +156,7 @@ const TaskCodeSnippets = (props: Props) => {
               showLineNumbers={true}
               language={activeSnippet.language}
             >
-              {activeSnippet.content}
+              {activeSnippet.snippet}
             </SyntaxHighlighter>
           </>
         )}
@@ -124,11 +165,48 @@ const TaskCodeSnippets = (props: Props) => {
         modalOpen={addSnippetModalOpen}
         setModalOpen={setAddSnippetModalOpen}
       >
-        <form className="flex flex-col gap-3">
+        <form
+          className="flex flex-col gap-3"
+          onSubmit={(e) => {
+            e.preventDefault();
+            createSnippet(
+              {
+                code: formData.content,
+                language: formData.language,
+                name: formData.name,
+                task_id: task._id,
+                description: formData.description,
+              },
+              {
+                onSuccess: () => {
+                  setAddSnippetModalOpen(false);
+                  task.snippets.push({
+                    _id: "123",
+                    name: formData.name,
+                    language: formData.language,
+                    snippet: formData.content,
+                    description: formData.description,
+                  });
+                  toast.success("Snippet created");
+                  setFormData({
+                    name: "",
+                    language: "javascript",
+                    content: "",
+                    description: "",
+                  });
+                },
+                onError: (err) => {
+                  toast.error(err.message);
+                },
+              }
+            );
+          }}
+        >
           <h3>Create snippet</h3>
           <input
             type="text"
             value={formData.name}
+            required
             onChange={(e) => {
               setFormData({ ...formData, name: e.target.value });
             }}
@@ -140,11 +218,11 @@ const TaskCodeSnippets = (props: Props) => {
             onChange={(e) => {
               setFormData({ ...formData, language: e.target.value });
             }}
+            required
+            defaultValue={formData.language}
             className="select w-full max-w-xs rounded-md  border border-gray-300 bg-white shadow-sm outline-none focus:border-primary focus:outline-none"
           >
-            <option disabled selected>
-              Language
-            </option>
+            <option disabled>Language</option>
             <option value="html">HTML</option>
             <option value="css">CSS</option>
             <option value="javascript">JavaScript</option>
@@ -154,6 +232,15 @@ const TaskCodeSnippets = (props: Props) => {
             <option value="rust">Rust</option>
             <option value="java">Java</option>
           </select>
+          <input
+            type="text"
+            value={formData.description}
+            onChange={(e) => {
+              setFormData({ ...formData, description: e.target.value });
+            }}
+            placeholder="Description"
+            className="input w-full max-w-xs rounded-md  border border-gray-300 bg-white shadow-sm outline-none focus:border-primary focus:outline-none"
+          />
           <CodeMirror
             value={formData.content}
             height="200px"
@@ -163,6 +250,13 @@ const TaskCodeSnippets = (props: Props) => {
               setFormData({ ...formData, content: value })
             }
           />
+
+          <button
+            className={`btn-success btn ${isCreatingSnippet ? "loading" : ""}`}
+            type="submit"
+          >
+            Create!
+          </button>
         </form>
       </CustomModal>
     </>

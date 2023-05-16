@@ -22,10 +22,11 @@ export const imageRouter = createTRPCRouter({
         image: z.string(),
       })
     )
-    .query(async ({ input, ctx }) => {
+    .mutation(async ({ input, ctx }) => {
+      console.log(input, ctx)
       const { image } = input;
       const { user } = ctx;
-      console.log(image);
+     // const res = await cloudinary.uploader.upload(image, {public_id: ctx})
       return image;
     }),
   getImage: privateProcedure

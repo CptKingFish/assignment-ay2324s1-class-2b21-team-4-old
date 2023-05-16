@@ -14,107 +14,19 @@ import CustomModal from "./Modal";
 import CreateTeamForm from "./CreateTeamForm";
 import SendFriendRequestForm from "./SendFriendRequestForm";
 import NotificationList from "./NotificationList";
+import { Message } from "@/utils/chat";
+import { ObjectId } from "mongoose";
 
-const chatInfoArr = [
-  {
-    id: "1",
-    avatarUrl: "https://i.pravatar.cc/300?img=1",
-    name: "John Doe",
-    lastMessage: "Hello, World!",
-    lastMessageTime: "9:45 PM",
-  },
-  {
-    id: "2",
-    avatarUrl: "https://i.pravatar.cc/300?img=1",
-    name: "John Doe",
-    lastMessage: "Hello, World!",
-    lastMessageTime: "9:45 PM",
-  },
-  {
-    id: "3",
-    avatarUrl: "https://i.pravatar.cc/300?img=1",
-    name: "John Doe",
-    lastMessage: "Hello, World!",
-    lastMessageTime: "9:45 PM",
-  },
-  {
-    id: "4",
-    avatarUrl: "https://i.pravatar.cc/300?img=1",
-    name: "John Doe",
-    lastMessage: "Hello, World!",
-    lastMessageTime: "9:45 PM",
-  },
-  {
-    id: "5",
-    avatarUrl: "https://i.pravatar.cc/300?img=1",
-    name: "John Doe",
-    lastMessage: "Hello, World!",
-    lastMessageTime: "9:45 PM",
-  },
-  {
-    id: "6",
-    avatarUrl: "https://i.pravatar.cc/300?img=1",
-    name: "John Doe",
-    lastMessage: "Hello, World!",
-    lastMessageTime: "9:45 PM",
-  },
-  {
-    id: "7",
-    avatarUrl: "https://i.pravatar.cc/300?img=1",
-    name: "John Doe",
-    lastMessage: "Hello, World!",
-    lastMessageTime: "9:45 PM",
-  },
-  {
-    id: "8",
-    avatarUrl: "https://i.pravatar.cc/300?img=1",
-    name: "John Doe",
-    lastMessage: "Hello, World!",
-    lastMessageTime: "9:45 PM",
-  },
-  {
-    id: "9",
-    avatarUrl: "https://i.pravatar.cc/300?img=1",
-    name: "John Doe",
-    lastMessage: "Hello, World!",
-    lastMessageTime: "9:45 PM",
-  },
-  {
-    id: "10",
-    avatarUrl: "https://i.pravatar.cc/300?img=1",
-    name: "John Doe",
-    lastMessage: "Hello, World!",
-    lastMessageTime: "9:45 PM",
-  },
-  {
-    id: "11",
-    avatarUrl: "https://i.pravatar.cc/300?img=1",
-    name: "John Doe",
-    lastMessage: "Hello, World!",
-    lastMessageTime: "9:45 PM",
-  },
-  {
-    id: "12",
-    avatarUrl: "https://i.pravatar.cc/300?img=1",
-    name: "John Doe",
-    lastMessage: "Hello, World!",
-    lastMessageTime: "9:45 PM",
-  },
-  {
-    id: "13",
-    avatarUrl: "https://i.pravatar.cc/300?img=1",
-    name: "John Doe",
-    lastMessage: "Hello, World!",
-    lastMessageTime: "9:45 PM",
-  },
-  {
-    id: "14",
-    avatarUrl: "https://i.pravatar.cc/300?img=1",
-    name: "John Doe",
-    lastMessage: "Hello, World!",
-    lastMessageTime: "9:45 PM",
-  },
-];
+export interface ChatroomInfoWithParticipantNames {
+  _id: ObjectId;
+  name: string;
+  type: string;
+  participants: {
+    _id: string;
+    username: string;
+  }[];
+  messages: Message[];
+}
 
 export default function SideBarNav({
   children,
@@ -130,7 +42,11 @@ export default function SideBarNav({
   const handleTabChange = (index: number) => {
     setActiveTab(index);
   };
-  const { data: chatroomsData, isLoading } = api.chat.getChatrooms.useQuery();
+  const {
+    data: chatroomsData,
+    isLoading,
+    refetch: refetchChatrooms,
+  } = api.chat.getChatrooms.useQuery();
   const { data: notificationsData, isLoading: isLoadingNotifications } =
     api.notification.getNotifications.useQuery();
   const [openAddChatroomModal, setOpenAddChatroomModal] = React.useState(false);
@@ -184,7 +100,10 @@ export default function SideBarNav({
             />
           )}
           {activeTab === 1 && (
-            <CreateTeamForm setOpenAddChatroomModal={setOpenAddChatroomModal} />
+            <CreateTeamForm
+              setOpenAddChatroomModal={setOpenAddChatroomModal}
+              refetchChatrooms={refetchChatrooms}
+            />
           )}
         </CustomModal>
         {/* <label
@@ -276,11 +195,14 @@ export default function SideBarNav({
               </svg>
             </a>
           </div>
-          <input
-            type="text"
-            placeholder="Search chat"
-            className="input w-full max-w-xs"
-          />
+          {activeTab !== 2 && (
+            <input
+              type="text"
+              placeholder="Search chat"
+              className="input w-full max-w-xs"
+            />
+          )}
+
           <div className="flex-1">
             {activeTab === 0 && (
               <ChatList privateChatrooms={privateChatrooms} />

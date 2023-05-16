@@ -71,7 +71,21 @@ export const chatRouter = createTRPCRouter({
       participants: user._id,
     }).slice("messages", -1);
 
-    return chatrooms;
+    // also retrieve participant names
+
+    const chatroomsWithParticipants = await Promise.all(
+      chatrooms.map(async (chatroom) => {
+        const participants = await User.find({
+          _id: { $in: chatroom.participants },
+        }).select("username");
+        return {
+          ...chatroom.toObject(),
+          participants: participants,
+        };
+      })
+    );
+
+    return chatroomsWithParticipants;
   }),
   getUsernamesFromChatroom: privateProcedure
     .input(

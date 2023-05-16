@@ -4,10 +4,12 @@ import { api } from "@/utils/api";
 
 interface CreateTeamFormProps {
   setOpenAddChatroomModal: React.Dispatch<React.SetStateAction<boolean>>;
+  refetchChatrooms: () => void;
 }
 
 export default function CreateTeamForm({
   setOpenAddChatroomModal,
+  refetchChatrooms,
 }: CreateTeamFormProps) {
   const [chatroomName, setChatroomName] = React.useState("");
   const { mutate: createChatroom, isLoading: isLoadingChatroomCreate } =
@@ -25,6 +27,7 @@ export default function CreateTeamForm({
 
               setOpenAddChatroomModal(false);
               toast.success("Chatroom created successfully");
+              refetchChatrooms();
             },
             onError: (error) => {
               toast.error(error.message);

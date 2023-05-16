@@ -27,7 +27,7 @@ const TeamChat = () => {
     chatroom_id: router.query.id as string,
   });
 
-  const [isOpen, setIsOpen] = React.useState(true);
+  const [isOpen, setIsOpen] = React.useState(false);
 
   function handleDrawerToggle() {
     setIsOpen(!isOpen);
@@ -106,7 +106,7 @@ const TeamChat = () => {
         chatroom_name={chatroomData?.name || ""}
         openSidebarDetails={handleDrawerToggle}
       />
-      <div className="drawer drawer-mobile drawer-end">
+      <div className="drawer-mobile drawer drawer-end">
         <input id="my-drawer-4" type="checkbox" className="drawer-toggle" />
 
         <div className="flex-no-wrap drawer-content flex">

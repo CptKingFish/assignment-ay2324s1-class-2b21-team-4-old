@@ -1,3 +1,3 @@
-export default function PrivateChat() {
+export default function PrivateChatDefault() {
   return <div></div>;
 }

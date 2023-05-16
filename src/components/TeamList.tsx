@@ -19,12 +19,12 @@ export default function TeamList({
           <TeamMenuItem
             id={team._id.toString()}
             avatarUrl={"https://i.pravatar.cc/300?img=1"}
-            name={team.name}
-            lastSender={team.messages[0]?.sender.username || ""}
-            lastMessage={team.messages[0]?.text || ""}
-            lastMessageTime={formatTimestampToTime(
-              team.messages[0]?.timestamp || 0
-            )}
+            name={team.name || ""}
+            // lastSender={team.messages[0]?.sender.username || ""}
+            lastMessage={team.messages[0]}
+            // lastMessageTime={formatTimestampToTime(
+            //   team.messages[0]?.timestamp || 0
+            // )}
           />
         </li>
       ))}

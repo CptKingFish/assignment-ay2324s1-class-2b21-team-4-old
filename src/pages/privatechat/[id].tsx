@@ -9,11 +9,12 @@ import { Message } from "@/utils/chat";
 import { api } from "@/utils/api";
 import UserSideBar from "@/components/UserSideBar";
 
-const TeamChat = () => {
+export default function PrivateChat() {
   const router = useRouter();
   const { user } = useGlobalContext();
   const [messages, setMessages] = React.useState<Message[]>([]);
   const [users, setUsers] = React.useState<Object[]>([]);
+  const [name, setName] = React.useState("");
   // const [showDownButton, setShowDownButton] = React.useState(false);
   const {
     data: chatroomData,
@@ -27,36 +28,23 @@ const TeamChat = () => {
     chatroom_id: router.query.id as string,
   });
 
-  const [isOpen, setIsOpen] = React.useState(true);
+  // get the other user's name
+
+  React.useEffect(() => {
+    if (!user || !userRaw) return;
+
+    const otherUser = userRaw.find(
+      (participant) => user._id !== participant._id
+    );
+
+    setName(otherUser?.username || "");
+  }, [user, userRaw]);
+
+  const [isOpen, setIsOpen] = React.useState(false);
 
   function handleDrawerToggle() {
     setIsOpen(!isOpen);
   }
-
-  // useEffect(() => {
-  //   const handleScroll = () => {
-  //     console.log("window.pageYOffset", window.pageYOffset);
-
-  //     if (window.pageYOffset > 100) {
-  //       setShowDownButton(true);
-  //     } else {
-  //       setShowDownButton(false);
-  //     }
-  //   };
-
-  //   window.addEventListener("scroll", handleScroll);
-
-  //   return () => {
-  //     window.removeEventListener("scroll", handleScroll);
-  //   };
-  // }, []);
-
-  // const handleDownButtonClick = () => {
-  //   window.scrollTo({
-  //     top: document.body.scrollHeight,
-  //     behavior: "smooth",
-  //   });
-  // };
 
   useEffect(() => {
     if (isLoading || !chatroomData) return;
@@ -76,7 +64,6 @@ const TeamChat = () => {
     if (!user) return;
 
     const pusherClient = pusherClientConstructor(user?._id);
-    console.log("pusherClient", pusherClient);
 
     pusherClient.subscribe(channelCode);
 
@@ -103,10 +90,10 @@ const TeamChat = () => {
   return (
     <>
       <TopNav
-        chatroom_name={chatroomData?.name || ""}
+        chatroom_name={name || ""}
         openSidebarDetails={handleDrawerToggle}
       />
-      <div className="drawer drawer-mobile drawer-end">
+      <div className="drawer-mobile drawer drawer-end">
         <input id="my-drawer-4" type="checkbox" className="drawer-toggle" />
 
         <div className="flex-no-wrap drawer-content flex">
@@ -146,6 +133,4 @@ const TeamChat = () => {
       </div>
     </>
   );
-};
-
-export default TeamChat;
+}

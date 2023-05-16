@@ -1,4 +1,5 @@
 export const formatTimestampToTime = (timestamp: number) => {
+  if (!timestamp) return "";
   const date = new Date(timestamp);
   return date.getHours().toString() + ":" + date.getMinutes().toString();
 };

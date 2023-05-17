@@ -1,8 +1,9 @@
-import React from "react";
+import React, { useState } from "react";
 import IconButton from "./IconButton";
 import Dropzone from "react-dropzone";
 import { IUser } from "@/models/User";
 import { api } from "@/utils/api";
+import { Cloudinary } from "@cloudinary/url-gen";
 
 const FILES = [
   {
@@ -21,9 +22,7 @@ const FILES = [
     author: "6455e852383957836ede8877",
     timestamp: 1587915010000,
   },
-
 ];
-
 
 const convertFileSize = (bytes: number) => {
   const sizes = ["Bytes", "KB", "MB", "GB", "TB"];
@@ -33,15 +32,18 @@ const convertFileSize = (bytes: number) => {
 };
 
 const ProjectFiles = ({ users }: { users: IUser[] }) => {
+  const [uploadedFiles, setUploadedFiles] = useState<File[]>([]);
 
-  const [uploadedFiles, setUploadedFiles] = React.useState<File[]>([]);
-
-  const onHandleSubmit = (file) => {
+  const onHandleSubmit = async (files: File[]) => {
     try {
-      console.log(file)
-      const { mutate } = api.image.uploadImage.useMutation(file);
-    } catch (error) { 
-      console.log("handle upload error: " ,error)
+      console.log(files);
+      for (const file of files) {
+        const formData = new FormData();
+        formData.append("file", file);
+        const {mutate} = await api.image.uploadImage(formData);
+      }
+    } catch (error) {
+      console.log("handle upload error:", error);
     }
   };
 
@@ -58,7 +60,10 @@ const ProjectFiles = ({ users }: { users: IUser[] }) => {
             <section>
               <div {...getRootProps()}>
                 <input {...getInputProps()} />
-                <button className="btn-sm btn flex items-center justify-center gap-2">
+                <button
+                  className="btn-sm btn flex items-center justify-center gap-2"
+                  onClick={() => onHandleSubmit(uploadedFiles[0])}
+                >
                   <svg
                     xmlns="http://www.w3.org/2000/svg"
                     fill="none"
@@ -84,7 +89,7 @@ const ProjectFiles = ({ users }: { users: IUser[] }) => {
             <button className="btn-success btn-sm btn">Submit!</button>
             <button
               className="btn-info btn-sm btn"
-              onClick={() => onHandleSubmit(uploadedFiles[0])}
+              onClick={() => setUploadedFiles([])}
             >
               Clear
             </button>
@@ -95,13 +100,12 @@ const ProjectFiles = ({ users }: { users: IUser[] }) => {
         {uploadedFiles.map((file) => (
           <div key={file.name} className="border border-gray-200 p-2">
             <div>{file.name}</div>
-            <div className="text-xs text-gray-500">
+            <div className="text -gray-500 text-xs">
               {convertFileSize(file.size)}
             </div>
           </div>
         ))}
       </div>
-
       <table className="mt-4 table w-full">
         <thead>
           <tr>
@@ -190,7 +194,8 @@ const ProjectFiles = ({ users }: { users: IUser[] }) => {
                         <path
                           strokeLinecap="round"
                           strokeLinejoin="round"
-                          d="M14.74 9l-.346 9m-4.788 0L9.26 9m9.968-3.21c.342.052.682.107 1.022.166m-1.022-.165L18.16 19.673a2.25 2.25 0 01-2.244 2.077H8.084a2.25 2.25 0 01-2.244-2.077L4.772 5.79m14.456 0a48.108 48.108 0 00-3.478-.397m-12 .562c.34-.059.68-.114 1.022-.165m0 0a48.11 48.11 0 013.478-.397m7.5 0v-.916c0-1.18-.91-2.164-2.09-2.201a51.964 51.964 0 00-3.32 0c-1.18.037-2.09 1.022-2.09 2.201v.916m7.5 0a48.667 48.667 0 00-7.5 0"
+                          d="M14
+                      .74 9l-.346 9m-4.788 0L9.26 9m9.968-3.21c.342.052.682.107 1.022.166m-1.022-.165L18.16 19.673a2.25 2.25 0 01-2.244 2.077H8.084a2.25 2.25 0 01-2.244-2.077L4.772 5.79m14.456 0a48.108 48.108 0 00-3.478-.397m-12 .562c.34-.059.68-.114 1.022-.165m0 0a48.11 48.11 0 013.478-.397m7.5 0v-.916c0-1.18-.91-2.164-2.09-2.201a51.964 51.964 0 00-3.32 0c-1.18.037-2.09 1.022-2.09 2.201v.916m7.5 0a48.667 48.667 0 00-7.5 0"
                         />
                       </svg>
                     </IconButton>

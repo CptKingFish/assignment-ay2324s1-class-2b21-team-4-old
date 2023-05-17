@@ -8,7 +8,7 @@ import { TRPCError } from "@trpc/server";
 import { env } from "@/env.mjs";   
 import { v2 as cloudinary } from 'cloudinary'
 
- cloudinary.config({ 
+cloudinary.config({ 
   cloud_name: process.env.CLOUDINARY_CLOUD_NAME, 
   api_key: process.env.CLOUDINARY_API_KEY, 
   api_secret: process.env.CLOUDINARY_API_SECRET,
@@ -26,8 +26,10 @@ export const imageRouter = createTRPCRouter({
       console.log(input, ctx)
       const { image } = input;
       const { user } = ctx;
-     // const res = await cloudinary.uploader.upload(image, {public_id: ctx})
-      return image;
+     const res = await cloudinary.uploader
+      .upload(image, { upload_preset: "ml_default" })
+      .then(result=>console.log(result));
+      return res
     }),
   getImage: privateProcedure
     .input(

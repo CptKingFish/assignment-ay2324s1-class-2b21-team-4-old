@@ -1,9 +1,11 @@
-import React, { useState } from "react";
+import React, { useEffect, useState } from "react";
 import IconButton from "./IconButton";
 import Dropzone from "react-dropzone";
 import { IUser } from "@/models/User";
 import { api } from "@/utils/api";
 import { Cloudinary } from "@cloudinary/url-gen";
+import accept from "attr-accept";
+import { toast } from "react-hot-toast";
 
 const FILES = [
   {
@@ -24,6 +26,21 @@ const FILES = [
   },
 ];
 
+const convertBase64: Promise<string> = (file: File) => {
+  return new Promise((resolve, reject) => {
+    const fileReader = new FileReader();
+    fileReader.readAsDataURL(file);
+
+    fileReader.onload = () => {
+      resolve(fileReader.result as string);
+    };
+
+    fileReader.onerror = (error) => {
+      reject(error);
+    };
+  });
+};
+
 const convertFileSize = (bytes: number) => {
   const sizes = ["Bytes", "KB", "MB", "GB", "TB"];
   if (bytes === 0) return "0 Byte";
@@ -33,20 +50,31 @@ const convertFileSize = (bytes: number) => {
 
 const ProjectFiles = ({ users }: { users: IUser[] }) => {
   const [uploadedFiles, setUploadedFiles] = useState<File[]>([]);
+  const { mutate } = api.image.uploadImage.useMutation();
 
   const onHandleSubmit = async (files: File[]) => {
     try {
-      console.log(files);
+      const parray: string[] = [];
       for (const file of files) {
-        const formData = new FormData();
-        formData.append("file", file);
-        const {mutate} = await api.image.uploadImage(formData);
+        parray.push(convertBase64(file));
       }
+      const allFilesB64 = await Promise.all(parray);
+      mutate(allFilesB64, {
+        onSuccess: (data) => {
+          toast.success("Upload successfully!");
+          console.log(data);
+        },
+        onError: (error) => {
+          toast.error("Upload failed!");
+          console.log(error);
+        }
+      })
     } catch (error) {
       console.log("handle upload error:", error);
     }
   };
 
+  
   return (
     <div className="mt-4">
       <div className="flex gap-4">
@@ -60,10 +88,7 @@ const ProjectFiles = ({ users }: { users: IUser[] }) => {
             <section>
               <div {...getRootProps()}>
                 <input {...getInputProps()} />
-                <button
-                  className="btn-sm btn flex items-center justify-center gap-2"
-                  onClick={() => onHandleSubmit(uploadedFiles[0])}
-                >
+                <button className="btn-sm btn flex items-center justify-center gap-2">
                   <svg
                     xmlns="http://www.w3.org/2000/svg"
                     fill="none"
@@ -86,7 +111,12 @@ const ProjectFiles = ({ users }: { users: IUser[] }) => {
         </Dropzone>
         {uploadedFiles.length > 0 && (
           <>
-            <button className="btn-success btn-sm btn">Submit!</button>
+            <button
+              className="btn-success btn-sm btn"
+              onClick={() => onHandleSubmit(uploadedFiles)}
+            >
+              Submit!
+            </button>
             <button
               className="btn-info btn-sm btn"
               onClick={() => setUploadedFiles([])}

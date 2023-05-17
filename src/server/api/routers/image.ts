@@ -5,15 +5,7 @@ import {
   publicProcedure,
 } from "@/server/api/trpc";
 import { TRPCError } from "@trpc/server";
-import { env } from "@/env.mjs";   
-import { v2 as cloudinary } from 'cloudinary'
-
-cloudinary.config({ 
-  cloud_name: process.env.CLOUDINARY_CLOUD_NAME, 
-  api_key: process.env.CLOUDINARY_API_KEY, 
-  api_secret: process.env.CLOUDINARY_API_SECRET,
-  secure: true
-});
+import { v2 as cloudinary } from "cloudinary";
 
 export const imageRouter = createTRPCRouter({
   uploadImage: privateProcedure
@@ -23,13 +15,18 @@ export const imageRouter = createTRPCRouter({
       })
     )
     .mutation(async ({ input, ctx }) => {
-      console.log(input, ctx)
-      const { image } = input;
-      const { user } = ctx;
-     const res = await cloudinary.uploader
-      .upload(image, { upload_preset: "ml_default" })
-      .then(result=>console.log(result));
-      return res
+      try {
+        const { image } = input;
+        const res = await cloudinary.uploader
+          .upload(image, { upload_preset: "ml_default" })
+          .then((result) => console.log(result));
+        return res;
+      } catch (error) {
+        throw new TRPCError({
+          code: "BAD_REQUEST",
+          message: "image is required",
+        });
+      }
     }),
   getImage: privateProcedure
     .input(

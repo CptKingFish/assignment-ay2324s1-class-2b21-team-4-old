@@ -12,7 +12,7 @@ const ProfileChangeEmail: React.FC<ProfileChangeEmailProps> = ({ prevEmail, refr
     const { mutate: changeEmail } = api.user.changeOwnEmail.useMutation()
 
     React.useEffect(() => {
-        setEmail(email)
+        setEmail(prevEmail)
     }, [email])
 
     const handleChangeEmail = () => {

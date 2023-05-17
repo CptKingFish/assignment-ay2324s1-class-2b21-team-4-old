@@ -1,6 +1,6 @@
 import Link from "next/link";
 import React from "react";
-import Avatar from "react-avatar-edit";
+
 import toast from "react-hot-toast";
 import { api } from "@/utils/api";
 import ProfileChangeUsername from "./ProfileChangeUsername";
@@ -11,13 +11,6 @@ export default function Profile() {
     const { data } = api.user.getMe.useQuery()
     const [username, setUsername] = React.useState(data?.username || "")
     const [email, setEmail] = React.useState(data?.email || "")
-
-    function onBeforeFileLoad(elem: any) {
-        if (elem.target.files[0].size > 71680) {
-            toast.error("File is too big!");
-            elem.target.value = "";
-        }
-    }
 
     function refreshUsername(newName:string){
         setUsername(newName)
@@ -36,12 +29,6 @@ export default function Profile() {
                 <div className="modal-box w-8/9 max-w-l justify-center">
                     <label htmlFor="profile" className="btn btn-sm btn-circle absolute right-2 top-2">✕</label>
                     <div className="">
-                        <Avatar
-                            width={200}
-                            height={200}
-                            onBeforeFileLoad={onBeforeFileLoad}
-                            src={undefined}
-                        />
                         <button className="btn btn-success btn-outline absolute bottom-2 right-2 ms-5 mt-5">Upload Image</button>
                         {/* {preview && <img src={preview} alt="Preview" />} */}
                     </div>
@@ -87,11 +74,8 @@ export default function Profile() {
                         <div className="font-bold text-xs">EMAIL<div className="font-light text-xl">{email}</div></div>
                         <label htmlFor = "email" className="btn btn-primary">Edit</label>
                     </div>
-                    {/* <div className="mt-2 mb-5 flex flex-wrap w-full justify-between">
-                        <div className="font-bold text-xs">PHONE NUMBER<div className="font-light text-xl">1010010101010101001</div></div>
-                        <a className="btn btn-primary">Edit</a>
-                    </div> */}
                 </div>
+                <div className = "divider"></div>
             </div>
         </>
     );

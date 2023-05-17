@@ -1,4 +1,10 @@
-export default function TopNav() {
+import React from "react";
+
+interface TopNavProps {
+  drawer:() => void;
+}
+
+const TopNav:React.FC<TopNavProps> = ({drawer})=> {
   return (
     <div className="navbar bg-base-300">
       <div className="avatar pl-5">
@@ -7,7 +13,7 @@ export default function TopNav() {
         </div>
       </div>
       <div className="flex-1">
-        <span className="ms-5 text-xl normal-case">Test Team</span>
+        <span className="ms-5 text-xl normal-case cursor-pointer" onClick={drawer}>Test Team</span>
       </div>
       <div className="flex-none gap-2">
         <div className="form-control"></div>
@@ -39,3 +45,5 @@ export default function TopNav() {
     </div>
   );
 }
+
+export default TopNav;

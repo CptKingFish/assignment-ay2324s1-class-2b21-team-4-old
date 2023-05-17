@@ -17,7 +17,7 @@ const TeamChat = () => {
   const router = useRouter();
   const { user } = useGlobalContext();
   const [messages, setMessages] = React.useState<Message[]>([]);
-  const [users,setUsers] = React.useState<Object[]>([]);
+  const [users, setUsers] = React.useState<Object[]>([]);
   // const [showDownButton, setShowDownButton] = React.useState(false);
   const {
     data: messageData,
@@ -27,8 +27,8 @@ const TeamChat = () => {
     chatroom_id: router.query.id as string,
   });
 
-  const {data:userRaw} = api.chat.getUsernamesFromChatroom.useQuery({
-    chatroom_id:router.query.id as string,
+  const { data: userRaw } = api.chat.getUsernamesFromChatroom.useQuery({
+    chatroom_id: router.query.id as string,
   })
 
   const [isOpen, setIsOpen] = React.useState(true);
@@ -65,7 +65,7 @@ const TeamChat = () => {
   useEffect(() => {
     if (isLoading || !messageData) return;
     setMessages(messageData.reverse());
-    setUsers((userRaw||[]).map((user)=>{return {key:user._id,username:user.username}}))
+    setUsers((userRaw || []).map((user) => { return { key: user._id, username: user.username } }))
   }, [isLoading, messageData]);
 
   const channelCode = React.useMemo(() => {
@@ -113,13 +113,12 @@ const TeamChat = () => {
 
   return (
     <>
-      <TopNav />
       <div className="drawer drawer-end drawer-mobile">
-
+        
         <input id="my-drawer-4" type="checkbox" className="drawer-toggle" />
 
-        <div className="drawer-content flex flex-no-wrap">
-
+        <div className="drawer-content ">
+        <TopNav drawer = {handleDrawerToggle}/>
 
           {/* {showDownButton && (
             <div className="fixed bottom-10 right-4 z-50">
@@ -164,9 +163,6 @@ const TeamChat = () => {
 
             <ChatInput channelCode={channelCode} />
           </div>
-          <button className={` h-screen items-center justify-center bg-base-200 text-white text-4xl px-2 ${isOpen ? 'hidden' : ''}`} onClick={handleDrawerToggle}>
-            {"<"}
-          </button>
         </div>
         <UserSideBar isOpen={isOpen} handleDrawerToggle={handleDrawerToggle} participants={users} />
       </div>

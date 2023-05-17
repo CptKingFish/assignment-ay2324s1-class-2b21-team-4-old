@@ -34,6 +34,17 @@ export const pusherClientConstructor = (userId: string) => {
   return new PusherClient(process.env.NEXT_PUBLIC_PUSHER_KEY || "", {
     cluster: process.env.NEXT_PUBLIC_PUSHER_CLUSTER || "",
     authEndpoint: "/api/pusher/auth",
+    userAuthentication: {
+      headers: {
+        "Content-Type": "application/json",
+      },
+      params: {
+        user_id: userId,
+      },
+      endpoint: "/api/pusher/user-auth",
+      transport: "ajax",
+    },
+
     auth: {
       params: {
         user_id: userId,

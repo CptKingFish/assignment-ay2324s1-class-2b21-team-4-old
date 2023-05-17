@@ -12,6 +12,7 @@ import { TRPCError } from "@trpc/server";
 import { env } from "@/env.mjs";
 import Notification from "@/models/Notification";
 import Chatroom from "@/models/Chatroom";
+import { pusherServer } from "@/utils/pusherConfig";
 
 export const notificationRouter = createTRPCRouter({
   getNotifications: privateProcedure.query(async ({ ctx }) => {
@@ -65,7 +66,7 @@ export const notificationRouter = createTRPCRouter({
         });
       }
 
-      const receiver_id = receiver._id;
+      const receiver_id = receiver._id.toString();
 
       const areAlreadyFriends = await Chatroom.findOne({
         type: "private",
@@ -92,10 +93,42 @@ export const notificationRouter = createTRPCRouter({
         });
       }
 
+      // send notification to receiver
+
+      // key={notification._id.toString()}
+      //           notification_id={notification._id.toString()}
+      //           sender_username={notification?.sender?.username.toString() || ""}
+      //           type={notification.type}
+      //           time={formatDate(notification.createdAt)}
+      //           avatarUrl={"https://source.unsplash.com/random/?city,night"}
+      //           handleRemoveNotification={handleRemoveNotification}
+
       const notification = await Notification.create({
         type: "friend_request",
         sender_id: user._id,
         receiver_id: receiver_id,
+      });
+
+      //   sender: (Document<unknown, {}, IUser> & Omit<IUser & Required<{
+      //     _id: string;
+      // }>, never>) | null;
+      // _id: Schema.Types.ObjectId;
+      // type: "friend_request" | "team_invite";
+      // sender_id: Schema.Types.ObjectId;
+      // receiver_id: Schema.Types.ObjectId;
+      // chatroom_id?: Schema.Types.ObjectId | undefined;
+      // createdAt: Date;
+
+      await pusherServer.sendToUser(receiver_id, "incoming-notification", {
+        _id: notification._id.toString(),
+        type: notification.type,
+        sender: {
+          _id: user._id.toString(),
+          username: user.username,
+        },
+        sender_id: notification.sender_id.toString(),
+        receiver_id: notification.receiver_id.toString(),
+        createdAt: notification.createdAt,
       });
       return notification;
     }),

@@ -35,3 +35,16 @@ interface ChatRoom {
   messages: Message[];
   participants: string[];
 }
+
+export interface PusherMemberStatusProps {
+  id: string;
+  info: {
+    email: string;
+    username: string;
+  };
+}
+
+interface WatchListEventProps {
+  name: "online" | "offline";
+  user_ids: string[];
+}

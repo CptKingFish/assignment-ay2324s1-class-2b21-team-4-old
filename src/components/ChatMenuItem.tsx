@@ -4,8 +4,10 @@ import { useRouter } from "next/router";
 import { useGlobalContext } from "@/context";
 import { log } from "console";
 import { pusherClientConstructor } from "@/utils/pusherConfig";
-import { Message } from "@/utils/chat";
+import { Message, WatchListEventProps } from "@/utils/chat";
 import { formatTimestampToTime } from "@/utils/helper";
+import type { PusherMemberStatusProps } from "@/utils/chat";
+import { set } from "mongoose";
 
 interface ChatMenuItemProps {
   id: string;
@@ -25,11 +27,13 @@ export default function ChatMenuItem({
 }: ChatMenuItemProps) {
   console.log("participants", participants);
 
-  const { user } = useGlobalContext();
-  const [name, setName] = React.useState("");
+  const { user, pusherClient } = useGlobalContext();
+  // const [name, setName] = React.useState("");
+  const [otherUser, setOtherUser] = React.useState(participants[0]);
   const [latestMessage, setLatestMessage] = React.useState<Message | undefined>(
     lastMessage
   );
+  const [otherUserIsOnline, setOtherUserIsOnline] = React.useState(false);
   const router = useRouter();
 
   const channelCode = React.useMemo(() => {
@@ -37,11 +41,9 @@ export default function ChatMenuItem({
   }, [id]);
 
   React.useEffect(() => {
-    if (!user) return;
+    if (!pusherClient) return;
 
-    const pusherClient = pusherClientConstructor(user?._id);
-
-    pusherClient.subscribe(channelCode);
+    const channel = pusherClient.subscribe(channelCode);
 
     const messageHandler = (message: Message) => {
       console.log("incoming message", message);
@@ -49,13 +51,43 @@ export default function ChatMenuItem({
       setLatestMessage(message);
     };
 
-    pusherClient.bind("incoming-message", messageHandler);
+    const watchlistEventHandler = (event: WatchListEventProps) => {
+      console.log("otherUser", otherUser);
+
+      console.log("event", event);
+      if (!otherUser) return;
+      if (event.name === "online" && event.user_ids.includes(otherUser._id)) {
+        console.log("other user is online");
+
+        setOtherUserIsOnline(true);
+      }
+      if (event.name === "offline" && event.user_ids.includes(otherUser._id)) {
+        console.log("other user is offline");
+        setOtherUserIsOnline(false);
+      }
+    };
+
+    // const memberAddedHandler = (data: PusherMemberStatusProps) => {
+    //   if (data.id === user?._id) return;
+    //   setOtherUserIsOnline(true);
+    // };
+
+    // const memberRemovedHandler = (data: PusherMemberStatusProps) => {
+    //   if (data.id === user?._id) return;
+    //   setOtherUserIsOnline(false);
+    // };
+
+    channel.bind("incoming-message", messageHandler);
+    pusherClient.user.watchlist.bind("online", watchlistEventHandler);
+    pusherClient.user.watchlist.bind("offline", watchlistEventHandler);
+    // channel.bind("pusher:member_added", memberAddedHandler);
+    // channel.bind("pusher:member_removed", memberRemovedHandler);
 
     return () => {
       pusherClient.unsubscribe(channelCode);
       pusherClient.unbind("incoming-message", messageHandler);
     };
-  }, [user, channelCode]);
+  }, [user, channelCode, pusherClient]);
 
   React.useEffect(() => {
     if (!user || !participants) return;
@@ -64,7 +96,9 @@ export default function ChatMenuItem({
       (participant) => user._id !== participant._id
     );
 
-    setName(otherUser?.username || "");
+    setOtherUser(otherUser);
+
+    // setName(otherUser?.username || "");
   }, [participants, user]);
 
   const isInChatroom = React.useMemo(() => {
@@ -80,14 +114,16 @@ export default function ChatMenuItem({
       onClick={handleChatBtnClick}
     >
       <div className="mt-4 flex items-center">
-        <div className="online avatar">
+        <div className={`${otherUserIsOnline ? "online" : "offline"} avatar`}>
           <div className="w-16 rounded-full">
             {/* <Image src={avatarUrl} alt="chat menu item" width={32} height={32} /> */}
             <img src={avatarUrl} alt="chat menu item" />
           </div>
         </div>
         <div className="ml-2">
-          <div className="text-lg font-semibold">{name}</div>
+          <div className="text-lg font-semibold">
+            {otherUser?.username || ""}
+          </div>
           <div className="text-sm">{latestMessage?.text || ""}</div>
         </div>
         <div className="ml-auto text-xs">

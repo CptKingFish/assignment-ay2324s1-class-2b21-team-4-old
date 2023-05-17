@@ -8,13 +8,15 @@ import ChatBody from "@/components/ChatBody";
 import { Message } from "@/utils/chat";
 import { api } from "@/utils/api";
 import UserSideBar from "@/components/UserSideBar";
+import type { PusherMemberStatusProps } from "@/utils/chat";
 
 export default function PrivateChat() {
   const router = useRouter();
-  const { user } = useGlobalContext();
+  const { user, pusherClient } = useGlobalContext();
   const [messages, setMessages] = React.useState<Message[]>([]);
   const [users, setUsers] = React.useState<Object[]>([]);
   const [name, setName] = React.useState("");
+  const [otherUserIsOnline, setOtherUserIsOnline] = React.useState(false);
   // const [showDownButton, setShowDownButton] = React.useState(false);
   const {
     data: chatroomData,
@@ -61,25 +63,35 @@ export default function PrivateChat() {
   }, [router.query.id]);
 
   React.useEffect(() => {
-    if (!user) return;
+    if (!pusherClient) return;
 
-    const pusherClient = pusherClientConstructor(user?._id);
+    // const pusherClient = pusherClientConstructor(user?._id);
 
-    pusherClient.subscribe(channelCode);
+    const channel = pusherClient.subscribe(channelCode);
 
     const messageHandler = (message: Message) => {
-      console.log("incoming message", message);
-
       setMessages((prev) => [message, ...prev]);
     };
 
-    pusherClient.bind("incoming-message", messageHandler);
+    const memberAddedHandler = (data: PusherMemberStatusProps) => {
+      if (data.id === user?._id) return;
+      setOtherUserIsOnline(true);
+    };
+
+    const memberRemovedHandler = (data: PusherMemberStatusProps) => {
+      if (data.id === user?._id) return;
+      setOtherUserIsOnline(false);
+    };
+
+    channel.bind("incoming-message", messageHandler);
+    channel.bind("pusher:member_added", memberAddedHandler);
+    channel.bind("pusher:member_removed", memberRemovedHandler);
 
     return () => {
       pusherClient.unsubscribe(channelCode);
       pusherClient.unbind("incoming-message", messageHandler);
     };
-  }, [user, channelCode]);
+  }, [user, channelCode, pusherClient]);
 
   // const scrollDownRef = React.useRef<HTMLDivElement | null>(null);
 

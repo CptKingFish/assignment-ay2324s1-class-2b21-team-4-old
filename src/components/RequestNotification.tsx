@@ -7,6 +7,7 @@ interface RequestNotificationProps {
   avatarUrl: string;
   type: string;
   time: string;
+  refetchChatrooms: () => void;
   handleRemoveNotification: (notification_id: string) => void;
 }
 
@@ -16,6 +17,7 @@ export default function RequestNotification({
   avatarUrl,
   type,
   time,
+  refetchChatrooms,
   handleRemoveNotification,
 }: RequestNotificationProps) {
   const {
@@ -34,6 +36,7 @@ export default function RequestNotification({
       {
         onSuccess: () => {
           handleRemoveNotification(notification_id);
+          refetchChatrooms();
           toast.success("Friend request accepted.");
         },
         onError: (error) => {

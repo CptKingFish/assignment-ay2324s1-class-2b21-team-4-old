@@ -11,7 +11,7 @@ import UserSideBar from "@/components/UserSideBar";
 
 const TeamChat = () => {
   const router = useRouter();
-  const { user } = useGlobalContext();
+  const { user, pusherClient } = useGlobalContext();
   const [messages, setMessages] = React.useState<Message[]>([]);
   const [users, setUsers] = React.useState<Object[]>([]);
   // const [showDownButton, setShowDownButton] = React.useState(false);
@@ -73,10 +73,9 @@ const TeamChat = () => {
   }, [router.query.id]);
 
   React.useEffect(() => {
-    if (!user) return;
+    if (!pusherClient) return;
 
-    const pusherClient = pusherClientConstructor(user?._id);
-    console.log("pusherClient", pusherClient);
+    // const pusherClient = pusherClientConstructor(user?._id);
 
     pusherClient.subscribe(channelCode);
 
@@ -92,7 +91,7 @@ const TeamChat = () => {
       pusherClient.unsubscribe(channelCode);
       pusherClient.unbind("incoming-message", messageHandler);
     };
-  }, [user, channelCode]);
+  }, [user, channelCode, pusherClient]);
 
   // const scrollDownRef = React.useRef<HTMLDivElement | null>(null);
 

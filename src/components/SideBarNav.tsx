@@ -35,9 +35,9 @@ export default function SideBarNav({
 }) {
   const { user } = useGlobalContext();
   const [chatrooms, setChatrooms] = React.useState<IChatroom[]>([]);
-  const [notifications, setNotifications] = React.useState<
-    typeof notificationsData
-  >([]);
+  // const [notifications, setNotifications] = React.useState<
+  //   typeof notificationsData
+  // >([]);
   const [activeTab, setActiveTab] = React.useState(0);
   const handleTabChange = (index: number) => {
     setActiveTab(index);
@@ -47,8 +47,8 @@ export default function SideBarNav({
     isLoading,
     refetch: refetchChatrooms,
   } = api.chat.getChatrooms.useQuery();
-  const { data: notificationsData, isLoading: isLoadingNotifications } =
-    api.notification.getNotifications.useQuery();
+  // const { data: notificationsData, isLoading: isLoadingNotifications } =
+  //   api.notification.getNotifications.useQuery();
   const [openAddChatroomModal, setOpenAddChatroomModal] = React.useState(false);
 
   React.useEffect(() => {
@@ -56,10 +56,10 @@ export default function SideBarNav({
     setChatrooms(chatroomsData);
   }, [isLoading, chatroomsData]);
 
-  React.useEffect(() => {
-    if (isLoadingNotifications || !notificationsData) return;
-    setNotifications(notificationsData);
-  }, [isLoadingNotifications, notificationsData]);
+  // React.useEffect(() => {
+  //   if (isLoadingNotifications || !notificationsData) return;
+  //   setNotifications(notificationsData);
+  // }, [isLoadingNotifications, notificationsData]);
 
   // get chatrooms with the type of team
   const teamChatrooms: IChatroom[] = React.useMemo(() => {
@@ -76,14 +76,14 @@ export default function SideBarNav({
 
   // remove notification with _id
 
-  const handleRemoveNotification = (notification_id: string) => {
-    setNotifications((prevNotifications) => {
-      if (!prevNotifications) return [];
-      return prevNotifications.filter(
-        (notification) => notification._id.toString() !== notification_id
-      );
-    });
-  };
+  // const handleRemoveNotification = (notification_id: string) => {
+  //   setNotifications((prevNotifications) => {
+  //     if (!prevNotifications) return [];
+  //     return prevNotifications.filter(
+  //       (notification) => notification._id.toString() !== notification_id
+  //     );
+  //   });
+  // };
 
   return (
     <div className="drawer-mobile drawer -z-10">
@@ -210,8 +210,9 @@ export default function SideBarNav({
             {activeTab === 1 && <TeamList teamChatrooms={teamChatrooms} />}
             {activeTab === 2 && (
               <NotificationList
-                notifications={notifications}
-                handleRemoveNotification={handleRemoveNotification}
+                refetchChatrooms={refetchChatrooms}
+                // notifications={notifications}
+                // handleRemoveNotification={handleRemoveNotification}
               />
             )}
           </div>

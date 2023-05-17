@@ -12,7 +12,7 @@ interface ExtendedNextApiRequest extends NextApiRequest {
 }
 
 const handler = async (req: ExtendedNextApiRequest, res: NextApiResponse) => {
-  console.log("auth request received");
+  console.log("authorization request received");
 
   mongoose.connect(env.MONGO_URL).catch((err) => console.log(err));
 
@@ -20,6 +20,7 @@ const handler = async (req: ExtendedNextApiRequest, res: NextApiResponse) => {
   if (!user) {
     return res.status(400).send("User not found");
   }
+
   const presenceData = {
     user_id: user._id.toString(),
     user_info: {
@@ -33,7 +34,7 @@ const handler = async (req: ExtendedNextApiRequest, res: NextApiResponse) => {
       req.body.channel_name,
       presenceData
     );
-    console.log("sending auth");
+    console.log("sending authorization");
     res.send(authResponse);
   } catch (error) {
     console.error(error);

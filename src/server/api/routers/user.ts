@@ -10,7 +10,7 @@ import User from "@/models/User";
 import jwt from "jsonwebtoken";
 import { TRPCError } from "@trpc/server";
 import { env } from "@/env.mjs";
-import ProfileChangeEmail from "@/components/ProfileChangeEmail";
+import { api } from "@/utils/api"
 
 export const userRouter = createTRPCRouter({
   getMe: privateProcedure.query(({ ctx }) => {
@@ -122,7 +122,7 @@ export const userRouter = createTRPCRouter({
       })
     )
     .mutation(async ({ input, ctx }) => {
-      
+
       const response = await User.findByIdAndUpdate(
         ctx.user._id,
         {
@@ -140,9 +140,9 @@ export const userRouter = createTRPCRouter({
     )
     .mutation(async ({ input, ctx }) => {
       if (!input.email.toLowerCase()
-      .match(
-        /^(([^<>()[\]\\.,;:\s@"]+(\.[^<>()[\]\\.,;:\s@"]+)*)|.(".+"))@((\[[0-9]{1,3}\.[0-9]{1,3}\.[0-9]{1,3}\.[0-9]{1,3}\])|(([a-zA-Z\-0-9]+\.)+[a-zA-Z]{2,}))$/
-      )){
+        .match(
+          /^(([^<>()[\]\\.,;:\s@"]+(\.[^<>()[\]\\.,;:\s@"]+)*)|.(".+"))@((\[[0-9]{1,3}\.[0-9]{1,3}\.[0-9]{1,3}\.[0-9]{1,3}\])|(([a-zA-Z\-0-9]+\.)+[a-zA-Z]{2,}))$/
+        )) {
         throw new TRPCError({
           code: "BAD_REQUEST",
           message: "Invalid email!",
@@ -200,4 +200,35 @@ export const userRouter = createTRPCRouter({
       );
       return updatedUser;
     }),
+  // changeProfilePicture: privateProcedure
+  //   .input(z.object({ profilePic: z.string().url() }))
+  //   .mutation(async ({ input, ctx }) => {
+  //     const response = await User.findById(ctx.user._id);
+  //     if (!response) {
+  //       throw new TRPCError({
+  //         code: "BAD_REQUEST",
+  //         message: "User not found",
+  //       });
+  //     }
+
+  //     // Upload the new profile picture to Cloudinary
+  //     const uploadResponse = await api.image.uploadImage(input.profilePic);
+
+  //     // Delete the old profile picture from Cloudinary
+  //     if (response.profilePic) {
+  //       await api.image.deleteImage(response.profilePic);
+  //     }
+
+  //     // Update the profile picture URL in the user document
+  //     const updatedUser = await User.findByIdAndUpdate(
+  //       ctx.user._id,
+  //       {
+  //         profilePic: uploadResponse.url,
+  //       },
+  //       { new: true }
+  //     );
+
+  //     return updatedUser;
+  //   });
+
 });

@@ -2,15 +2,7 @@ import axios from "axios";
 import React from "react";
 import { toast } from "react-hot-toast";
 import { useGlobalContext } from "@/context";
-// import { FC, useRef, useState } from "react";
-// import { toast } from "react-hot-toast";
-// import TextareaAutosize from "react-textarea-autosize";
-// import Button from "./ui/Button";
-
-// interface ChatInputProps {
-//   chatPartner: User;
-//   chatId: string;
-// }
+import { api } from "@/utils/api";
 
 interface ChatInputProps {
   channelCode: string;
@@ -46,13 +38,11 @@ const ChatInput = ({ channelCode }: ChatInputProps) => {
     }
   };
 
-  // const handleSubmit = async (e: React.FormEvent<HTMLFormElement>) => {
-  //   e.stopPropagation();
-  //   e.preventDefault();
-  //   await sendMessage();
-  // };
+  const uploadImage = () => {
+    const formData = new FormData();
+    // Add your image upload logic here
+  };
 
-  // detect enter press on input
   const handleKeyDown = (e: React.KeyboardEvent<HTMLInputElement>) => {
     console.log(e.key);
 
@@ -65,26 +55,49 @@ const ChatInput = ({ channelCode }: ChatInputProps) => {
   const handleSend = () => {
     void sendMessage();
   };
+
   return (
     <div className="z-10 bg-white">
-      {/* <form className="flex items-center p-3" onSubmit={void handleSubmit}> */}
-      <div className="flex items-center p-3">
+      <div className="flex items-center">
+      <div className="dropdown-top dropdown">
+          <label tabIndex={0} className="btn">
+            <svg
+              xmlns="http://www.w3.org/2000/svg"
+              fill="none"
+              viewBox="0 0 24 24"
+              strokeWidth={1.5}
+              stroke="currentColor"
+              className="h-6 w-6" 
+            >
+              <path
+                strokeLinecap="round"
+                strokeLinejoin="round"
+                d="M18.375 12.739l-7.693 7.693a4.5 4.5 0 01-6.364-6.364l10.94-10.94A3 3 0 1119.5 7.372L8.552 18.32m.009-.01l-.01.01m5.699-9.941l-7.81 7.81a1.5 1.5 0 002.112 2.13"
+              />
+            </svg>
+          </label>
+          <ul
+            tabIndex={0}
+            className="dropdown-content menu rounded-box w-52 bg-base-100 p-2 shadow"
+          >
+            <li>
+              <a>Item 1</a>
+            </li>
+            <li>
+              <a>Item 2</a>
+            </li>
+          </ul>
+        </div>
         <input
           type="text"
           placeholder="Type your message"
-          className="flex-1 rounded-md border-2 border-gray-200 p-2 focus:outline-none focus:ring-2 focus:ring-blue-500"
+          className="flex-1 rounded-md border-2 border-gray-200 p-2  focus:outline-none focus:ring-2 focus:ring-blue-500"
           value={input}
           onChange={(e) => setInput(e.target.value)}
           onKeyDown={handleKeyDown}
         />
-        <button
-          onClick={handleSend}
-          className="ml-2 rounded-md bg-blue-500 px-4 py-2 font-bold text-white hover:bg-blue-600"
-        >
-          Send
-        </button>
+        
       </div>
-      {/* </form> */}
     </div>
   );
 };

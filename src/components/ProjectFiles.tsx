@@ -2,6 +2,7 @@ import React from "react";
 import IconButton from "./IconButton";
 import Dropzone from "react-dropzone";
 import { IUser } from "@/models/User";
+import { api } from "@/utils/api";
 
 const FILES = [
   {
@@ -20,7 +21,9 @@ const FILES = [
     author: "6455e852383957836ede8877",
     timestamp: 1587915010000,
   },
+
 ];
+
 
 const convertFileSize = (bytes: number) => {
   const sizes = ["Bytes", "KB", "MB", "GB", "TB"];
@@ -30,7 +33,18 @@ const convertFileSize = (bytes: number) => {
 };
 
 const ProjectFiles = ({ users }: { users: IUser[] }) => {
+
   const [uploadedFiles, setUploadedFiles] = React.useState<File[]>([]);
+
+  const onHandleSubmit = (file) => {
+    try {
+      console.log(file)
+      const { mutate } = api.image.uploadImage.useMutation(file);
+    } catch (error) { 
+      console.log("handle upload error: " ,error)
+    }
+  };
+
   return (
     <div className="mt-4">
       <div className="flex gap-4">
@@ -70,7 +84,7 @@ const ProjectFiles = ({ users }: { users: IUser[] }) => {
             <button className="btn-success btn-sm btn">Submit!</button>
             <button
               className="btn-info btn-sm btn"
-              onClick={() => setUploadedFiles([])}
+              onClick={() => onHandleSubmit(uploadedFiles[0])}
             >
               Clear
             </button>

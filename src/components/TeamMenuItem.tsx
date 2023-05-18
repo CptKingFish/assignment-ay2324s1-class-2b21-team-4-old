@@ -20,7 +20,7 @@ export default function TeamMenuItem({
   name,
   lastMessage,
 }: TeamMenuItemProps) {
-  const { user } = useGlobalContext();
+  const { user, pusherClient } = useGlobalContext();
   const router = useRouter();
   const [collapsed, setCollapsed] = React.useState(true);
   const [latestMessage, setLatestMessage] = React.useState<Message | undefined>(
@@ -32,9 +32,9 @@ export default function TeamMenuItem({
   }, [id]);
 
   React.useEffect(() => {
-    if (!user) return;
+    if (!user || !pusherClient) return;
 
-    const pusherClient = pusherClientConstructor(user?._id);
+    // const pusherClient = pusherClientConstructor(user?._id);
 
     pusherClient.subscribe(channelCode);
 
@@ -50,7 +50,7 @@ export default function TeamMenuItem({
       pusherClient.unsubscribe(channelCode);
       pusherClient.unbind("incoming-message", messageHandler);
     };
-  }, [user, channelCode]);
+  }, [user, channelCode, pusherClient]);
 
   const handleChatBtnClick = () => {
     router.push(`/teamchat/${id}`).catch(console.error);
@@ -70,7 +70,7 @@ export default function TeamMenuItem({
         className="mt-4 flex items-center"
         onClick={() => setCollapsed((prev) => !prev)}
       >
-        <div className="online avatar">
+        <div className="avatar">
           <div className="w-16 rounded-xl">
             {/* <Image src={avatarUrl} alt="chat menu item" width={32} height={32} /> */}
             <img src={avatarUrl} alt="chat menu item" />
@@ -96,11 +96,4 @@ export default function TeamMenuItem({
       )}
     </>
   );
-}
-
-{
-  /* <div className="text-sm">{latestMessage?.text || ""}</div>
-        </div>
-        <div className="ml-auto text-xs">
-          {formatTimestampToTime(latestMessage?.timestamp || 0)} */
 }

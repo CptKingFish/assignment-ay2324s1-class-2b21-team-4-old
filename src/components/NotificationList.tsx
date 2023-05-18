@@ -15,6 +15,7 @@ import { Schema } from "mongoose";
 
 interface NotificationListProps {
   refetchChatrooms: () => void;
+  display: boolean;
 }
 
 interface NotificationItem {
@@ -29,6 +30,7 @@ interface NotificationItem {
 
 export default function NotificationList({
   refetchChatrooms,
+  display,
 }: // notifications,
 // handleRemoveNotification,
 NotificationListProps) {
@@ -88,6 +90,7 @@ NotificationListProps) {
             avatarUrl={"https://source.unsplash.com/random/?city,night"}
             refetchChatrooms={refetchChatrooms}
             handleRemoveNotification={handleRemoveNotification}
+            display={display}
           />
         );
       })}

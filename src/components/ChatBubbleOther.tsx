@@ -26,6 +26,7 @@ export default function ChatBubbleOther({
         <time className="text-xs opacity-50">{time}</time>
       </div>
       <div className="chat-bubble">{text}</div>
+      <div className="chat-footer opacity-50">{date}</div>
     </div>
   );
 }

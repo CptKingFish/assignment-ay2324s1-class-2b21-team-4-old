@@ -9,6 +9,7 @@ interface RequestNotificationProps {
   time: string;
   refetchChatrooms: () => void;
   handleRemoveNotification: (notification_id: string) => void;
+  display: boolean;
 }
 
 export default function RequestNotification({
@@ -19,6 +20,7 @@ export default function RequestNotification({
   time,
   refetchChatrooms,
   handleRemoveNotification,
+  display,
 }: RequestNotificationProps) {
   const {
     mutate: acceptFriendRequest,
@@ -62,9 +64,9 @@ export default function RequestNotification({
   };
 
   return (
-    <div className="bordered">
+    <div className="bordered" hidden={!display}>
       <div className="mt-4 flex items-center">
-        <div className="online avatar mr-3">
+        <div className="avatar online mr-3">
           <div className="w-16 rounded-full">
             {/* <Image src={avatarUrl} alt="chat menu item" width={32} height={32} /> */}
             <img src={avatarUrl} alt="chat menu item" />

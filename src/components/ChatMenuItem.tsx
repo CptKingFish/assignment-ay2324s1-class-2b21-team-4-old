@@ -7,7 +7,8 @@ import { pusherClientConstructor } from "@/utils/pusherConfig";
 import { Message, WatchListEventProps } from "@/utils/chat";
 import { formatTimestampToTime } from "@/utils/helper";
 import type { PusherMemberStatusProps } from "@/utils/chat";
-import { set } from "mongoose";
+import { toast } from "react-hot-toast";
+import ChatNotification from "./ChatNotification";
 
 interface ChatMenuItemProps {
   id: string;
@@ -17,6 +18,7 @@ interface ChatMenuItemProps {
     username: string;
   }[];
   lastMessage: Message | undefined;
+  display: boolean;
 }
 
 export default function ChatMenuItem({
@@ -24,10 +26,11 @@ export default function ChatMenuItem({
   avatarUrl,
   participants,
   lastMessage,
+  display,
 }: ChatMenuItemProps) {
   console.log("participants", participants);
 
-  const { user, pusherClient, watchlistEvent } = useGlobalContext();
+  const { user, pusherClient, watchlistStatus } = useGlobalContext();
   // const [name, setName] = React.useState("");
   const [otherUser, setOtherUser] = React.useState(participants[0]);
   const [latestMessage, setLatestMessage] = React.useState<Message | undefined>(
@@ -41,61 +44,47 @@ export default function ChatMenuItem({
   }, [id]);
 
   React.useEffect(() => {
-    if (!pusherClient) return;
+    if (!pusherClient || !otherUser) return;
 
     const channel = pusherClient.subscribe(channelCode);
 
     const messageHandler = (message: Message) => {
-      console.log("incoming message", message);
+      console.log("incoming message item", message);
+
+      toast.custom(
+        (t) => (
+          <div
+            className={`${
+              t.visible ? "animate-enter" : "animate-leave"
+            } pointer-events-auto flex w-full max-w-md rounded-lg bg-white shadow-lg ring-1 ring-black ring-opacity-5`}
+          >
+            <ChatNotification
+              avatarUrl={avatarUrl}
+              text={message?.text || ""}
+              username={otherUser?.username || ""}
+            />
+          </div>
+        ),
+        {
+          duration: 5000,
+        }
+      );
 
       setLatestMessage(message);
     };
 
-    // const watchlistEventHandler = (event: WatchListEventProps) => {
-    //   console.log("otherUser", otherUser);
-
-    //   console.log("event", event);
-    // };
-
-    if (watchlistEvent) {
-      if (!otherUser) return;
-      if (
-        watchlistEvent.name === "online" &&
-        watchlistEvent.user_ids.includes(otherUser._id.toString())
-      ) {
-        console.log("other user is online");
-        setOtherUserIsOnline(true);
-      }
-      if (
-        watchlistEvent.name === "offline" &&
-        watchlistEvent.user_ids.includes(otherUser._id.toString())
-      ) {
-        console.log("other user is offline");
-        setOtherUserIsOnline(false);
-      }
-    }
-
-    // const memberAddedHandler = (data: PusherMemberStatusProps) => {
-    //   if (data.id === user?._id) return;
-    //   setOtherUserIsOnline(true);
-    // };
-
-    // const memberRemovedHandler = (data: PusherMemberStatusProps) => {
-    //   if (data.id === user?._id) return;
-    //   setOtherUserIsOnline(false);
-    // };
-
     channel.bind("incoming-message", messageHandler);
-    // pusherClient.user.watchlist.bind("online", watchlistEventHandler);
-    // pusherClient.user.watchlist.bind("offline", watchlistEventHandler);
-    // channel.bind("pusher:member_added", memberAddedHandler);
-    // channel.bind("pusher:member_removed", memberRemovedHandler);
 
     return () => {
       pusherClient.unsubscribe(channelCode);
       pusherClient.unbind("incoming-message", messageHandler);
     };
-  }, [user, channelCode, pusherClient, otherUser, watchlistEvent]);
+  }, [user, channelCode, pusherClient, otherUser]);
+
+  React.useEffect(() => {
+    if (!pusherClient || !otherUser) return;
+    setOtherUserIsOnline(watchlistStatus[otherUser?._id] || false);
+  }, [watchlistStatus, otherUser, pusherClient]);
 
   React.useEffect(() => {
     if (!user || !participants) return;
@@ -120,6 +109,7 @@ export default function ChatMenuItem({
     <li
       className={`${isInChatroom ? "bordered" : ""}`}
       onClick={handleChatBtnClick}
+      hidden={!display}
     >
       <div className="mt-4 flex items-center">
         <div className={`${otherUserIsOnline ? "online" : "offline"} avatar`}>
@@ -141,7 +131,3 @@ export default function ChatMenuItem({
     </li>
   );
 }
-
-// lastMessageTime={formatTimestampToTime(
-//   privateChatroom.messages[0]?.timestamp || 0
-// )}

@@ -70,6 +70,8 @@ export default function PrivateChat() {
     const channel = pusherClient.subscribe(channelCode);
 
     const messageHandler = (message: Message) => {
+      // console.log("incfoming message", message);
+
       setMessages((prev) => [message, ...prev]);
     };
 

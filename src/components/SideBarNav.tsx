@@ -204,17 +204,25 @@ export default function SideBarNav({
           )}
 
           <div className="flex-1">
-            {activeTab === 0 && (
+            <ChatList
+              privateChatrooms={privateChatrooms}
+              display={activeTab === 0}
+            />
+
+            <TeamList teamChatrooms={teamChatrooms} display={activeTab === 1} />
+
+            <NotificationList
+              refetchChatrooms={refetchChatrooms}
+              display={activeTab === 2}
+            />
+
+            {/* {activeTab === 0 && (
               <ChatList privateChatrooms={privateChatrooms} />
             )}
             {activeTab === 1 && <TeamList teamChatrooms={teamChatrooms} />}
             {activeTab === 2 && (
-              <NotificationList
-                refetchChatrooms={refetchChatrooms}
-                // notifications={notifications}
-                // handleRemoveNotification={handleRemoveNotification}
-              />
-            )}
+              <NotificationList refetchChatrooms={refetchChatrooms} />
+            )} */}
           </div>
           {activeTab !== 2 && (
             <button

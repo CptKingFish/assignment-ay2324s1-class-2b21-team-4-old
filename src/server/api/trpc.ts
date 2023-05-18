@@ -12,6 +12,7 @@ mongoose
 export const createTRPCContext = (_opts: CreateNextContextOptions) => {
   return {
     req: _opts.req,
+    res: _opts.res,
   };
 };
 

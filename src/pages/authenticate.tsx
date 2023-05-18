@@ -8,10 +8,10 @@ const Authenticate = () => {
   const router = useRouter();
   const [activeTab, setActiveTab] = React.useState(0);
   const { user } = useGlobalContext();
-  React.useEffect(() => {
-    if (!user) return;
-    router.push("/chat").catch(console.error);
-  }, [user, router]);
+  // React.useEffect(() => {
+  //   if (!user) return;
+  //   router.push("/chat").catch(console.error);
+  // }, [user, router]);
   const { message, type } = router.query;
 
   const handleTabChange = (index: number) => {
@@ -36,7 +36,7 @@ const Authenticate = () => {
               <div className="tabs">
                 <a
                   className={
-                    "tab tab-bordered" + (activeTab == 0 ? " tab-active" : "")
+                    "tab-bordered tab" + (activeTab == 0 ? " tab-active" : "")
                   }
                   onClick={() => handleTabChange(0)}
                 >
@@ -44,7 +44,7 @@ const Authenticate = () => {
                 </a>
                 <a
                   className={
-                    "tab tab-bordered" + (activeTab == 1 ? " tab-active" : "")
+                    "tab-bordered tab" + (activeTab == 1 ? " tab-active" : "")
                   }
                   onClick={() => handleTabChange(1)}
                 >

@@ -5,6 +5,7 @@ import toast from "react-hot-toast";
 import { api } from "@/utils/api";
 import ProfileChangeUsername from "./ProfileChangeUsername";
 import ProfileChangeEmail from "./ProfileChangeEmail";
+import { ThemeContext } from "./ThemeProvider";
 
 
 export default function Profile() {
@@ -12,13 +13,21 @@ export default function Profile() {
     const [username, setUsername] = React.useState(data?.username || "")
     const [email, setEmail] = React.useState(data?.email || "")
 
-    function refreshUsername(newName:string){
+    const { changeTheme } = React.useContext(ThemeContext);
+
+    const handleThemeChange = () => {
+        // Change the theme value when desired
+        changeTheme('corporate');
+    };
+
+    function refreshUsername(newName: string) {
         setUsername(newName)
     }
 
-    function refreshEmail(newEmail:string){
+    function refreshEmail(newEmail: string) {
         setEmail(newEmail)
     }
+
 
 
 
@@ -36,11 +45,11 @@ export default function Profile() {
             </div>
             <input type="checkbox" id="username" className="modal-toggle" />
             <div className="modal">
-                <ProfileChangeUsername name={data?.username || ""} refresh={refreshUsername}/>
+                <ProfileChangeUsername name={data?.username || ""} refresh={refreshUsername} />
             </div>
             <input type="checkbox" id="email" className="modal-toggle" />
             <div className="modal">
-                <ProfileChangeEmail prevEmail={data?.email || ""} refresh={refreshEmail}/>
+                <ProfileChangeEmail prevEmail={data?.email || ""} refresh={refreshEmail} />
             </div>
             <input id="my-drawer-2" type="checkbox" className="drawer-toggle" />
             <div className="drawer-content flex flex-col items-start justify-start p-5 ">
@@ -72,10 +81,12 @@ export default function Profile() {
                     </div>
                     <div className="mt-2 mb-5 flex flex-wrap w-full justify-between">
                         <div className="font-bold text-xs">EMAIL<div className="font-light text-xl">{email}</div></div>
-                        <label htmlFor = "email" className="btn btn-primary">Edit</label>
+                        <label htmlFor="email" className="btn btn-primary">Edit</label>
                     </div>
                 </div>
-                <div className = "divider"></div>
+                <div className="divider"> </div>
+                <div className="font-bold text-xl mb-5">Password and Authentication</div>
+                <div className="btn btn-primary" onClick = {handleThemeChange}>Change Password</div>
             </div>
         </>
     );

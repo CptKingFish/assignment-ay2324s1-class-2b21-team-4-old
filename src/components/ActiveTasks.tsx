@@ -1,10 +1,11 @@
 import React from "react";
 import TaskCard from "./TaskCard";
 import IconButton from "./IconButton";
+import axios from "axios";
 import CustomModal from "./Modal";
 import { type IUser } from "@/models/User";
 import { type IScrum } from "@/models/Scrum";
-import { type Document } from "mongoose";
+import { set, type Document } from "mongoose";
 import { type ITask } from "@/models/Task";
 import { TagPicker } from "rsuite";
 import { api } from "@/utils/api";
@@ -14,6 +15,8 @@ import {
   Droppable,
   type OnDragEndResponder,
 } from "react-beautiful-dnd";
+import { pusherClientConstructor } from "@/utils/pusherConfig";
+import { useGlobalContext } from "@/context";
 
 export const PROGRESS = {
   Todo: "To Do",
@@ -50,6 +53,12 @@ const Tasks = ({
     users: [] as string[],
   });
   const utils = api.useContext();
+  const { user } = useGlobalContext();
+  const [movementInfo, setMovementInfo] = React.useState({
+    task_id: "",
+    name: "",
+    avatar: "",
+  });
   const { mutate: rearrangeTasks } = api.scrum.rearrangeTasks.useMutation();
 
   const [createTaskModalOpen, setCreateTaskModalOpen] = React.useState(false);
@@ -76,6 +85,7 @@ const Tasks = ({
       return;
     const task = scrum?.tasks.find((task) => task._id === draggableId);
     if (!task) return;
+    if (!scrum) return;
     const source_status = source.droppableId as keyof typeof PROGRESS;
     const destination_status = destination.droppableId as keyof typeof PROGRESS;
     const destination_index = destination.index;
@@ -94,7 +104,92 @@ const Tasks = ({
       scrum_id: scrum?._id,
       task_id: task._id,
     });
+    axios
+      .post("/api/pusher/scrum/rearrange", {
+        channel: `scrum-${scrum._id}`,
+        user_id: user?._id,
+        source_status,
+        source_index: source.index,
+        destination_status,
+        destination_index,
+        task_id: task._id,
+        name: user?.username,
+        avatar: user?.avatar,
+      })
+      .catch(console.error);
   };
+
+  React.useEffect(() => {
+    if (!user) return;
+    if (!scrum) return;
+    const pusher = pusherClientConstructor(user._id);
+    const channel = pusher.subscribe(`scrum-${scrum._id}`);
+    channel.bind("pusher:subscription_succeeded", () => {
+      console.log("subscription succeeded to scrum channel " + scrum._id);
+    });
+    channel.bind(
+      "rearrange",
+      (data: {
+        source_status: keyof typeof PROGRESS;
+        destination_status: keyof typeof PROGRESS;
+        destination_index: number;
+        source_index: number;
+        task_id: string;
+        user_id: string;
+        name: string;
+        avatar: string;
+      }) => {
+        const {
+          source_status,
+          destination_status,
+          source_index,
+          destination_index,
+          task_id,
+          name,
+          avatar,
+        } = data;
+        if (data.user_id === user._id) return;
+        const task = scrum?.tasks.find((task) => task._id === task_id);
+        if (!task) return;
+        // first delete the task from the source
+        aggregatedTasks.get(source_status)?.splice(source_index, 1);
+        aggregatedTasks
+          .get(destination_status)
+          ?.splice(destination_index, 0, task);
+        setMovementInfo({
+          task_id: task._id,
+          name,
+          avatar,
+        });
+        setTimeout(() => {
+          setMovementInfo({
+            task_id: "",
+            name: "",
+            avatar: "",
+          });
+        }, 2000);
+        // then add the task to the destination
+      }
+    );
+    // channel.bind("task-updated", (data: ITask) => {
+    //   console.log("task updated");
+    //   const task = aggregatedTasks
+    //     .get(data.status)
+    //     ?.find((task) => task._id === data._id);
+    //   if (!task) return;
+    //   Object.assign(task, data);
+    // });
+    // channel.bind("task-deleted", (data: ITask) => {
+    //   console.log("task deleted");
+    //   const task = aggregatedTasks
+    //     .get(data.status)
+    //     ?.find((task) => task._id === data._id);
+    //   if (!task) return;
+    //   aggregatedTasks
+    //     .get(data.status)
+    //     ?.splice(aggregatedTasks.get(data.status)?.indexOf(task), 1);
+    // });
+  }, [user, scrum, aggregatedTasks]);
 
   return (
     <>
@@ -138,6 +233,9 @@ const Tasks = ({
                       {aggregatedTasks.get(status)?.map((task, index) => {
                         return (
                           <TaskCard
+                            isDragging={movementInfo.task_id === task._id}
+                            showMovement={movementInfo.task_id === task._id}
+                            movementInfo={movementInfo}
                             draggable={true}
                             aggregatedTasks={aggregatedTasks}
                             index={index}

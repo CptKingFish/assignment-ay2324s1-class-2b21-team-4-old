@@ -25,10 +25,10 @@ function Login() {
         onSuccess: (data) => {
           console.log(data);
           localStorage.setItem("token", data.token);
-          setCookie("token", data.token, {
-            // expire in 1 day
-            expires: new Date(Date.now() + 86400),
-          });
+          // setCookie("token", data.token, {
+          //   // expire in 1 day
+          //   expires: new Date(Date.now() + 86400),
+          // });
           router.push("/chat").catch(console.error);
           window.location.href = "/chat";
           toast.success(data.message);

@@ -27,7 +27,7 @@ export default function ChatMenuItem({
 }: ChatMenuItemProps) {
   console.log("participants", participants);
 
-  const { user, pusherClient } = useGlobalContext();
+  const { user, pusherClient, watchlistEvent } = useGlobalContext();
   // const [name, setName] = React.useState("");
   const [otherUser, setOtherUser] = React.useState(participants[0]);
   const [latestMessage, setLatestMessage] = React.useState<Message | undefined>(
@@ -51,21 +51,29 @@ export default function ChatMenuItem({
       setLatestMessage(message);
     };
 
-    const watchlistEventHandler = (event: WatchListEventProps) => {
-      console.log("otherUser", otherUser);
+    // const watchlistEventHandler = (event: WatchListEventProps) => {
+    //   console.log("otherUser", otherUser);
 
-      console.log("event", event);
+    //   console.log("event", event);
+    // };
+
+    if (watchlistEvent) {
       if (!otherUser) return;
-      if (event.name === "online" && event.user_ids.includes(otherUser._id)) {
+      if (
+        watchlistEvent.name === "online" &&
+        watchlistEvent.user_ids.includes(otherUser._id.toString())
+      ) {
         console.log("other user is online");
-
         setOtherUserIsOnline(true);
       }
-      if (event.name === "offline" && event.user_ids.includes(otherUser._id)) {
+      if (
+        watchlistEvent.name === "offline" &&
+        watchlistEvent.user_ids.includes(otherUser._id.toString())
+      ) {
         console.log("other user is offline");
         setOtherUserIsOnline(false);
       }
-    };
+    }
 
     // const memberAddedHandler = (data: PusherMemberStatusProps) => {
     //   if (data.id === user?._id) return;
@@ -78,8 +86,8 @@ export default function ChatMenuItem({
     // };
 
     channel.bind("incoming-message", messageHandler);
-    pusherClient.user.watchlist.bind("online", watchlistEventHandler);
-    pusherClient.user.watchlist.bind("offline", watchlistEventHandler);
+    // pusherClient.user.watchlist.bind("online", watchlistEventHandler);
+    // pusherClient.user.watchlist.bind("offline", watchlistEventHandler);
     // channel.bind("pusher:member_added", memberAddedHandler);
     // channel.bind("pusher:member_removed", memberRemovedHandler);
 
@@ -87,7 +95,7 @@ export default function ChatMenuItem({
       pusherClient.unsubscribe(channelCode);
       pusherClient.unbind("incoming-message", messageHandler);
     };
-  }, [user, channelCode, pusherClient]);
+  }, [user, channelCode, pusherClient, otherUser, watchlistEvent]);
 
   React.useEffect(() => {
     if (!user || !participants) return;

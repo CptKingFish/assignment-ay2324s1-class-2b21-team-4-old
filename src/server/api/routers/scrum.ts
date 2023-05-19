@@ -241,14 +241,29 @@ export const scrumRouter = createTRPCRouter({
         });
       }
       // tasks is an array of tasks
+      if (tasks.length === 1) {
+        await Task.updateOne(
+          {
+            _id: input.task_id,
+          },
+          {
+            $set: {
+              status: input.destination_status,
+            },
+          }
+        );
+        return;
+      }
       for (let i = 0; i < tasks.length; i++) {
         if (tasks[i]?._id.toString() === input.task_id) {
           tasks.splice(i, 1);
         }
       }
       let count_encountered_tasks = 0;
+      console.log(input.destination_index, input.destination_status);
       for (let i = 0; i < tasks.length; i++) {
         if (count_encountered_tasks === input.destination_index) {
+          console.log("i like cats", task, i);
           tasks.splice(i, 0, task as unknown as ITask);
           break;
         }

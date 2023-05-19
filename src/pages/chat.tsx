@@ -12,20 +12,26 @@ const Chat = () => {
     setIsOpen(!isOpen);
   }
   return (
-    <div className="drawer drawer-end drawer-mobile">
+    <div className="drawer drawer-mobile drawer-end">
       <input id="my-drawer-4" type="checkbox" className="drawer-toggle" />
-      <div className="drawer-content flex flex-no-wrap">
+      <div className="flex-no-wrap drawer-content flex">
         <Box />
-        <button className={` h-screen items-center justify-center bg-base-200 text-white text-4xl px-2 ${isOpen ? 'hidden' : ''}`} onClick={handleDrawerToggle}>
+        <button
+          className={` h-screen items-center justify-center bg-base-200 px-2 text-4xl text-white ${
+            isOpen ? "hidden" : ""
+          }`}
+          onClick={handleDrawerToggle}
+        >
           {"<"}
         </button>
-
       </div>
 
-      <UserSideBar isOpen={isOpen} handleDrawerToggle={handleDrawerToggle} participants = {[]}/>
+      <UserSideBar
+        isOpen={isOpen}
+        handleDrawerToggle={handleDrawerToggle}
+        participants={[]}
+      />
     </div>
-
-
   );
 };
 

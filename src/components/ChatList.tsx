@@ -9,6 +9,7 @@ export default function ChatList({ chatInfoArr }: ChatListProps) {
   if (chatInfoArr.length === 0) return null;
   return (
     <>
+    <div>
       {chatInfoArr.map((chatInfo) => (      
           <ChatMenuItem
             key={chatInfo.id}
@@ -19,6 +20,7 @@ export default function ChatList({ chatInfoArr }: ChatListProps) {
             lastMessageTime={chatInfo.lastMessageTime}
           />    
       ))}
+      </div>
     </>
   );
 }

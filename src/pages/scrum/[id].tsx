@@ -2,7 +2,6 @@ import React from "react";
 import { useRouter } from "next/router";
 import ActiveTasks from "@/components/ActiveTasks";
 import Backlog from "@/components/Backlog";
-import AllTasks from "@/components/AllTasks";
 import ProjectFiles from "@/components/ProjectFiles";
 import { api } from "@/utils/api";
 import useLogger from "@/hooks/useChangeLog";
@@ -58,19 +57,12 @@ const Scrum = () => {
             onClick={() => setActiveTab(2)}
             className={`tab-lifted tab ${activeTab === 2 ? "tab-active" : ""}`}
           >
-            All Tasks
-          </a>
-          <a
-            onClick={() => setActiveTab(3)}
-            className={`tab-lifted tab ${activeTab === 3 ? "tab-active" : ""}`}
-          >
             Project Files
           </a>
         </div>
         {activeTab === 0 && <ActiveTasks users={users || []} scrum={scrum} />}
         {activeTab === 1 && <Backlog scrum={scrum} users={users || []} />}
-        {activeTab === 2 && <AllTasks />}
-        {activeTab === 3 && <ProjectFiles users={users || []} />}
+        {activeTab === 2 && <ProjectFiles users={users || []} />}
       </div>
     </div>
   );

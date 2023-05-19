@@ -9,6 +9,9 @@ import { api } from "@/utils/api";
 import "@/styles/globals.css";
 import { setCookie, deleteCookie } from "cookies-next";
 import SideBarNav from "@/components/SideBarNav";
+import { ThemeProvider } from "@/components/ThemeProvider";
+
+
 
 const WrappedApp = ({ children }: { children: React.ReactNode }) => {
   React.useEffect(() => {
@@ -57,12 +60,14 @@ const MyApp: AppType = ({ Component, pageProps }) => {
   return (
     <WrappedApp>
       <AuthProvider>
-        <div data-theme="corporate">
-          <SidebarWrapper pathname={router.pathname}>
-            <Toaster />
-            <Component {...pageProps} />
-          </SidebarWrapper>
-        </div>
+        <ThemeProvider>
+          <div>
+            <SidebarWrapper pathname={router.pathname}>
+              <Toaster />
+              <Component {...pageProps} />
+            </SidebarWrapper>
+          </div>
+        </ThemeProvider>
       </AuthProvider>
     </WrappedApp>
   );

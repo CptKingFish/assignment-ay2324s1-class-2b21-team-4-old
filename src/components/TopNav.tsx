@@ -1,3 +1,5 @@
+import React from "react";
+
 interface TopNavProps {
   chatroom_name: string;
   openSidebarDetails: () => void;
@@ -20,7 +22,14 @@ export default function TopNav({
           <span className="ms-5 text-xl normal-case">{chatroom_name}</span>
         </div>
       </div>
-
+      <div className="flex-1">
+        <span
+          className="ms-5 cursor-pointer text-xl normal-case"
+          onClick={drawer}
+        >
+          Test Team
+        </span>
+      </div>
       <div className="flex-none gap-2">
         <div className="form-control"></div>
         <div className="dropdown-end dropdown">

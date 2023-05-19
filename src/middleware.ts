@@ -2,13 +2,12 @@ import { NextResponse } from "next/server";
 import type { NextRequest } from "next/server";
 // import jwt from "jsonwebtoken";
 import { env } from "./env.mjs";
-import { type IUser } from "./models/User.js";
 
 export async function middleware(request: NextRequest) {
   const authRoutes = ["/authenticate"];
+  let verified = false;
   // check jwt validity
   let token = request.cookies.get("token")?.value;
-  let user: undefined | IUser;
   if (!token && !authRoutes.includes(request.nextUrl.pathname)) {
     return NextResponse.redirect(new URL("/authenticate", request.url));
   }
@@ -21,27 +20,31 @@ export async function middleware(request: NextRequest) {
       },
       body: JSON.stringify({ token }),
     });
-    const data = (await response.json()) as { user?: IUser; message: string };
-    console.log(request.nextUrl.pathname);
-    if (!data.user && authRoutes.includes(request.nextUrl.pathname)) {
+    const data = (await response.json()) as { verified: boolean };
+    console.log(request.nextUrl.pathname, data);
+    if (!data.verified && authRoutes.includes(request.nextUrl.pathname)) {
+      console.log("ee4");
       return NextResponse.next();
     }
-    if (!data.user) {
-      return NextResponse.redirect(new URL("/authenticate", request.url));
-    }
-    user = data.user;
+    // if (!data.verified) {
+    //   return NextResponse.redirect(new URL("/authenticate", request.url));
+    // }
+    verified = data.verified;
   }
-  if (user && authRoutes.includes(request.nextUrl.pathname)) {
-    console.log("redirecting to /chat");
+  if (verified && authRoutes.includes(request.nextUrl.pathname)) {
+    console.log("eeredirecting to /chat");
     return NextResponse.redirect(new URL("/chat", request.url));
   }
-  if (!user && authRoutes.includes(request.nextUrl.pathname)) {
+  if (!verified && authRoutes.includes(request.nextUrl.pathname)) {
+    console.log("ee1");
     return NextResponse.next();
   }
-  if (user && !authRoutes.includes(request.nextUrl.pathname)) {
+  if (verified && !authRoutes.includes(request.nextUrl.pathname)) {
+    console.log("ee2");
     return NextResponse.next();
   }
-  if (!user && !authRoutes.includes(request.nextUrl.pathname)) {
+  if (!verified && !authRoutes.includes(request.nextUrl.pathname)) {
+    console.log("ee3");
     return NextResponse.redirect(new URL("/authenticate", request.url));
   }
 }

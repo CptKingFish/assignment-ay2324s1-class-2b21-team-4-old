@@ -2,7 +2,7 @@ import { z } from "zod";
 import { createTRPCRouter, publicProcedure } from "@/server/api/trpc";
 import { TRPCError } from "@trpc/server";
 import Scrum from "@/models/Scrum";
-import Task, { ITask } from "@/models/Task";
+import Task, { type ITask } from "@/models/Task";
 import File from "@/models/File";
 import User, { type IUser } from "@/models/User";
 import Snippet from "@/models/Snippet";
@@ -221,6 +221,7 @@ export const scrumRouter = createTRPCRouter({
       })
     )
     .mutation(async ({ input }) => {
+      // console.log(input);
       const scrum = await Scrum.findById(input.scrum_id).populate({
         path: "tasks",
         model: Task,
@@ -240,22 +241,37 @@ export const scrumRouter = createTRPCRouter({
         });
       }
       // tasks is an array of tasks
+      if (tasks.length === 1) {
+        await Task.updateOne(
+          {
+            _id: input.task_id,
+          },
+          {
+            $set: {
+              status: input.destination_status,
+            },
+          }
+        );
+        return;
+      }
       for (let i = 0; i < tasks.length; i++) {
         if (tasks[i]?._id.toString() === input.task_id) {
           tasks.splice(i, 1);
         }
       }
       let count_encountered_tasks = 0;
+      console.log(input.destination_index, input.destination_status);
       for (let i = 0; i < tasks.length; i++) {
+        if (count_encountered_tasks === input.destination_index) {
+          console.log("i like cats", task, i);
+          tasks.splice(i, 0, task as unknown as ITask);
+          break;
+        }
         if (
           tasks[i]?.status === input.destination_status &&
           !tasks[i]?.backlog
         ) {
           count_encountered_tasks++;
-        }
-        if (count_encountered_tasks === input.destination_index) {
-          tasks.splice(input.destination_index, 0, task as unknown as ITask);
-          break;
         }
       }
       await Promise.all([

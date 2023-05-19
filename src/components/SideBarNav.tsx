@@ -2,7 +2,7 @@ import ChatList from "./ChatList";
 import ChatMenuItem from "./ChatMenuItem";
 import React from "react";
 import TeamList from "./TeamList";
-import Profile from "./Profile";
+import Profile from "./Profile/Account";
 import Link from "next/link";
 import { api } from "@/utils/api";
 import { useGlobalContext } from "@/context";

@@ -1,0 +1,7 @@
+table {
+    margin: 0 auto;
+}
+
+tr.error {
+    background-color: rgba(255, 0, 0, 0.5);
+}

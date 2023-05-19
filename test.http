@@ -1,0 +1,22 @@
+### Init Table
+
+POST http://localhost:3000/modules/table HTTP/1.1
+
+### Add Module
+
+POST http://localhost:3000/modules HTTP/1.1
+Content-Type: application/json
+
+{
+    "code": "ST0507",
+    "name": "ADES",
+    "credit": 6
+}
+
+### Get Modules
+
+GET http://localhost:3000/modules/st0507 HTTP/1.1
+
+### Get Modules Bulk
+
+GET http://localhost:3000/modules/bulk?codes=st0507,st0506,ades HTTP/1.1

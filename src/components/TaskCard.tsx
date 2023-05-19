@@ -2,6 +2,7 @@ import React from "react";
 import { Menu } from "@headlessui/react";
 import { type IUser } from "@/models/User";
 import TrashIcon from "@heroicons/react/20/solid/TrashIcon";
+import { motion } from "framer-motion";
 import ArchiveBoxIcon from "@heroicons/react/20/solid/ArchiveBoxIcon";
 import IconButton from "./IconButton";
 import "rsuite/dist/rsuite.css";
@@ -22,15 +23,24 @@ type Props = {
   users: IUser[];
   backlog?: boolean;
   index: number;
+  showMovement?: boolean;
+  movementInfo?: {
+    avatar?: string;
+    name: string;
+  };
+  isDragging: boolean;
 };
 
 const TaskCard = ({
+  movementInfo,
+  showMovement,
   aggregatedTasks,
   task,
   users,
   backlog,
   index,
   draggable,
+  isDragging,
 }: Props) => {
   const utils = api.useContext();
   const { mutate: deleteTask } = api.scrum.deleteTask.useMutation();
@@ -47,166 +57,192 @@ const TaskCard = ({
         isDragDisabled={!draggable}
       >
         {(provided) => (
-          <div
-            {...provided.draggableProps}
-            {...provided.dragHandleProps}
-            ref={provided.innerRef}
-            key={task._id}
-            onClick={() => {
-              setModalOpen(true);
-            }}
-            className={clsx(
-              "flex cursor-pointer flex-col justify-center gap-2 rounded-xl bg-white px-3 py-2 shadow-sm outline outline-1 outline-[#dcdfe4] hover:bg-[#f7f8fa]"
-            )}
-          >
-            <div className="flex flex-row items-center gap-2">
-              <div className="flex w-full flex-col">
-                <div className="flex w-full items-center justify-between">
-                  <div className="text-md font-semibold">{task.name}</div>
-                  <Menu as="div" className="relative inline-block text-left">
-                    <Menu.Button
-                      onClick={(e) => e.stopPropagation()}
-                      className="ext-sm inline-flex w-full justify-center rounded-md font-medium text-white"
-                    >
-                      <IconButton>
-                        <svg
-                          xmlns="http://www.w3.org/2000/svg"
-                          fill="none"
-                          viewBox="0 0 24 24"
-                          strokeWidth={1.5}
-                          stroke="currentColor"
-                          className="h-6 w-6 text-black"
-                        >
-                          <path
-                            strokeLinecap="round"
-                            strokeLinejoin="round"
-                            d="M6.75 12a.75.75 0 11-1.5 0 .75.75 0 011.5 0zM12.75 12a.75.75 0 11-1.5 0 .75.75 0 011.5 0zM18.75 12a.75.75 0 11-1.5 0 .75.75 0 011.5 0z"
-                          />
-                        </svg>
-                      </IconButton>
-                    </Menu.Button>
-                    <Menu.Items className="absolute right-0 mt-2 origin-top-left divide-y divide-gray-100 rounded-md bg-white p-1 shadow-lg ring-1 ring-black ring-opacity-5 focus:outline-none">
-                      <Menu.Item>
-                        {({ active }) => (
-                          <button
-                            onClick={(e) => {
-                              e.stopPropagation();
-                              const confirm = window.confirm(
-                                "Are you sure you want to delete this task?"
-                              );
-                              if (!confirm) return;
-                              toast.success("Task deleted");
-                              deleteTask(
-                                { task_id: task._id },
-                                {
-                                  onSuccess: () => {
-                                    utils.scrum.getScrumByChatId
-                                      .invalidate()
-                                      .catch(console.error);
-                                  },
-                                }
-                              );
-                            }}
-                            className={`${
-                              active
-                                ? "bg-gray-200 text-white"
-                                : "text-gray-900"
-                            } text-md group flex w-full items-center space-x-1 rounded-md px-2 py-2`}
-                          >
-                            <TrashIcon className="h-6 w-6 text-red-600" />
-                            <span className="font-semibold text-red-600">
-                              Delete
-                            </span>
-                          </button>
-                        )}
-                      </Menu.Item>
-                      <Menu.Item>
-                        {({ active }) => (
-                          <button
-                            onClick={(e) => {
-                              e.stopPropagation();
-                              task.backlog = true;
-                              const curr_tasks = aggregatedTasks?.get(
-                                task.status
-                              ) as ITask[];
-                              if (!curr_tasks) {
-                                aggregatedTasks?.set(task.status, [task]);
-                              } else {
-                                for (const task of curr_tasks) {
-                                  if (task._id === task._id) {
-                                    task.backlog = true;
-                                  }
-                                }
-                                aggregatedTasks?.set(task.status, curr_tasks);
-                              }
-
-                              changeBacklog(
-                                {
-                                  backlog: backlog ? false : true,
-                                  task_id: task._id,
-                                },
-                                {
-                                  onSuccess: () => {
-                                    task.backlog = backlog ? false : true;
-                                    utils.scrum.getScrumByChatId
-                                      .invalidate()
-                                      .catch(console.error);
-                                  },
-                                }
-                              );
-                            }}
-                            className={`${
-                              active
-                                ? "bg-gray-200 text-white"
-                                : "text-gray-900"
-                            } text-md group flex w-full items-center space-x-1 rounded-md px-2 py-2`}
-                          >
-                            <ArchiveBoxIcon className="h-6 w-6 text-black" />
-                            <span className="whitespace-nowrap font-semibold text-black">
-                              {backlog ? "Move to sprint" : "Move to backlog"}
-                            </span>
-                          </button>
-                        )}
-                      </Menu.Item>
-                    </Menu.Items>
-                  </Menu>
-                </div>
-                <p className="text-sm text-gray-400">{task.description}</p>
-              </div>
-            </div>
-
-            <div className="avatar-group flex flex-[3] -space-x-2 ">
-              {task.users.map((user) => {
-                if (!user) {
-                  return null;
-                }
-                if (!user.avatar) {
-                  return (
-                    <div className="placeholder avatar" key={user._id}>
-                      <div
-                        className="justiy-center w-6 items-center rounded-full bg-neutral-focus text-neutral-content"
-                        style={{ lineHeight: "1.5rem" }}
+          <motion.div layoutId={task._id}>
+            <div
+              {...provided.draggableProps}
+              {...provided.dragHandleProps}
+              ref={provided.innerRef}
+              key={task._id}
+              onClick={() => {
+                setModalOpen(true);
+              }}
+              className={clsx(
+                "relative flex cursor-pointer flex-col justify-center gap-2 rounded-xl bg-white px-3 py-2 shadow-sm outline outline-1 outline-[#dcdfe4] hover:bg-[#f7f8fa]"
+              )}
+            >
+              <div className="flex flex-row items-center gap-2">
+                <div className="flex w-full flex-col">
+                  <div className="flex w-full items-center justify-between">
+                    <div className="text-md font-semibold">{task.name}</div>
+                    <Menu as="div" className="relative inline-block text-left">
+                      <Menu.Button
+                        onClick={(e) => e.stopPropagation()}
+                        as="div"
+                        className="inline-flex w-full justify-center rounded-md text-sm font-medium text-white"
                       >
-                        <span className="m-0 p-0 text-xl">
-                          {user.username[0]}
-                        </span>
+                        <IconButton>
+                          <svg
+                            xmlns="http://www.w3.org/2000/svg"
+                            fill="none"
+                            viewBox="0 0 24 24"
+                            strokeWidth={1.5}
+                            stroke="currentColor"
+                            className="h-6 w-6 text-black"
+                          >
+                            <path
+                              strokeLinecap="round"
+                              strokeLinejoin="round"
+                              d="M6.75 12a.75.75 0 11-1.5 0 .75.75 0 011.5 0zM12.75 12a.75.75 0 11-1.5 0 .75.75 0 011.5 0zM18.75 12a.75.75 0 11-1.5 0 .75.75 0 011.5 0z"
+                            />
+                          </svg>
+                        </IconButton>
+                      </Menu.Button>
+                      <Menu.Items className="absolute right-0 mt-2 origin-top-left divide-y divide-gray-100 rounded-md bg-white p-1 shadow-lg ring-1 ring-black ring-opacity-5 focus:outline-none">
+                        <Menu.Item>
+                          {({ active }) => (
+                            <button
+                              onClick={(e) => {
+                                e.stopPropagation();
+                                const confirm = window.confirm(
+                                  "Are you sure you want to delete this task?"
+                                );
+                                if (!confirm) return;
+                                toast.success("Task deleted");
+                                deleteTask(
+                                  { task_id: task._id },
+                                  {
+                                    onSuccess: () => {
+                                      utils.scrum.getScrumByChatId
+                                        .invalidate()
+                                        .catch(console.error);
+                                    },
+                                  }
+                                );
+                              }}
+                              className={`${
+                                active
+                                  ? "bg-gray-200 text-white"
+                                  : "text-gray-900"
+                              } text-md group flex w-full items-center space-x-1 rounded-md px-2 py-2`}
+                            >
+                              <TrashIcon className="h-6 w-6 text-red-600" />
+                              <span className="font-semibold text-red-600">
+                                Delete
+                              </span>
+                            </button>
+                          )}
+                        </Menu.Item>
+                        <Menu.Item>
+                          {({ active }) => (
+                            <button
+                              onClick={(e) => {
+                                e.stopPropagation();
+                                task.backlog = true;
+                                const curr_tasks = aggregatedTasks?.get(
+                                  task.status
+                                ) as ITask[];
+                                if (!curr_tasks) {
+                                  aggregatedTasks?.set(task.status, [task]);
+                                } else {
+                                  for (const task of curr_tasks) {
+                                    if (task._id === task._id) {
+                                      task.backlog = true;
+                                    }
+                                  }
+                                  aggregatedTasks?.set(task.status, curr_tasks);
+                                }
+
+                                changeBacklog(
+                                  {
+                                    backlog: backlog ? false : true,
+                                    task_id: task._id,
+                                  },
+                                  {
+                                    onSuccess: () => {
+                                      task.backlog = backlog ? false : true;
+                                      utils.scrum.getScrumByChatId
+                                        .invalidate()
+                                        .catch(console.error);
+                                    },
+                                  }
+                                );
+                              }}
+                              className={`${
+                                active
+                                  ? "bg-gray-200 text-white"
+                                  : "text-gray-900"
+                              } text-md group flex w-full items-center space-x-1 rounded-md px-2 py-2`}
+                            >
+                              <ArchiveBoxIcon className="h-6 w-6 text-black" />
+                              <span className="whitespace-nowrap font-semibold text-black">
+                                {backlog ? "Move to sprint" : "Move to backlog"}
+                              </span>
+                            </button>
+                          )}
+                        </Menu.Item>
+                      </Menu.Items>
+                    </Menu>
+                  </div>
+                  <p className="text-sm text-gray-400">{task.description}</p>
+                </div>
+              </div>
+
+              <div className="avatar-group flex flex-[3] -space-x-2 ">
+                {task.users.map((user) => {
+                  if (!user) {
+                    return null;
+                  }
+                  if (!user.avatar) {
+                    return (
+                      <div className="placeholder avatar" key={user._id}>
+                        <div
+                          className="justiy-center w-6 items-center rounded-full bg-neutral-focus text-neutral-content"
+                          style={{ lineHeight: "1.5rem" }}
+                        >
+                          <span className="m-0 p-0 text-xl">
+                            {user.username[0]}
+                          </span>
+                        </div>
+                      </div>
+                    );
+                  }
+                  return (
+                    <div
+                      key={user._id}
+                      className="avatar border-[1px] border-[#dcdfe4]"
+                    >
+                      <div className="w-6">
+                        <img src={user?.avatar} alt="profile img" />
                       </div>
                     </div>
                   );
-                }
-                return (
-                  <div
-                    key={user._id}
-                    className="avatar border-[1px] border-[#dcdfe4]"
-                  >
-                    <div className="w-6">
-                      <img src={user?.avatar} alt="profile img" />
+                })}
+              </div>
+
+              {showMovement && (
+                <div className="absolute -left-2 -top-2">
+                  {movementInfo?.avatar ? (
+                    <div className="avatar border-[1px] border-[#dcdfe4]">
+                      <div className="w-6">
+                        <img src={movementInfo?.avatar} alt="profile img" />
+                      </div>
                     </div>
-                  </div>
-                );
-              })}
+                  ) : (
+                    <div className="placeholder avatar">
+                      <div
+                        className="justiy-center w-6 items-center rounded-full border-2 border-rose-400 bg-neutral-focus text-neutral-content"
+                        style={{ lineHeight: "1.5rem" }}
+                      >
+                        <span className="m-0 p-0 text-xl">
+                          {movementInfo?.name[0]}
+                        </span>
+                      </div>
+                    </div>
+                  )}
+                </div>
+              )}
             </div>
-          </div>
+          </motion.div>
         )}
       </Draggable>
       <CustomModal modalOpen={modalOpen} setModalOpen={setModalOpen}>

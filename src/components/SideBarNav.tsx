@@ -2,7 +2,7 @@ import ChatList from "./ChatList";
 import ChatMenuItem from "./ChatMenuItem";
 import React from "react";
 import TeamList from "./TeamList";
-import Profile from "./Profile";
+import Profile from "./Profile/Account";
 import Link from "next/link";
 import { api } from "@/utils/api";
 import { useGlobalContext } from "@/context";
@@ -111,7 +111,7 @@ export default function SideBarNav({
     return chatrooms.filter((chatroom: IChatroom) => chatroom.type === "team");
   }, [chatrooms]);
 
-  console.log("teamChatrooms", teamChatrooms);
+  // console.log("teamChatrooms", teamChatrooms);
 
   return (
     <div className="drawer-mobile drawer -z-10">
@@ -142,7 +142,7 @@ export default function SideBarNav({
           <div className="tabs mb-4 w-full">
             <a
               className={
-                "tab tab-bordered w-1/3 " +
+                "tab-bordered tab w-1/3 " +
                 (activeTab === 0 ? " tab-active" : "")
               }
               onClick={() => handleTabChange(0)}
@@ -164,7 +164,7 @@ export default function SideBarNav({
             </a>
             <a
               className={
-                "tab tab-bordered w-1/3 " +
+                "tab-bordered tab w-1/3 " +
                 (activeTab === 1 ? " tab-active" : "")
               }
               onClick={() => handleTabChange(1)}
@@ -186,7 +186,7 @@ export default function SideBarNav({
             </a>
             <a
               className={
-                "tab tab-bordered w-1/3 " +
+                "tab-bordered tab w-1/3 " +
                 (activeTab === 2 ? " tab-active" : "")
               }
               onClick={() => handleTabChange(2)}
@@ -217,7 +217,7 @@ export default function SideBarNav({
             {activeTab === 1 && <TeamList teamChatrooms={teamChatrooms} />}
             {activeTab === 2 && null}
           </div>
-        
+
           <button className="btn-outline glass btn-circle btn absolute bottom-10 right-10">
             <svg
               xmlns="http://www.w3.org/2000/svg"

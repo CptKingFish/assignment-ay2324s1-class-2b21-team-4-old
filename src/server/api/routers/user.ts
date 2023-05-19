@@ -10,7 +10,7 @@ import User from "@/models/User";
 import jwt from "jsonwebtoken";
 import { TRPCError } from "@trpc/server";
 import { env } from "@/env.mjs";
-import ProfileChangeEmail from "@/components/ProfileChangeEmail";
+import { redis } from "@/utils/redis";
 
 export const userRouter = createTRPCRouter({
   getMe: privateProcedure.query(({ ctx }) => {
@@ -69,7 +69,7 @@ export const userRouter = createTRPCRouter({
         password: z.string().min(8),
       })
     )
-    .mutation(async ({ input }) => {
+    .mutation(async ({ input, ctx }) => {
       const user = await User.findOne({
         email: input.email.toLowerCase(),
       });
@@ -92,6 +92,12 @@ export const userRouter = createTRPCRouter({
       const token = jwt.sign({ user_id: user._id }, env.JWT_SECRET, {
         expiresIn: "1d",
       });
+      ctx.res.setHeader(
+        "Set-Cookie",
+        `token=${token};expires=${new Date(
+          Date.now() + 1000 * 60 * 60 * 24
+        ).toUTCString()};sameSite=Strict;path=/;secure`
+      );
       return {
         token,
         message: "Logged in successfully!",
@@ -122,7 +128,6 @@ export const userRouter = createTRPCRouter({
       })
     )
     .mutation(async ({ input, ctx }) => {
-      
       const response = await User.findByIdAndUpdate(
         ctx.user._id,
         {
@@ -139,10 +144,13 @@ export const userRouter = createTRPCRouter({
       })
     )
     .mutation(async ({ input, ctx }) => {
-      if (!input.email.toLowerCase()
-      .match(
-        /^(([^<>()[\]\\.,;:\s@"]+(\.[^<>()[\]\\.,;:\s@"]+)*)|.(".+"))@((\[[0-9]{1,3}\.[0-9]{1,3}\.[0-9]{1,3}\.[0-9]{1,3}\])|(([a-zA-Z\-0-9]+\.)+[a-zA-Z]{2,}))$/
-      )){
+      if (
+        !input.email
+          .toLowerCase()
+          .match(
+            /^(([^<>()[\]\\.,;:\s@"]+(\.[^<>()[\]\\.,;:\s@"]+)*)|.(".+"))@((\[[0-9]{1,3}\.[0-9]{1,3}\.[0-9]{1,3}\.[0-9]{1,3}\])|(([a-zA-Z\-0-9]+\.)+[a-zA-Z]{2,}))$/
+          )
+      ) {
         throw new TRPCError({
           code: "BAD_REQUEST",
           message: "Invalid email!",
@@ -200,4 +208,44 @@ export const userRouter = createTRPCRouter({
       );
       return updatedUser;
     }),
+  // changeProfilePicture: privateProcedure
+  //   .input(z.object({ profilePic: z.string().url() }))
+  //   .mutation(async ({ input, ctx }) => {
+  //     const response = await User.findById(ctx.user._id);
+  //     if (!response) {
+  //       throw new TRPCError({
+  //         code: "BAD_REQUEST",
+  //         message: "User not found",
+  //       });
+  //     }
+
+  //     // Upload the new profile picture to Cloudinary
+  //     const uploadResponse = await api.image.uploadImage(input.profilePic);
+
+  //     // Delete the old profile picture from Cloudinary
+  //     if (response.profilePic) {
+  //       await api.image.deleteImage(response.profilePic);
+  //     }
+
+  //     // Update the profile picture URL in the user document
+  //     const updatedUser = await User.findByIdAndUpdate(
+  //       ctx.user._id,
+  //       {
+  //         profilePic: uploadResponse.url,
+  //       },
+  //       { new: true }
+  //     );
+
+  //     return updatedUser;
+  //   });
+
+  // seedRedis: publicProcedure.mutation(async () => {
+  //   // add all user_ids to redis
+  //   console.log("herre");
+  //   const users = await User.find({});
+  //   for (const user of users) {
+  //     await redis.sadd("users", user._id);
+  //   }
+  //   console.log("yayyy");
+  // }),
 });

@@ -46,7 +46,7 @@ export const chatRouter = createTRPCRouter({
     .query(async ({ ctx }) => {
       // const { user_id } = input;
       const { user } = ctx;
-      console.log(user._id.toString());
+      // console.log(user._id.toString());
       const chatrooms = await Chatroom.find({
         participants: user._id,
       }).slice("messages", -1);

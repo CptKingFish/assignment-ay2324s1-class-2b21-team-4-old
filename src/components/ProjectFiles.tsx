@@ -5,25 +5,6 @@ import { IUser } from "@/models/User";
 import { api } from "@/utils/api";
 import { toast } from "react-hot-toast";
 
-const FILES = [
-  {
-    id: 1,
-    name: "index.html",
-    url: "https://www.w3schools.com/html/mov_bbb.mp4",
-    type: "file",
-    author: "6455e852383957836ede8877",
-    timestamp: 1587915010000,
-  },
-  {
-    id: 2,
-    name: "index.css",
-    type: "file",
-    url: "https://www.w3schools.com/html/mov_bbb.mp4",
-    author: "6455e852383957836ede8877",
-    timestamp: 1587915010000,
-  },
-];
-
 const convertBase64= (file: File): Promise<string> => {
   return new Promise((resolve, reject) => {
     const fileReader = new FileReader();
@@ -32,7 +13,7 @@ const convertBase64= (file: File): Promise<string> => {
     fileReader.onload = () => {
       resolve(fileReader.result as string);
     };
-
+    
     fileReader.onerror = (error) => { 
       reject(error);
     };
@@ -47,8 +28,10 @@ const convertFileSize = (bytes: number) => {
 };
 
 const ProjectFiles = ({ users }: { users: IUser[] }): JSX.Element => {
+  
+  const [files, setFiles] = useState<File[]>([]);
   const [uploadedFiles, setUploadedFiles] = useState<File[]>([]);
-  const { mutate } = api.image.uploadImage.useMutation();
+  const { mutate } = api.image.uploadImages.useMutation();
 
   const onHandleSubmit = async (files: File[]): Promise<void> => {
     try {
@@ -57,8 +40,12 @@ const ProjectFiles = ({ users }: { users: IUser[] }): JSX.Element => {
         parray.push(convertBase64(file));
       }
       const allFilesB64 = await Promise.all(parray);
-      console.log(allFilesB64)
-      mutate(allFilesB64, {
+
+      const input = {
+        images: allFilesB64
+      };
+
+      mutate(input, {
         onSuccess: (data) => {
           toast.success("Upload successfully!");
           console.log(data);
@@ -72,7 +59,6 @@ const ProjectFiles = ({ users }: { users: IUser[] }): JSX.Element => {
       console.log("handle upload error:", error);
     }
   };
-
   
   return (
     <div className="mt-4">
@@ -143,18 +129,17 @@ const ProjectFiles = ({ users }: { users: IUser[] }): JSX.Element => {
             <th>Name</th>
             <th>Author</th>
             <th>Modified</th>
-            <th>Actions</th>
           </tr>
         </thead>
         <tbody>
-          {FILES.map((file) => {
+          {files.map((file) => {
             const user = users.find(
               (user) => user._id.toString() === file.author
             );
             if (!user) return null;
             return (
               <tr key={file.id}>
-                <td>
+                <td>                
                   <div className="flex items-center gap-2">
                     <svg
                       xmlns="http://www.w3.org/2000/svg"

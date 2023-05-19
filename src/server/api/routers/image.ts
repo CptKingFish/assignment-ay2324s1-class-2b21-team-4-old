@@ -4,6 +4,7 @@ import {
   privateProcedure,
 } from "@/server/api/trpc";
 import { TRPCError } from "@trpc/server";
+import { cloudConfig } from "@/utils/cloudconfig";
 
 export const imageRouter = createTRPCRouter({
   uploadImages: privateProcedure

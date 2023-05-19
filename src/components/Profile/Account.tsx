@@ -1,28 +1,16 @@
-import Link from "next/link";
-import React from "react";
-import toast from "react-hot-toast";
-import { api } from "@/utils/api";
-import AccountChangeUsername from "./AccountChangeUsername";
-import AccountChangeEmail from "./AccountChangeEmail";
 import { useGlobalContext } from "@/context";
-import { ThemeContext } from "../ThemeProvider";
+import { api } from "@/utils/api";
+import Link from "next/link";
+import AccountChangeEmail from "./AccountChangeEmail";
 import AccountChangePassword from "./AccountChangePassword";
 import AccountChangeProfile from "./AccountChangeProfile";
+import AccountChangeUsername from "./AccountChangeUsername";
 
 
 export default function Account() {
-    const utils = api.useContext()
     const {
         user
     } = useGlobalContext()
-
-    const { changeTheme } = React.useContext(ThemeContext);
-
-    const handleThemeChange = () => {
-        changeTheme('corporate');
-    };
-
-
 
     return (
         <>
@@ -54,7 +42,7 @@ export default function Account() {
             <div className="my-5 flex flex-wrap w-full justify-between">
                 <div className="avatar online me-5">
                     <div className="w-24 rounded-full">
-                        <img src="https://picsum.photos/200/300" />
+                        <img src={user?.avatar || "/Profile.png"} />
                     </div>
                 </div>
                 <div className="font-bold text-xl grid grid-flow-col">{user?.username}</div>

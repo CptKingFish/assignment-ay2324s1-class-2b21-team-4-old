@@ -56,11 +56,6 @@ export default function SideBarNav({
     setChatrooms(chatroomsData);
   }, [isLoading, chatroomsData]);
 
-  // React.useEffect(() => {
-  //   if (isLoadingNotifications || !notificationsData) return;
-  //   setNotifications(notificationsData);
-  // }, [isLoadingNotifications, notificationsData]);
-
   // get chatrooms with the type of team
   const teamChatrooms: IChatroom[] = React.useMemo(() => {
     return chatrooms.filter((chatroom: IChatroom) => chatroom.type === "team");
@@ -73,17 +68,6 @@ export default function SideBarNav({
       (chatroom: IChatroom) => chatroom.type === "private"
     );
   }, [chatrooms]);
-
-  // remove notification with _id
-
-  // const handleRemoveNotification = (notification_id: string) => {
-  //   setNotifications((prevNotifications) => {
-  //     if (!prevNotifications) return [];
-  //     return prevNotifications.filter(
-  //       (notification) => notification._id.toString() !== notification_id
-  //     );
-  //   });
-  // };
 
   return (
     <div className="drawer-mobile drawer -z-10">

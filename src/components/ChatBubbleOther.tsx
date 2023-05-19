@@ -1,9 +1,13 @@
+import { useGlobalContext } from "@/context";
+import React from "react";
+
 interface ChatBubbleOtherProps {
   senderId: string;
   text: string;
   time: string;
   date: string;
   senderName: string;
+  avatarUrl: string;
 }
 
 export default function ChatBubbleOther({
@@ -12,12 +16,17 @@ export default function ChatBubbleOther({
   time,
   date,
   senderName,
+  avatarUrl,
 }: ChatBubbleOtherProps) {
+  const { watchlistStatus } = useGlobalContext();
+  const isOnline = React.useMemo(() => {
+    return watchlistStatus[senderId];
+  }, [watchlistStatus, senderId]);
   return (
     <div className="chat chat-start">
-      <div className="chat-image avatar">
+      <div className={`chat-image avatar ${isOnline ? "online" : "offline"}`}>
         <div className="w-10 rounded-full">
-          <img src="/images/stock/photo-1534528741775-53994a69daeb.jpg" />
+          <img src={avatarUrl} />
         </div>
       </div>
       <div className="chat-header">

@@ -90,8 +90,8 @@ export default function PrivateChat() {
     channel.bind("pusher:member_removed", memberRemovedHandler);
 
     return () => {
+      channel.unbind("incoming-message", messageHandler);
       pusherClient.unsubscribe(channelCode);
-      pusherClient.unbind("incoming-message", messageHandler);
     };
   }, [user, channelCode, pusherClient]);
 

@@ -22,6 +22,7 @@ export default function ChatBody({ messages }: ChatBodyProps) {
               text={message.text}
               time={formatTimestampToTime(message.timestamp)}
               date={formatTimeStampToDate(message.timestamp)}
+              avatarUrl="https://source.unsplash.com/random/?city,night"
             />
           );
         } else {
@@ -33,6 +34,7 @@ export default function ChatBody({ messages }: ChatBodyProps) {
               text={message.text}
               time={formatTimestampToTime(message.timestamp)}
               date={formatTimeStampToDate(message.timestamp)}
+              avatarUrl="https://source.unsplash.com/random/?city,night"
             />
           );
         }

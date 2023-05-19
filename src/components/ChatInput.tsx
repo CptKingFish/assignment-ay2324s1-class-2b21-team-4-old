@@ -1,4 +1,4 @@
-import axios from "axios";
+// import axios from "axios";
 import React from "react";
 import { toast } from "react-hot-toast";
 import { useGlobalContext } from "@/context";
@@ -12,7 +12,8 @@ const ChatInput = ({ channelCode }: ChatInputProps) => {
   const { user } = useGlobalContext();
   const [input, setInput] = React.useState("");
   const [isLoading, setIsLoading] = React.useState(false);
-  console.log("channelCode", channelCode);
+  const { mutateAsync: sendMessageMutation } =
+    api.chat.sendMessage.useMutation();
 
   const sendMessage = async () => {
     console.log("sendMessage");
@@ -23,15 +24,18 @@ const ChatInput = ({ channelCode }: ChatInputProps) => {
     try {
       console.log("sending message");
 
-      await axios.post("/api/pusher/message/send", {
-        user_id: user?._id,
+      await sendMessageMutation({
         channel: channelCode,
         text: input,
       });
+
+      // await axios.post("/api/pusher/message/send", {
+      //   user_id: user?._id,
+      //   channel: channelCode,
+      //   text: input,
+      // });
       setInput("");
     } catch (e) {
-      console.log(e);
-
       toast.error("Something went wrong. Please try again later.");
     } finally {
       setIsLoading(false);
@@ -59,7 +63,7 @@ const ChatInput = ({ channelCode }: ChatInputProps) => {
   return (
     <div className="z-10 bg-white">
       <div className="flex items-center">
-      <div className="dropdown-top dropdown">
+        <div className="dropdown dropdown-top">
           <label tabIndex={0} className="btn">
             <svg
               xmlns="http://www.w3.org/2000/svg"
@@ -67,7 +71,7 @@ const ChatInput = ({ channelCode }: ChatInputProps) => {
               viewBox="0 0 24 24"
               strokeWidth={1.5}
               stroke="currentColor"
-              className="h-6 w-6" 
+              className="h-6 w-6"
             >
               <path
                 strokeLinecap="round"
@@ -96,7 +100,6 @@ const ChatInput = ({ channelCode }: ChatInputProps) => {
           onChange={(e) => setInput(e.target.value)}
           onKeyDown={handleKeyDown}
         />
-        
       </div>
     </div>
   );

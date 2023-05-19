@@ -1,11 +1,12 @@
 import Image from "next/image";
 import React from "react";
-// import type { TeamMenuItemProps } from "@/utils/chat";
 import { useRouter } from "next/router";
 import { useGlobalContext } from "@/context";
-import { pusherClientConstructor } from "@/utils/pusherConfig";
 import type { Message } from "@/utils/chat";
 import { formatTimestampToTime } from "@/utils/helper";
+import { toast } from "react-hot-toast";
+import ChatNotification from "./ChatNotification";
+import { truncateString } from "@/utils/helper";
 
 interface TeamMenuItemProps {
   id: string;
@@ -27,6 +28,10 @@ export default function TeamMenuItem({
     lastMessage
   );
 
+  const queryId = React.useMemo(() => {
+    return router.query.id as string;
+  }, [router.query.id]);
+
   const channelCode = React.useMemo(() => {
     return `presence-${id}`;
   }, [id]);
@@ -34,23 +39,46 @@ export default function TeamMenuItem({
   React.useEffect(() => {
     if (!user || !pusherClient) return;
 
-    // const pusherClient = pusherClientConstructor(user?._id);
-
-    pusherClient.subscribe(channelCode);
+    const channel = pusherClient.subscribe(channelCode);
 
     const messageHandler = (message: Message) => {
       console.log("incoming message", message);
 
+      if (message.sender._id.toString() !== user?._id && queryId !== id) {
+        toast.custom(
+          (t) => (
+            <div
+              className={`${
+                t.visible ? "animate-enter" : "animate-leave"
+              } pointer-events-auto flex w-full max-w-md rounded-lg bg-white shadow-lg ring-1 ring-black ring-opacity-5`}
+            >
+              <ChatNotification
+                type={"team"}
+                avatarUrl={avatarUrl}
+                text={message?.text || ""}
+                team={name}
+                username={message.sender.username || ""}
+                chatroom_id={id}
+              />
+            </div>
+          ),
+          {
+            id: "chat-notification",
+            duration: 5000,
+          }
+        );
+      }
+
       setLatestMessage(message);
     };
 
-    pusherClient.bind("incoming-message", messageHandler);
+    channel.bind("incoming-message", messageHandler);
 
     return () => {
+      channel.unbind("incoming-message", messageHandler);
       pusherClient.unsubscribe(channelCode);
-      pusherClient.unbind("incoming-message", messageHandler);
     };
-  }, [user, channelCode, pusherClient]);
+  }, [user, channelCode, pusherClient, queryId, id, avatarUrl]);
 
   const handleChatBtnClick = () => {
     router.push(`/teamchat/${id}`).catch(console.error);
@@ -63,6 +91,11 @@ export default function TeamMenuItem({
   const isInScrum = React.useMemo(() => {
     return router.query.id === id && router.pathname.includes("scrum");
   }, [router.query.id, router.pathname, id]);
+
+  const truncatedText = React.useMemo(() => {
+    if (!latestMessage) return "";
+    return truncateString(latestMessage?.text || "", 20);
+  }, [latestMessage]);
 
   return (
     <>
@@ -78,7 +111,11 @@ export default function TeamMenuItem({
         </div>
         <div className="ml-2">
           <div className="text-lg font-semibold">{name}</div>
-          <div className="text-sm">{latestMessage?.text || ""}</div>
+          <div className="pr-1 text-sm font-semibold">
+            {(latestMessage?.sender.username || "") +
+              (latestMessage ? ": " : "")}
+          </div>
+          <div className="text-sm">{truncatedText}</div>
         </div>
         <div className="ml-auto text-xs">
           {formatTimestampToTime(latestMessage?.timestamp || 0)}

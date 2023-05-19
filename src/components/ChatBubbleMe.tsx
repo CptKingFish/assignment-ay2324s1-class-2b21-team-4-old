@@ -4,6 +4,7 @@ interface ChatBubbleMeProps {
   senderName: string;
   time: string;
   date: string;
+  avatarUrl: string;
 }
 
 export default function ChatBubbleMe({
@@ -12,6 +13,7 @@ export default function ChatBubbleMe({
   senderName,
   time,
   date,
+  avatarUrl,
 }: ChatBubbleMeProps) {
   // id: uuidv4() as string,
   //   senderId: user_id,
@@ -21,7 +23,7 @@ export default function ChatBubbleMe({
     <div className="chat chat-end">
       <div className="chat-image avatar">
         <div className="w-10 rounded-full">
-          <img src="https://source.unsplash.com/random/?city,night" />
+          <img src={avatarUrl} />
         </div>
       </div>
       <div className="chat-header">

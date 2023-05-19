@@ -13,6 +13,7 @@ import { TRPCError } from "@trpc/server";
 import { env } from "@/env.mjs";
 import { m } from "framer-motion";
 import mongoose, { ObjectId } from "mongoose";
+import { pusherServer } from "@/utils/pusherConfig";
 
 export const chatRouter = createTRPCRouter({
   getMessagesAndChatroomInfo: privateProcedure
@@ -113,5 +114,63 @@ export const chatRouter = createTRPCRouter({
         _id: { $in: chatroom.participants },
       }).select("username");
       return usernames;
+    }),
+  sendMessage: privateProcedure
+    .input(
+      z.object({
+        channel: z.string(),
+        text: z.string(),
+      })
+    )
+    .mutation(async ({ input, ctx }) => {
+      const { channel, text } = input;
+      const { user } = ctx;
+      const chatroom_id = channel.split("-")[1];
+
+      const foundUser = await User.findById(user._id);
+
+      if (!foundUser) {
+        throw new TRPCError({
+          code: "NOT_FOUND",
+          message: "User not found",
+        });
+      }
+
+      const chatroom = await Chatroom.findById(chatroom_id);
+
+      if (!chatroom) {
+        throw new TRPCError({
+          code: "NOT_FOUND",
+          message: "Chatroom not found",
+        });
+      }
+
+      if (!chatroom.participants.includes(user._id)) {
+        throw new TRPCError({
+          code: "UNAUTHORIZED",
+          message: "Unauthorized",
+        });
+      }
+
+      const timestamp = Date.now();
+
+      const messageData = {
+        _id: new mongoose.Types.ObjectId() as unknown as ObjectId,
+        sender: {
+          _id: new mongoose.Types.ObjectId(user._id) as unknown as ObjectId,
+          username: user.username,
+        },
+        text: text,
+        timestamp: timestamp,
+      };
+
+      chatroom.messages.push(messageData);
+
+      await chatroom.save();
+
+      const result = await pusherServer.trigger(channel, "incoming-message", {
+        ...messageData,
+      });
+      return result;
     }),
 });

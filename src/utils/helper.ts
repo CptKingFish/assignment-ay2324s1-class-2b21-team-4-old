@@ -1,7 +1,9 @@
 export const formatTimestampToTime = (timestamp: number) => {
   if (!timestamp) return "";
   const date = new Date(timestamp);
-  return date.getHours().toString() + ":" + date.getMinutes().toString();
+  const hours = date.getHours().toString().padStart(2, "0");
+  const minutes = date.getMinutes().toString().padStart(2, "0");
+  return hours + ":" + minutes;
 };
 
 export const formatTimeStampToDate = (timestamp: number) => {
@@ -25,4 +27,11 @@ export const formatDate = (date: Date) => {
   const amPm = hours >= 12 ? "PM" : "AM";
   const minutes = formattedDate.getMinutes().toString().padStart(2, "0");
   return `${day}/${month}/${year} ${hours}:${minutes} ${amPm}`;
+};
+
+export const truncateString = (str: string, num: number) => {
+  if (str.length <= num) {
+    return str;
+  }
+  return str.slice(0, num) + "...";
 };

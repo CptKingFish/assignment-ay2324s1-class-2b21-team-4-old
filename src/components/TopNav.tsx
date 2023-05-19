@@ -11,7 +11,7 @@ export default function TopNav({
 }: TopNavProps) {
   return (
     <div className="navbar bg-base-300">
-      <div className="flex-1" onClick={openSidebarDetails}>
+      <div className="flex-1 cursor-pointer" onClick={openSidebarDetails}>
         <div className="avatar pl-5">
           <div className="w-16 rounded-xl">
             {/* <span className="text-3xl">K</span> */}
@@ -25,7 +25,7 @@ export default function TopNav({
       <div className="flex-1">
         <span
           className="ms-5 cursor-pointer text-xl normal-case"
-          onClick={drawer}
+          // onClick={drawer}
         >
           Test Team
         </span>

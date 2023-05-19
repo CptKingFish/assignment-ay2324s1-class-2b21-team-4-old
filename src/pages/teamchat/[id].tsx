@@ -75,9 +75,7 @@ const TeamChat = () => {
   React.useEffect(() => {
     if (!pusherClient) return;
 
-    // const pusherClient = pusherClientConstructor(user?._id);
-
-    pusherClient.subscribe(channelCode);
+    const channel = pusherClient.subscribe(channelCode);
 
     const messageHandler = (message: Message) => {
       console.log("incoming message", message);
@@ -85,11 +83,11 @@ const TeamChat = () => {
       setMessages((prev) => [message, ...prev]);
     };
 
-    pusherClient.bind("incoming-message", messageHandler);
+    channel.bind("incoming-message", messageHandler);
 
     return () => {
       pusherClient.unsubscribe(channelCode);
-      pusherClient.unbind("incoming-message", messageHandler);
+      channel.unbind("incoming-message", messageHandler);
     };
   }, [user, channelCode, pusherClient]);
 

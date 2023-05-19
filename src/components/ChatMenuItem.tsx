@@ -2,13 +2,11 @@ import Image from "next/image";
 import React from "react";
 import { useRouter } from "next/router";
 import { useGlobalContext } from "@/context";
-import { log } from "console";
-import { pusherClientConstructor } from "@/utils/pusherConfig";
 import { Message, WatchListEventProps } from "@/utils/chat";
 import { formatTimestampToTime } from "@/utils/helper";
-import type { PusherMemberStatusProps } from "@/utils/chat";
 import { toast } from "react-hot-toast";
 import ChatNotification from "./ChatNotification";
+import { truncateString } from "@/utils/helper";
 
 interface ChatMenuItemProps {
   id: string;
@@ -39,6 +37,10 @@ export default function ChatMenuItem({
   const [otherUserIsOnline, setOtherUserIsOnline] = React.useState(false);
   const router = useRouter();
 
+  const queryId = React.useMemo(() => {
+    return router.query.id as string;
+  }, [router.query.id]);
+
   const channelCode = React.useMemo(() => {
     return `presence-${id}`;
   }, [id]);
@@ -51,24 +53,30 @@ export default function ChatMenuItem({
     const messageHandler = (message: Message) => {
       console.log("incoming message item", message);
 
-      toast.custom(
-        (t) => (
-          <div
-            className={`${
-              t.visible ? "animate-enter" : "animate-leave"
-            } pointer-events-auto flex w-full max-w-md rounded-lg bg-white shadow-lg ring-1 ring-black ring-opacity-5`}
-          >
-            <ChatNotification
-              avatarUrl={avatarUrl}
-              text={message?.text || ""}
-              username={otherUser?.username || ""}
-            />
-          </div>
-        ),
-        {
-          duration: 5000,
-        }
-      );
+      if (message.sender._id.toString() !== user?._id && queryId !== id) {
+        toast.custom(
+          (t) => (
+            <div
+              className={`${
+                t.visible ? "animate-enter" : "animate-leave"
+              } pointer-events-auto flex w-full max-w-md rounded-lg bg-white shadow-lg ring-1 ring-black ring-opacity-5`}
+            >
+              <ChatNotification
+                type={"private"}
+                avatarUrl={avatarUrl}
+                text={message?.text || ""}
+                team={null}
+                username={message.sender.username || ""}
+                chatroom_id={id}
+              />
+            </div>
+          ),
+          {
+            id: "chat-notification",
+            duration: 5000,
+          }
+        );
+      }
 
       setLatestMessage(message);
     };
@@ -76,10 +84,10 @@ export default function ChatMenuItem({
     channel.bind("incoming-message", messageHandler);
 
     return () => {
+      channel.unbind("incoming-message", messageHandler);
       pusherClient.unsubscribe(channelCode);
-      pusherClient.unbind("incoming-message", messageHandler);
     };
-  }, [user, channelCode, pusherClient, otherUser]);
+  }, [user, channelCode, pusherClient, otherUser, queryId, id, avatarUrl]);
 
   React.useEffect(() => {
     if (!pusherClient || !otherUser) return;
@@ -105,6 +113,13 @@ export default function ChatMenuItem({
   const handleChatBtnClick = () => {
     router.push(`/privatechat/${id}`).catch(console.error);
   };
+
+  // if text is too long, truncate it
+  const truncatedText = React.useMemo(() => {
+    if (!latestMessage) return "";
+    return truncateString(latestMessage.text, 18);
+  }, [latestMessage]);
+
   return (
     <li
       className={`${isInChatroom ? "bordered" : ""}`}
@@ -122,7 +137,7 @@ export default function ChatMenuItem({
           <div className="text-lg font-semibold">
             {otherUser?.username || ""}
           </div>
-          <div className="text-sm">{latestMessage?.text || ""}</div>
+          <div className="text-sm">{truncatedText}</div>
         </div>
         <div className="ml-auto text-xs">
           {formatTimestampToTime(latestMessage?.timestamp || 0)}

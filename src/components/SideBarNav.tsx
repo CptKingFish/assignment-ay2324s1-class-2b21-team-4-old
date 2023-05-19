@@ -105,7 +105,7 @@ export default function SideBarNav({
         <ul className="base-200 menu relative w-80 bg-neutral-content p-4">
           {/* <div className="avatar">
             <div className=" w-24 content-center rounded-full ring ring-primary ring-offset-2 ring-offset-base-100">
-              <img src="https://source.unsplash.com/random/?city,night" />
+              <img src={user?.avatar || "/Profile.png"} />
             </div>
           </div>
           <Link className="btn-primary btn my-5 rounded-lg" href="/profile">

@@ -1,29 +1,24 @@
-import React from "react";
+import React, {  useState } from "react";
 import IconButton from "./IconButton";
 import Dropzone from "react-dropzone";
 import { IUser } from "@/models/User";
 import { api } from "@/utils/api";
+import { toast } from "react-hot-toast";
 
-const FILES = [
-  {
-    id: 1,
-    name: "index.html",
-    url: "https://www.w3schools.com/html/mov_bbb.mp4",
-    type: "file",
-    author: "6455e852383957836ede8877",
-    timestamp: 1587915010000,
-  },
-  {
-    id: 2,
-    name: "index.css",
-    type: "file",
-    url: "https://www.w3schools.com/html/mov_bbb.mp4",
-    author: "6455e852383957836ede8877",
-    timestamp: 1587915010000,
-  },
+const convertBase64= (file: File): Promise<string> => {
+  return new Promise((resolve, reject) => {
+    const fileReader = new FileReader();
+    fileReader.readAsDataURL(file);
 
-];
-
+    fileReader.onload = () => {
+      resolve(fileReader.result as string);
+    };
+    
+    fileReader.onerror = (error) => { 
+      reject(error);
+    };
+  });
+};
 
 const convertFileSize = (bytes: number) => {
   const sizes = ["Bytes", "KB", "MB", "GB", "TB"];
@@ -32,19 +27,39 @@ const convertFileSize = (bytes: number) => {
   return `${Math.round(bytes / Math.pow(1024, i))} ${sizes[i] ?? ""}`;
 };
 
-const ProjectFiles = ({ users }: { users: IUser[] }) => {
+const ProjectFiles = ({ users }: { users: IUser[] }): JSX.Element => {
+  
+  const [files, setFiles] = useState<File[]>([]);
+  const [uploadedFiles, setUploadedFiles] = useState<File[]>([]);
+  const { mutate } = api.image.uploadImages.useMutation();
 
-  const [uploadedFiles, setUploadedFiles] = React.useState<File[]>([]);
-
-  const onHandleSubmit = (file) => {
+  const onHandleSubmit = async (files: File[]): Promise<void> => {
     try {
-      console.log(file)
-      const { mutate } = api.image.uploadImage.useMutation(file);
-    } catch (error) { 
-      console.log("handle upload error: " ,error)
+      const parray: Promise<string>[] = [];
+      for (const file of files) {
+        parray.push(convertBase64(file));
+      }
+      const allFilesB64 = await Promise.all(parray);
+
+      const input = {
+        images: allFilesB64
+      };
+
+      mutate(input, {
+        onSuccess: (data) => {
+          toast.success("Upload successfully!");
+          console.log(data);
+        },
+        onError: (error) => {
+          toast.error("Upload failed!");
+          console.log(error);
+        }
+      });
+    } catch (error) {
+      console.log("handle upload error:", error);
     }
   };
-
+  
   return (
     <div className="mt-4">
       <div className="flex gap-4">
@@ -52,7 +67,9 @@ const ProjectFiles = ({ users }: { users: IUser[] }) => {
           onDrop={(acceptedFiles) => {
             console.log(acceptedFiles);
             setUploadedFiles([...uploadedFiles, ...acceptedFiles]);
+          
           }}
+          maxSize={10 * 1024 * 1024} 
         >
           {({ getRootProps, getInputProps }) => (
             <section>
@@ -81,10 +98,15 @@ const ProjectFiles = ({ users }: { users: IUser[] }) => {
         </Dropzone>
         {uploadedFiles.length > 0 && (
           <>
-            <button className="btn-success btn-sm btn">Submit!</button>
+            <button
+              className="btn-success btn-sm btn"
+              onClick={() => onHandleSubmit(uploadedFiles)}
+            >
+              Submit!
+            </button>
             <button
               className="btn-info btn-sm btn"
-              onClick={() => onHandleSubmit(uploadedFiles[0])}
+              onClick={() => setUploadedFiles([])}
             >
               Clear
             </button>
@@ -95,31 +117,29 @@ const ProjectFiles = ({ users }: { users: IUser[] }) => {
         {uploadedFiles.map((file) => (
           <div key={file.name} className="border border-gray-200 p-2">
             <div>{file.name}</div>
-            <div className="text-xs text-gray-500">
+            <div className="text -gray-500 text-xs">
               {convertFileSize(file.size)}
             </div>
           </div>
         ))}
       </div>
-
       <table className="mt-4 table w-full">
         <thead>
           <tr>
             <th>Name</th>
             <th>Author</th>
             <th>Modified</th>
-            <th>Actions</th>
           </tr>
         </thead>
         <tbody>
-          {FILES.map((file) => {
+          {files.map((file) => {
             const user = users.find(
               (user) => user._id.toString() === file.author
             );
             if (!user) return null;
             return (
               <tr key={file.id}>
-                <td>
+                <td>                
                   <div className="flex items-center gap-2">
                     <svg
                       xmlns="http://www.w3.org/2000/svg"
@@ -190,7 +210,8 @@ const ProjectFiles = ({ users }: { users: IUser[] }) => {
                         <path
                           strokeLinecap="round"
                           strokeLinejoin="round"
-                          d="M14.74 9l-.346 9m-4.788 0L9.26 9m9.968-3.21c.342.052.682.107 1.022.166m-1.022-.165L18.16 19.673a2.25 2.25 0 01-2.244 2.077H8.084a2.25 2.25 0 01-2.244-2.077L4.772 5.79m14.456 0a48.108 48.108 0 00-3.478-.397m-12 .562c.34-.059.68-.114 1.022-.165m0 0a48.11 48.11 0 013.478-.397m7.5 0v-.916c0-1.18-.91-2.164-2.09-2.201a51.964 51.964 0 00-3.32 0c-1.18.037-2.09 1.022-2.09 2.201v.916m7.5 0a48.667 48.667 0 00-7.5 0"
+                          d="M14
+                      .74 9l-.346 9m-4.788 0L9.26 9m9.968-3.21c.342.052.682.107 1.022.166m-1.022-.165L18.16 19.673a2.25 2.25 0 01-2.244 2.077H8.084a2.25 2.25 0 01-2.244-2.077L4.772 5.79m14.456 0a48.108 48.108 0 00-3.478-.397m-12 .562c.34-.059.68-.114 1.022-.165m0 0a48.11 48.11 0 013.478-.397m7.5 0v-.916c0-1.18-.91-2.164-2.09-2.201a51.964 51.964 0 00-3.32 0c-1.18.037-2.09 1.022-2.09 2.201v.916m7.5 0a48.667 48.667 0 00-7.5 0"
                         />
                       </svg>
                     </IconButton>

@@ -1,13 +1,13 @@
 import { api } from "@/utils/api";
 import React from "react";
 import toast from "react-hot-toast";
-import { useGlobalContext } from "@/context";
+
 
 interface AccountChangeProfileProps {}
 
 const AccountChangeProfile: React.FC<AccountChangeProfileProps> = ({}) => {
   const utils = api.useContext();
-  const [profilePic, setProfilePic] = React.useState<File | undefined>(undefined);
+  const [profilePic, setProfilePic] = React.useState<string | null>(null);
   const [previewUrl, setPreviewUrl] = React.useState<string | null>(null);
 
   const { mutate: changeProfilePicture } = api.user.changeProfilePicture.useMutation();
@@ -17,10 +17,9 @@ const AccountChangeProfile: React.FC<AccountChangeProfileProps> = ({}) => {
       const file = e.target.files[0];
       let validate = validateFile(file);
       if (validate == "") {
-        setProfilePic(file);
-
         const reader = new FileReader();
         reader.onload = () => {
+          setProfilePic(reader.result as string);
           setPreviewUrl(reader.result as string);
         };
         reader.readAsDataURL(file);
@@ -36,22 +35,19 @@ const AccountChangeProfile: React.FC<AccountChangeProfileProps> = ({}) => {
     const allowedSize = 5 * 1024 * 1024; // 5MB
 
     const extension = file.name.split(".").pop()?.toLowerCase();
-    if(!(extension && allowedExtensions.includes(extension))){
-        return "Invalid File Format!"
-    };
-    if(!(file.size <= allowedSize)){
-        return "File size too large!"
-    };
+    if (!(extension && allowedExtensions.includes(extension))) {
+      return "Invalid File Format!";
+    }
+    if (!(file.size <= allowedSize)) {
+      return "File size too large!";
+    }
 
-    return ""
+    return "";
   };
 
   const handleProfilePicUpload = () => {
     if (profilePic) {
-      const formData = new FormData();
-      formData.append("profilePic", profilePic);
-
-      changeProfilePicture(formData, {
+      changeProfilePicture({ profilePic }, { // Pass the profile picture as an object with profilePic field
         onSuccess: (data) => {
           toast.success("Profile picture changed successfully!");
           utils.user.getMe.invalidate();
@@ -67,7 +63,7 @@ const AccountChangeProfile: React.FC<AccountChangeProfileProps> = ({}) => {
   };
 
   const resetForm = () => {
-    setProfilePic(undefined);
+    setProfilePic(null);
     setPreviewUrl(null);
   };
 

@@ -2,32 +2,33 @@ import { z } from "zod";
 import {
   createTRPCRouter,
   privateProcedure,
-  publicProcedure,
 } from "@/server/api/trpc";
 import { TRPCError } from "@trpc/server";
-import { env } from "@/env.mjs";   
-import { v2 as cloudinary } from 'cloudinary'
-
- cloudinary.config({ 
-  cloud_name: process.env.CLOUDINARY_CLOUD_NAME, 
-  api_key: process.env.CLOUDINARY_API_KEY, 
-  api_secret: process.env.CLOUDINARY_API_SECRET,
-  secure: true
-});
 
 export const imageRouter = createTRPCRouter({
-  uploadImage: privateProcedure
+  uploadImages: privateProcedure
     .input(
       z.object({
-        image: z.string(),
+        images: z.array(z.string()),
       })
     )
     .mutation(async ({ input, ctx }) => {
-      console.log(input, ctx)
-      const { image } = input;
-      const { user } = ctx;
-     // const res = await cloudinary.uploader.upload(image, {public_id: ctx})
-      return image;
+      try {
+        const { images } = input;
+        const promises = images.map(async (image) => {
+          const result = await cloudConfig.uploader.upload(image, {
+            upload_preset: "ml_default",
+          });
+          return result.secure_url;
+        });
+        const results = await Promise.all(promises);
+        return results;
+      } catch (error) {
+        throw new TRPCError({
+          code: "BAD_REQUEST",
+          message: "Images are required",
+        });
+      }
     }),
   getImage: privateProcedure
     .input(
@@ -35,9 +36,8 @@ export const imageRouter = createTRPCRouter({
         image_id: z.string(),
       })
     )
-    .query(async ({ input, ctx }) => {
+    .query(({ input, ctx }) => {
       const { image_id } = input;
-      const { user } = ctx;
       console.log(image_id);
       return image_id;
     }),
@@ -47,10 +47,8 @@ export const imageRouter = createTRPCRouter({
         image_id: z.string(),
       })
     )
-
-    .query(async ({ input, ctx }) => {
+    .query(({ input, ctx }) => {
       const { image_id } = input;
-      const { user } = ctx;
       console.log(image_id);
       return image_id;
     }),

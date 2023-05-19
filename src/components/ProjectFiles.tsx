@@ -1,10 +1,8 @@
-import React, { useEffect, useState } from "react";
+import React, {  useState } from "react";
 import IconButton from "./IconButton";
 import Dropzone from "react-dropzone";
 import { IUser } from "@/models/User";
 import { api } from "@/utils/api";
-import { Cloudinary } from "@cloudinary/url-gen";
-import accept from "attr-accept";
 import { toast } from "react-hot-toast";
 
 const FILES = [
@@ -26,7 +24,7 @@ const FILES = [
   },
 ];
 
-const convertBase64: Promise<string> = (file: File) => {
+const convertBase64= (file: File): Promise<string> => {
   return new Promise((resolve, reject) => {
     const fileReader = new FileReader();
     fileReader.readAsDataURL(file);
@@ -35,7 +33,7 @@ const convertBase64: Promise<string> = (file: File) => {
       resolve(fileReader.result as string);
     };
 
-    fileReader.onerror = (error) => {
+    fileReader.onerror = (error) => { 
       reject(error);
     };
   });
@@ -48,17 +46,18 @@ const convertFileSize = (bytes: number) => {
   return `${Math.round(bytes / Math.pow(1024, i))} ${sizes[i] ?? ""}`;
 };
 
-const ProjectFiles = ({ users }: { users: IUser[] }) => {
+const ProjectFiles = ({ users }: { users: IUser[] }): JSX.Element => {
   const [uploadedFiles, setUploadedFiles] = useState<File[]>([]);
   const { mutate } = api.image.uploadImage.useMutation();
 
-  const onHandleSubmit = async (files: File[]) => {
+  const onHandleSubmit = async (files: File[]): Promise<void> => {
     try {
-      const parray: string[] = [];
+      const parray: Promise<string>[] = [];
       for (const file of files) {
         parray.push(convertBase64(file));
       }
       const allFilesB64 = await Promise.all(parray);
+      console.log(allFilesB64)
       mutate(allFilesB64, {
         onSuccess: (data) => {
           toast.success("Upload successfully!");
@@ -68,7 +67,7 @@ const ProjectFiles = ({ users }: { users: IUser[] }) => {
           toast.error("Upload failed!");
           console.log(error);
         }
-      })
+      });
     } catch (error) {
       console.log("handle upload error:", error);
     }
@@ -82,7 +81,9 @@ const ProjectFiles = ({ users }: { users: IUser[] }) => {
           onDrop={(acceptedFiles) => {
             console.log(acceptedFiles);
             setUploadedFiles([...uploadedFiles, ...acceptedFiles]);
+          
           }}
+          maxSize={10 * 1024 * 1024} 
         >
           {({ getRootProps, getInputProps }) => (
             <section>

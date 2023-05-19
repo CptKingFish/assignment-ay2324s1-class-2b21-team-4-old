@@ -2,29 +2,31 @@ import { z } from "zod";
 import {
   createTRPCRouter,
   privateProcedure,
-  publicProcedure,
 } from "@/server/api/trpc";
 import { TRPCError } from "@trpc/server";
-import { v2 as cloudinary } from "cloudinary";
 
 export const imageRouter = createTRPCRouter({
-  uploadImage: privateProcedure
+  uploadImages: privateProcedure
     .input(
       z.object({
-        image: z.string(),
+        images: z.array(z.string()),
       })
     )
     .mutation(async ({ input, ctx }) => {
       try {
-        const { image } = input;
-        const res = await cloudinary.uploader
-          .upload(image, { upload_preset: "ml_default" })
-          .then((result) => console.log(result));
-        return res;
+        const { images } = input;
+        const promises = images.map(async (image) => {
+          const result = await cloudConfig.uploader.upload(image, {
+            upload_preset: "ml_default",
+          });
+          return result.secure_url;
+        });
+        const results = await Promise.all(promises);
+        return results;
       } catch (error) {
         throw new TRPCError({
           code: "BAD_REQUEST",
-          message: "image is required",
+          message: "Images are required",
         });
       }
     }),
@@ -34,9 +36,8 @@ export const imageRouter = createTRPCRouter({
         image_id: z.string(),
       })
     )
-    .query(async ({ input, ctx }) => {
+    .query(({ input, ctx }) => {
       const { image_id } = input;
-      const { user } = ctx;
       console.log(image_id);
       return image_id;
     }),
@@ -46,10 +47,8 @@ export const imageRouter = createTRPCRouter({
         image_id: z.string(),
       })
     )
-
-    .query(async ({ input, ctx }) => {
+    .query(({ input, ctx }) => {
       const { image_id } = input;
-      const { user } = ctx;
       console.log(image_id);
       return image_id;
     }),

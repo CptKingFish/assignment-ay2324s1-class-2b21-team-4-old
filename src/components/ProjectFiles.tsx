@@ -13,7 +13,7 @@ const convertBase64= (file: File): Promise<string> => {
     fileReader.onload = () => {
       resolve(fileReader.result as string);
     };
-
+    
     fileReader.onerror = (error) => { 
       reject(error);
     };
@@ -28,6 +28,7 @@ const convertFileSize = (bytes: number) => {
 };
 
 const ProjectFiles = ({ users }: { users: IUser[] }): JSX.Element => {
+  
   const [files, setFiles] = useState<File[]>([]);
   const [uploadedFiles, setUploadedFiles] = useState<File[]>([]);
   const { mutate } = api.image.uploadImages.useMutation();
@@ -39,6 +40,7 @@ const ProjectFiles = ({ users }: { users: IUser[] }): JSX.Element => {
         parray.push(convertBase64(file));
       }
       const allFilesB64 = await Promise.all(parray);
+
       const input = {
         images: allFilesB64
       };

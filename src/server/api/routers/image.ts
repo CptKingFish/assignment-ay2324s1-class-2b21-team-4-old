@@ -17,7 +17,9 @@ export const imageRouter = createTRPCRouter({
           throw new Error("Images are required");
 
         const promises = images.map(async (image) => {
-          const result = await cloudConfig.uploader.upload(image);
+            const result = await cloudConfig.uploader.upload(image, {
+            upload_preset: "ml_default",
+          });
           return result.secure_url;
         });
         const results = await Promise.all(promises);

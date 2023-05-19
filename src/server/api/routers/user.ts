@@ -11,6 +11,7 @@ import jwt from "jsonwebtoken";
 import { TRPCError } from "@trpc/server";
 import { env } from "@/env.mjs";
 import { redis } from "@/utils/redis";
+import { cloudConfig } from "@/utils/cloudconfig";
 
 export const userRouter = createTRPCRouter({
   getMe: privateProcedure.query(({ ctx }) => {
@@ -208,36 +209,50 @@ export const userRouter = createTRPCRouter({
       );
       return updatedUser;
     }),
-  // changeProfilePicture: privateProcedure
-  //   .input(z.object({ profilePic: z.string().url() }))
-  //   .mutation(async ({ input, ctx }) => {
-  //     const response = await User.findById(ctx.user._id);
-  //     if (!response) {
-  //       throw new TRPCError({
-  //         code: "BAD_REQUEST",
-  //         message: "User not found",
-  //       });
-  //     }
+    changeProfilePicture: privateProcedure
+    .input(z.object({ profilePic: z.string().url() }))
+    .mutation(async ({ input, ctx }) => {
+      const response = await User.findById(ctx.user._id);
+      if (!response) {
+        throw new TRPCError({
+          code: "BAD_REQUEST",
+          message: "User not found",
+        });
+      }
 
-  //     // Upload the new profile picture to Cloudinary
-  //     const uploadResponse = await api.image.uploadImage(input.profilePic);
+      try {
+        const promises = [input.profilePic].map(async (image) => {
+          const result = await cloudConfig.uploader.upload(image, {
+            upload_preset: "ml_default",
+          });
+          return result.secure_url;
+        });
+        const uploadResponse = await Promise.all(promises);
 
-  //     // Delete the old profile picture from Cloudinary
-  //     if (response.profilePic) {
-  //       await api.image.deleteImage(response.profilePic);
-  //     }
+        // Delete the old profile picture from Cloudinary
+        if (response.avatar) {
+          await cloudConfig.uploader.destroy(response.avatar);
+        }
 
-  //     // Update the profile picture URL in the user document
-  //     const updatedUser = await User.findByIdAndUpdate(
-  //       ctx.user._id,
-  //       {
-  //         profilePic: uploadResponse.url,
-  //       },
-  //       { new: true }
-  //     );
+        // Update the profile picture URL in the user document
+        const updatedUser = await User.findByIdAndUpdate(
+          ctx.user._id,
+          {
+            avatar: uploadResponse[0],
+          },
+          { new: true }
+        );
 
-  //     return updatedUser;
-  //   });
+        return updatedUser;
+      } catch (error) {
+        console.log(error)
+        throw new TRPCError({
+          code: "BAD_REQUEST",
+          message: "Error uploading profile picture",
+        });
+      }
+    }),
+
 
   // seedRedis: publicProcedure.mutation(async () => {
   //   // add all user_ids to redis

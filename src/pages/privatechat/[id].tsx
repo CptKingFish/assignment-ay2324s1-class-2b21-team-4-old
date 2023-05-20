@@ -8,12 +8,15 @@ import ChatBody from "@/components/ChatBody";
 import { Message } from "@/utils/chat";
 import { api } from "@/utils/api";
 import UserSideBar from "@/components/UserSideBar";
+import type { PusherMemberStatusProps } from "@/utils/chat";
 
-const TeamChat = () => {
+export default function PrivateChat() {
   const router = useRouter();
   const { user, pusherClient } = useGlobalContext();
   const [messages, setMessages] = React.useState<Message[]>([]);
   const [users, setUsers] = React.useState<Object[]>([]);
+  const [name, setName] = React.useState("");
+  const [otherUserIsOnline, setOtherUserIsOnline] = React.useState(false);
   // const [showDownButton, setShowDownButton] = React.useState(false);
   const {
     data: chatroomData,
@@ -27,36 +30,23 @@ const TeamChat = () => {
     chatroom_id: router.query.id as string,
   });
 
+  // get the other user's name
+
+  React.useEffect(() => {
+    if (!user || !userRaw) return;
+
+    const otherUser = userRaw.find(
+      (participant) => user._id !== participant._id
+    );
+
+    setName(otherUser?.username || "");
+  }, [user, userRaw]);
+
   const [isOpen, setIsOpen] = React.useState(false);
 
   function handleDrawerToggle() {
     setIsOpen(!isOpen);
   }
-
-  // useEffect(() => {
-  //   const handleScroll = () => {
-  //     console.log("window.pageYOffset", window.pageYOffset);
-
-  //     if (window.pageYOffset > 100) {
-  //       setShowDownButton(true);
-  //     } else {
-  //       setShowDownButton(false);
-  //     }
-  //   };
-
-  //   window.addEventListener("scroll", handleScroll);
-
-  //   return () => {
-  //     window.removeEventListener("scroll", handleScroll);
-  //   };
-  // }, []);
-
-  // const handleDownButtonClick = () => {
-  //   window.scrollTo({
-  //     top: document.body.scrollHeight,
-  //     behavior: "smooth",
-  //   });
-  // };
 
   useEffect(() => {
     if (isLoading || !chatroomData) return;
@@ -75,19 +65,33 @@ const TeamChat = () => {
   React.useEffect(() => {
     if (!pusherClient) return;
 
+    // const pusherClient = pusherClientConstructor(user?._id);
+
     const channel = pusherClient.subscribe(channelCode);
 
     const messageHandler = (message: Message) => {
-      console.log("incoming message", message);
+      // console.log("incfoming message", message);
 
       setMessages((prev) => [message, ...prev]);
     };
 
+    const memberAddedHandler = (data: PusherMemberStatusProps) => {
+      if (data.id === user?._id) return;
+      setOtherUserIsOnline(true);
+    };
+
+    const memberRemovedHandler = (data: PusherMemberStatusProps) => {
+      if (data.id === user?._id) return;
+      setOtherUserIsOnline(false);
+    };
+
     channel.bind("incoming-message", messageHandler);
+    channel.bind("pusher:member_added", memberAddedHandler);
+    channel.bind("pusher:member_removed", memberRemovedHandler);
 
     return () => {
-      pusherClient.unsubscribe(channelCode);
       channel.unbind("incoming-message", messageHandler);
+      pusherClient.unsubscribe(channelCode);
     };
   }, [user, channelCode, pusherClient]);
 
@@ -100,7 +104,7 @@ const TeamChat = () => {
   return (
     <>
       <TopNav
-        chatroom_name={chatroomData?.name || ""}
+        chatroom_name={name || ""}
         openSidebarDetails={handleDrawerToggle}
       />
       <div className="drawer-mobile drawer drawer-end">
@@ -143,6 +147,4 @@ const TeamChat = () => {
       </div>
     </>
   );
-};
-
-export default TeamChat;
+}

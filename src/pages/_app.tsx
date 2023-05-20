@@ -35,6 +35,8 @@ const isPageWithSidebar = (pathname: string) => {
     "/scrum/[id]",
     "/teamchat/[id]",
     "/teamchat",
+    "/privatechat/[id]",
+    "/privatechat",
   ];
   return pagesWithSidebar.includes(pathname);
 };

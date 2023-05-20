@@ -1,26 +1,42 @@
 import React from "react";
 
 interface TopNavProps {
-  drawer:() => void;
+  chatroom_name: string;
+  openSidebarDetails: () => void;
 }
 
-const TopNav:React.FC<TopNavProps> = ({drawer})=> {
+export default function TopNav({
+  chatroom_name,
+  openSidebarDetails,
+}: TopNavProps) {
   return (
     <div className="navbar bg-base-300">
-      <div className="avatar pl-5">
-        <div className="w-16 rounded-xl">
-          <img src="/images/stock/photo-1534528741775-53994a69daeb.jpg" />
+      <div className="flex-1 cursor-pointer" onClick={openSidebarDetails}>
+        <div className="avatar pl-5">
+          <div className="w-16 rounded-xl">
+            {/* <span className="text-3xl">K</span> */}
+            <img src="https://source.unsplash.com/random/?city,night" />
+          </div>
+        </div>
+        <div className="">
+          <span className="ms-5 text-xl normal-case">{chatroom_name}</span>
         </div>
       </div>
       <div className="flex-1">
-        <span className="ms-5 text-xl normal-case cursor-pointer" onClick={drawer}>Test Team</span>
+        <span
+          className="ms-5 cursor-pointer text-xl normal-case"
+          // onClick={drawer}
+        >
+          Test Team
+        </span>
       </div>
       <div className="flex-none gap-2">
         <div className="form-control"></div>
         <div className="dropdown-end dropdown">
           <label tabIndex={0} className="btn-ghost btn-circle avatar btn">
             <div className="w-10 rounded-full">
-              <img src="/images/stock/photo-1534528741775-53994a69daeb.jpg" />
+              <img src="https://source.unsplash.com/random/?city,night" />
+              {/* <span className="text-3xl">K</span> */}
             </div>
           </label>
           <ul
@@ -45,5 +61,3 @@ const TopNav:React.FC<TopNavProps> = ({drawer})=> {
     </div>
   );
 }
-
-export default TopNav;

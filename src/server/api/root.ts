@@ -2,6 +2,7 @@ import { createTRPCRouter } from "@/server/api/trpc";
 import { userRouter } from "./routers/user";
 import { scrumRouter } from "./routers/scrum";
 import { chatRouter } from "./routers/chat";
+import { notificationRouter } from "./routers/notification";
 import { imageRouter } from "./routers/image";
 
 /**
@@ -13,6 +14,7 @@ export const appRouter = createTRPCRouter({
   user: userRouter,
   scrum: scrumRouter,
   chat: chatRouter,
+  notification: notificationRouter,
   image: imageRouter,
 });
 

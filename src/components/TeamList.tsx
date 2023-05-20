@@ -6,30 +6,22 @@ import { formatTimestampToTime } from "@/utils/helper";
 //   teamInfoArr: TeamMenuItemProps[];
 // }
 
-export default function TeamList({
-  teamChatrooms,
-}: {
+interface TeamListProps {
   teamChatrooms: IChatroom[];
-}) {
-  // format timestamp into time
-  // const formatTimestampToTime = (timestamp: string) => {
-  //   const date = new Date(timestamp);
-  //   return date.getHours().toString() + ":" + date.getMinutes().toString();
-  // };
+  display: boolean;
+}
+
+export default function TeamList({ teamChatrooms, display }: TeamListProps) {
   if (teamChatrooms.length === 0) return null;
   return (
     <>
       {teamChatrooms.map((team) => (
-        <li key={team._id.toString()}>
+        <li key={team._id.toString()} hidden={!display}>
           <TeamMenuItem
             id={team._id.toString()}
             avatarUrl={"https://i.pravatar.cc/300?img=1"}
-            name={team.name}
-            lastSender={team.messages[0]?.sender.username || ""}
-            lastMessage={team.messages[0]?.text || ""}
-            lastMessageTime={formatTimestampToTime(
-              team.messages[0]?.timestamp || 0
-            )}
+            name={team.name || ""}
+            lastMessage={team.messages[0]}
           />
         </li>
       ))}

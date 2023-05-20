@@ -3,9 +3,9 @@ import mongoose, { ObjectId } from "mongoose";
 
 export interface IChatroom {
   _id: ObjectId;
-  name: string;
+  name?: string | null;
   avatarUrl?: string;
-  type: "personal" | "team";
+  type: "private" | "team";
   messages: Message[];
   participants: string[];
 }
@@ -19,11 +19,11 @@ export interface IChatroom {
 
 const chatroomSchema = new mongoose.Schema<IChatroom>(
   {
-    name: { type: String, required: true },
+    name: { type: String },
     avatarUrl: String,
     type: {
       type: String,
-      enum: ["personal", "team"],
+      enum: ["private", "team"],
       required: true,
     },
     messages: [
@@ -34,9 +34,12 @@ const chatroomSchema = new mongoose.Schema<IChatroom>(
         },
         text: String,
         timestamp: Number,
+        default: [],
       },
     ],
-    participants: [{ type: mongoose.Schema.Types.ObjectId, ref: "User" }],
+    participants: [
+      { type: mongoose.Schema.Types.ObjectId, ref: "User", required: true },
+    ],
   },
   { timestamps: true }
 );

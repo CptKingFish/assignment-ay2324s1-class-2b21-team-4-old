@@ -1,10 +1,16 @@
 import React from "react";
 import { toast } from "react-hot-toast";
 import { api } from "@/utils/api";
+import { TagPicker } from "rsuite";
 
 interface CreateTeamFormProps {
   setOpenAddChatroomModal: React.Dispatch<React.SetStateAction<boolean>>;
   refetchChatrooms: () => void;
+}
+
+interface FriendItem {
+  _id: string;
+  username: string;
 }
 
 export default function CreateTeamForm({
@@ -12,8 +18,20 @@ export default function CreateTeamForm({
   refetchChatrooms,
 }: CreateTeamFormProps) {
   const [chatroomName, setChatroomName] = React.useState("");
+  const [friendsList, setFriendsList] = React.useState<FriendItem[]>([]);
+  const [selectedUsers, setSelectedUsers] = React.useState<string[]>([]);
   const { mutate: createChatroom, isLoading: isLoadingChatroomCreate } =
     api.chat.createChatroom.useMutation();
+
+  const { data: friends } = api.chat.getFriends.useQuery();
+
+  React.useEffect(() => {
+    if (!friends) return;
+    setFriendsList(friends as FriendItem[]);
+  }, [friends]);
+
+  console.log(selectedUsers);
+
   return (
     <form
       className="flex min-w-[400px] flex-col gap-3"
@@ -47,32 +65,22 @@ export default function CreateTeamForm({
         placeholder="Name"
         className="input w-full rounded-md  border border-gray-300 bg-white shadow-sm outline-none focus:border-primary focus:outline-none"
       />
-      {/* <select
-              value={formData.status}
-              required
-              onChange={(e) => {
-                setFormData({ ...formData, status: e.target.value });
-              }}
-              className="select w-full max-w-xs rounded-md  border border-gray-300 bg-white shadow-sm outline-none focus:border-primary focus:outline-none"
-            >
-              <option disabled>Status</option>
-              <option value={PROGRESS.Todo}>{PROGRESS.Todo}</option>
-              <option value={PROGRESS.In_Progress}>
-                {PROGRESS.In_Progress}
-              </option>
-              <option value={PROGRESS.Done}>{PROGRESS.Done}</option>
-            </select> */}
-      {/* <textarea
-            className="textarea w-full max-w-xs rounded-md  border border-gray-300 bg-white shadow-sm outline-none focus:border-primary focus:outline-none"
-            name="description"
-            id="description"
-            cols={30}
-            placeholder="Description"
-            value={formData.description}
-            onChange={(e) => {
-              setFormData({ ...formData, description: e.target.value });
-            }}
-          ></textarea> */}
+      <TagPicker
+        size="md"
+        placeholder="People"
+        data={friendsList.map((friend) => {
+          return {
+            label: friend.username,
+            value: friend._id,
+          };
+        })}
+        className="flex-wrap items-center"
+        style={{ width: "100%", display: "flex", height: "3rem" }}
+        onChange={(value) => {
+          setSelectedUsers(value as string[]);
+        }}
+        value={selectedUsers}
+      />
 
       <button
         className={`btn-success h-10 w-full rounded-md  border border-gray-300 bg-white shadow-sm outline-none focus:border-primary focus:outline-none`}

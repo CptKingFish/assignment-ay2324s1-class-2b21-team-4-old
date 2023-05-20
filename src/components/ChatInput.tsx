@@ -16,24 +16,15 @@ const ChatInput = ({ channelCode }: ChatInputProps) => {
     api.chat.sendMessage.useMutation();
 
   const sendMessage = async () => {
-    console.log("sendMessage");
-
-    if (!input) return;
+    if (!input || isLoading) return;
     setIsLoading(true);
 
     try {
-      console.log("sending message");
-
       await sendMessageMutation({
         channel: channelCode,
         text: input,
       });
 
-      // await axios.post("/api/pusher/message/send", {
-      //   user_id: user?._id,
-      //   channel: channelCode,
-      //   text: input,
-      // });
       setInput("");
     } catch (e) {
       toast.error("Something went wrong. Please try again later.");
@@ -48,22 +39,16 @@ const ChatInput = ({ channelCode }: ChatInputProps) => {
   };
 
   const handleKeyDown = (e: React.KeyboardEvent<HTMLInputElement>) => {
-    console.log(e.key);
-
     if (e.key === "Enter") {
       e.preventDefault();
       void sendMessage();
     }
   };
 
-  const handleSend = () => {
-    void sendMessage();
-  };
-
   return (
     <div className="z-10 bg-white">
       <div className="flex items-center">
-        <div className="dropdown dropdown-top">
+        <div className="dropdown-top dropdown">
           <label tabIndex={0} className="btn">
             <svg
               xmlns="http://www.w3.org/2000/svg"

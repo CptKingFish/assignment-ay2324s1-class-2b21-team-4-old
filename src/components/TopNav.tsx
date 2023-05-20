@@ -23,16 +23,16 @@ export default function TopNav({
         </div>
       </div>
       <div className="flex-1">
-        <span
+        {/* <span
           className="ms-5 cursor-pointer text-xl normal-case"
           // onClick={drawer}
         >
           Test Team
-        </span>
+        </span> */}
       </div>
       <div className="flex-none gap-2">
         <div className="form-control"></div>
-        <div className="dropdown-end dropdown">
+        <div className="dropdown dropdown-end">
           <label tabIndex={0} className="btn-ghost btn-circle avatar btn">
             <div className="w-10 rounded-full">
               <img src="https://source.unsplash.com/random/?city,night" />

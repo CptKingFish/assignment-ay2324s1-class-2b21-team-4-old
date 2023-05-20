@@ -173,4 +173,29 @@ export const chatRouter = createTRPCRouter({
       });
       return result;
     }),
+  getFriends: privateProcedure.query(async ({ ctx }) => {
+    const { user } = ctx;
+
+    const chatrooms = await Chatroom.find({
+      participants: user._id,
+    }).select("participants");
+
+    const friends = chatrooms
+      .map((chatroom) => chatroom.participants)
+      .flat()
+      .filter((friend_id) => friend_id.toString() !== user._id.toString());
+
+    const uniqueFriends = [
+      ...new Set(friends.map((friend) => friend.toString())),
+    ];
+
+    const friendsWithNames = await Promise.all(
+      uniqueFriends.map(async (friend_id) => {
+        const friend = await User.findById(friend_id).select("username");
+        return friend;
+      })
+    );
+
+    return friendsWithNames;
+  }),
 });

@@ -46,7 +46,6 @@ export default function SendFriendRequestForm({
         className={`btn-success btn ${
           isLoadingSendFriendRequest ? "loading" : ""
         } h-10 w-full rounded-md border border-gray-300 bg-white shadow-sm outline-none focus:border-primary focus:outline-none`}
-        // className={`btn-success `}
       >
         Send
       </button>

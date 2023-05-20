@@ -5,6 +5,7 @@ export interface IFile {
   name: string;
   user: IUser;
   url: string;
+  createdAt: Date;
 }
 
 const fileSchema = new mongoose.Schema<IFile>(

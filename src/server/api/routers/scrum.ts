@@ -52,7 +52,7 @@ export const scrumRouter = createTRPCRouter({
           path: "files",
           model: File,
           populate: {
-            path: "users",
+            path: "user",
             model: User,
           },
         });

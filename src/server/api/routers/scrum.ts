@@ -91,7 +91,6 @@ export const scrumRouter = createTRPCRouter({
         status: input.status,
       });
       scrum.tasks.push(task);
-      console.log(task);
       await scrum.save();
       return task;
     }),
@@ -261,17 +260,43 @@ export const scrumRouter = createTRPCRouter({
       }
       let count_encountered_tasks = 0;
       console.log(input.destination_index, input.destination_status);
+      if (input.destination_index === 0) {
+        tasks.unshift(task as unknown as ITask);
+        await Promise.all([
+          Task.updateOne(
+            {
+              _id: input.task_id,
+            },
+            {
+              $set: {
+                status: input.destination_status,
+              },
+            }
+          ),
+          Scrum.updateOne(
+            {
+              _id: input.scrum_id,
+            },
+            {
+              $set: {
+                tasks: tasks.map((t) => t._id),
+              },
+            }
+          ),
+        ]);
+        return;
+      }
       for (let i = 0; i < tasks.length; i++) {
-        if (count_encountered_tasks === input.destination_index) {
-          console.log("i like cats", task, i);
-          tasks.splice(i, 0, task as unknown as ITask);
-          break;
-        }
         if (
           tasks[i]?.status === input.destination_status &&
           !tasks[i]?.backlog
         ) {
           count_encountered_tasks++;
+        }
+        if (count_encountered_tasks === input.destination_index) {
+          console.log("i like cats", i);
+          tasks.splice(i + 1, 0, task as unknown as ITask);
+          break;
         }
       }
       await Promise.all([

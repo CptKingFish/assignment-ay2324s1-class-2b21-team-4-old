@@ -11,20 +11,18 @@ import { setCookie, deleteCookie } from "cookies-next";
 import SideBarNav from "@/components/SideBarNav";
 import { ThemeProvider } from "@/components/ThemeProvider";
 
-
-
 const WrappedApp = ({ children }: { children: React.ReactNode }) => {
-  React.useEffect(() => {
-    const token = localStorage.getItem("token");
-    if (token) {
-      setCookie("token", token, {
-        // expire in 1 day
-        expires: new Date(Date.now() + 86400),
-      });
-    } else {
-      deleteCookie("token");
-    }
-  }, []);
+  // React.useEffect(() => {
+  //   const token = localStorage.getItem("token");
+  //   if (token) {
+  //     setCookie("token", token, {
+  //       // expire in 1 day
+  //       expires: new Date(Date.now() + 86400),
+  //     });
+  //   } else {
+  //     deleteCookie("token");
+  //   }
+  // }, []);
 
   return <>{children}</>;
 };

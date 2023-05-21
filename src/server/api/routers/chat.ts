@@ -14,6 +14,7 @@ import { env } from "@/env.mjs";
 import { m } from "framer-motion";
 import mongoose, { ObjectId } from "mongoose";
 import { pusherServer } from "@/utils/pusherConfig";
+import Notification from "@/models/Notification";
 
 export const chatRouter = createTRPCRouter({
   getMessagesAndChatroomInfo: privateProcedure
@@ -62,6 +63,71 @@ export const chatRouter = createTRPCRouter({
         messages: [],
         type: type,
       });
+
+      return chatroom;
+    }),
+
+  createTeam: privateProcedure
+    .input(
+      z.object({
+        chatroom_name: z.string(),
+        participants: z.array(z.string()),
+      })
+    )
+    .mutation(async ({ input, ctx }) => {
+      console.log(input);
+
+      const { chatroom_name, participants } = input;
+      const { user } = ctx;
+
+      // check if all participants exist
+
+      const foundParticipants = await User.find({
+        username: { $in: participants },
+      });
+
+      if (foundParticipants.length !== participants.length) {
+        throw new TRPCError({
+          code: "BAD_REQUEST",
+          message: "One or more participants do not exist.",
+        });
+      }
+
+      const chatroom = await Chatroom.create({
+        name: chatroom_name,
+        participants: [new mongoose.Types.ObjectId(user._id)],
+        messages: [],
+        type: "team",
+      });
+
+      const notifications = await Promise.all(
+        participants.map(async (participant_id) => {
+          const notification = await Notification.create({
+            type: "team_invite",
+            sender_id: new mongoose.Types.ObjectId(user._id),
+            receiver_id: new mongoose.Types.ObjectId(participant_id),
+            chatroom_id: chatroom._id,
+          });
+
+          await pusherServer.sendToUser(
+            participant_id,
+            "incoming-notification",
+            {
+              _id: notification._id.toString(),
+              type: notification.type,
+              sender: {
+                _id: user._id.toString(),
+                username: user.username,
+              },
+              sender_id: notification.sender_id.toString(),
+              receiver_id: notification.receiver_id.toString(),
+              createdAt: notification.createdAt,
+            }
+          );
+
+          return notification;
+        })
+      );
 
       return chatroom;
     }),
@@ -198,4 +264,33 @@ export const chatRouter = createTRPCRouter({
 
     return friendsWithNames;
   }),
+  unfriendUser: privateProcedure
+    .input(
+      z.object({
+        friend_id: z.string(),
+      })
+    )
+    .mutation(async ({ input, ctx }) => {
+      const { friend_id } = input;
+      const { user } = ctx;
+
+      const chatroom = await Chatroom.findOne({
+        participants: { $all: [user._id, friend_id] },
+        type: "private",
+      });
+
+      if (!chatroom) {
+        throw new TRPCError({
+          code: "BAD_REQUEST",
+          message: "You are not friends with this person.",
+        });
+      }
+
+      await Chatroom.deleteOne({
+        participants: { $all: [user._id, friend_id] },
+        type: "private",
+      });
+
+      return true;
+    }),
 });

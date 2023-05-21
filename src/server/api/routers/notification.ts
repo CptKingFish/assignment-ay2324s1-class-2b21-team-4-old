@@ -13,6 +13,7 @@ import { env } from "@/env.mjs";
 import Notification from "@/models/Notification";
 import Chatroom from "@/models/Chatroom";
 import { pusherServer } from "@/utils/pusherConfig";
+import mongoose from "mongoose";
 
 export const notificationRouter = createTRPCRouter({
   getNotifications: privateProcedure.query(async ({ ctx }) => {
@@ -93,31 +94,11 @@ export const notificationRouter = createTRPCRouter({
         });
       }
 
-      // send notification to receiver
-
-      // key={notification._id.toString()}
-      //           notification_id={notification._id.toString()}
-      //           sender_username={notification?.sender?.username.toString() || ""}
-      //           type={notification.type}
-      //           time={formatDate(notification.createdAt)}
-      //           avatarUrl={"https://source.unsplash.com/random/?city,night"}
-      //           handleRemoveNotification={handleRemoveNotification}
-
       const notification = await Notification.create({
         type: "friend_request",
         sender_id: user._id,
         receiver_id: receiver_id,
       });
-
-      //   sender: (Document<unknown, {}, IUser> & Omit<IUser & Required<{
-      //     _id: string;
-      // }>, never>) | null;
-      // _id: Schema.Types.ObjectId;
-      // type: "friend_request" | "team_invite";
-      // sender_id: Schema.Types.ObjectId;
-      // receiver_id: Schema.Types.ObjectId;
-      // chatroom_id?: Schema.Types.ObjectId | undefined;
-      // createdAt: Date;
 
       await pusherServer.sendToUser(receiver_id, "incoming-notification", {
         _id: notification._id.toString(),
@@ -207,5 +188,164 @@ export const notificationRouter = createTRPCRouter({
       });
 
       return chatroom;
+    }),
+  sendTeamInvite: privateProcedure
+    .input(
+      z.object({
+        receiver_ids: z.array(z.string()),
+        chatroom_id: z.string(),
+      })
+    )
+    .mutation(async ({ input, ctx }) => {
+      const { receiver_ids, chatroom_id } = input;
+      const { user } = ctx;
+
+      if (receiver_ids.includes(user._id.toString())) {
+        throw new TRPCError({
+          code: "BAD_REQUEST",
+          message: "You cannot invite yourself",
+        });
+      }
+
+      const isAlreadyInTeam = await Chatroom.findOne({
+        _id: chatroom_id,
+        type: "team",
+        participants: { $all: receiver_ids },
+      });
+
+      if (isAlreadyInTeam) {
+        throw new TRPCError({
+          code: "BAD_REQUEST",
+          message: "One or more of the users are already in the team",
+        });
+      }
+
+      const hasAlreadyInvited = await Notification.findOne({
+        sender_id: user._id,
+        receiver_id: { $in: receiver_ids },
+        type: "team_invite",
+        chatroom_id: chatroom_id,
+      });
+
+      if (hasAlreadyInvited) {
+        throw new TRPCError({
+          code: "BAD_REQUEST",
+          message: "One or more of the users have already been invited",
+        });
+      }
+
+      const notifications = await Promise.all(
+        receiver_ids.map(async (receiver_id) => {
+          const notification = await Notification.create({
+            type: "team_invite",
+            sender_id: new mongoose.Types.ObjectId(user._id),
+            receiver_id: new mongoose.Types.ObjectId(receiver_id),
+            chatroom_id: new mongoose.Types.ObjectId(chatroom_id),
+          });
+
+          await pusherServer.sendToUser(receiver_id, "incoming-notification", {
+            _id: notification._id.toString(),
+            type: notification.type,
+            sender: {
+              _id: user._id.toString(),
+              username: user.username,
+            },
+            sender_id: notification.sender_id.toString(),
+            receiver_id: notification.receiver_id.toString(),
+            chatroom_id: notification.chatroom_id?.toString() || "",
+            createdAt: notification.createdAt,
+          });
+
+          return notification;
+        })
+      );
+    }),
+  acceptTeamInvite: privateProcedure
+    .input(
+      z.object({
+        notification_id: z.string(),
+      })
+    )
+    .mutation(async ({ input, ctx }) => {
+      const { notification_id } = input;
+      const { user } = ctx;
+
+      const notification = await Notification.findById(notification_id);
+
+      if (!notification) {
+        throw new TRPCError({
+          code: "BAD_REQUEST",
+          message: "Notification does not exist",
+        });
+      }
+
+      if (notification.receiver_id.toString() !== user._id.toString()) {
+        throw new TRPCError({
+          code: "BAD_REQUEST",
+          message: "You cannot accept this team invite",
+        });
+      }
+
+      if (notification.type !== "team_invite") {
+        throw new TRPCError({
+          code: "BAD_REQUEST",
+          message: "Notification is not of type team invite",
+        });
+      }
+
+      // delete notification
+      await Notification.findByIdAndDelete(notification_id);
+
+      const chatroom = await Chatroom.findById(notification.chatroom_id);
+
+      if (!chatroom) {
+        throw new TRPCError({
+          code: "BAD_REQUEST",
+          message: "Chatroom does not exist",
+        });
+      }
+
+      chatroom.participants.push(user._id);
+      await chatroom.save();
+
+      return chatroom;
+    }),
+  declineTeamInvite: privateProcedure
+    .input(
+      z.object({
+        notification_id: z.string(),
+      })
+    )
+    .mutation(async ({ input, ctx }) => {
+      const { notification_id } = input;
+      const { user } = ctx;
+
+      const notification = await Notification.findById(notification_id);
+
+      if (!notification) {
+        throw new TRPCError({
+          code: "BAD_REQUEST",
+          message: "Notification does not exist",
+        });
+      }
+
+      if (notification.receiver_id.toString() !== user._id.toString()) {
+        throw new TRPCError({
+          code: "BAD_REQUEST",
+          message: "You cannot decline this team invite",
+        });
+      }
+
+      if (notification.type !== "team_invite") {
+        throw new TRPCError({
+          code: "BAD_REQUEST",
+          message: "Notification is not of type team invite",
+        });
+      }
+
+      // delete notification
+      await Notification.findByIdAndDelete(notification_id);
+
+      return notification;
     }),
 });

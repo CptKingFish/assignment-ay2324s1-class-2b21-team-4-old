@@ -1,7 +1,12 @@
 import { z } from "zod";
-import { createTRPCRouter, publicProcedure } from "@/server/api/trpc";
+import {
+  createTRPCRouter,
+  privateProcedure,
+  publicProcedure,
+} from "@/server/api/trpc";
 import { TRPCError } from "@trpc/server";
 import Scrum from "@/models/Scrum";
+import { pusherServer as pusher } from "@/utils/pusherConfig";
 import Task, { type ITask } from "@/models/Task";
 import File from "@/models/File";
 import User, { type IUser } from "@/models/User";
@@ -52,14 +57,14 @@ export const scrumRouter = createTRPCRouter({
           path: "files",
           model: File,
           populate: {
-            path: "users",
+            path: "user",
             model: User,
           },
         });
 
       return scrum;
     }),
-  createTask: publicProcedure
+  createTask: privateProcedure
     .input(
       z.object({
         scrum_id: z.string().nullish(),
@@ -69,7 +74,7 @@ export const scrumRouter = createTRPCRouter({
         status: z.string(),
       })
     )
-    .mutation(async ({ input }) => {
+    .mutation(async ({ input, ctx }) => {
       if (input.scrum_id === null) {
         throw new TRPCError({
           code: "BAD_REQUEST",
@@ -91,8 +96,15 @@ export const scrumRouter = createTRPCRouter({
         status: input.status,
       });
       scrum.tasks.push(task);
-      console.log(task);
       await scrum.save();
+      pusher
+        .trigger(`scrum-${scrum._id}`, "task-created", {
+          user_id: ctx.user._id,
+          task_id: task._id,
+          name: ctx.user.username,
+          avatar: ctx.user.avatar,
+        })
+        .catch(console.error);
       return task;
     }),
   changePeople: publicProcedure
@@ -210,17 +222,17 @@ export const scrumRouter = createTRPCRouter({
         }
       );
     }),
-  rearrangeTasks: publicProcedure
+  rearrangeTasks: privateProcedure
     .input(
       z.object({
-        scrum_id: z.string().nullish(),
+        scrum_id: z.string(),
         source_status: z.string(),
         destination_status: z.string(),
         destination_index: z.number(),
         task_id: z.string().nullish(),
       })
     )
-    .mutation(async ({ input }) => {
+    .mutation(async ({ input, ctx }) => {
       // console.log(input);
       const scrum = await Scrum.findById(input.scrum_id).populate({
         path: "tasks",
@@ -240,6 +252,13 @@ export const scrumRouter = createTRPCRouter({
           message: "task not found",
         });
       }
+      pusher
+        .trigger(`scrum-${input.scrum_id}`, "rearrange", {
+          task_id: input.task_id,
+          name: ctx.user.username,
+          avatar: ctx.user.avatar,
+        })
+        .catch(console.error);
       // tasks is an array of tasks
       if (tasks.length === 1) {
         await Task.updateOne(
@@ -260,18 +279,43 @@ export const scrumRouter = createTRPCRouter({
         }
       }
       let count_encountered_tasks = 0;
-      console.log(input.destination_index, input.destination_status);
+      if (input.destination_index === 0) {
+        tasks.unshift(task as unknown as ITask);
+        await Promise.all([
+          Task.updateOne(
+            {
+              _id: input.task_id,
+            },
+            {
+              $set: {
+                status: input.destination_status,
+              },
+            }
+          ),
+          Scrum.updateOne(
+            {
+              _id: input.scrum_id,
+            },
+            {
+              $set: {
+                tasks: tasks.map((t) => t._id),
+              },
+            }
+          ),
+        ]);
+        return;
+      }
       for (let i = 0; i < tasks.length; i++) {
-        if (count_encountered_tasks === input.destination_index) {
-          console.log("i like cats", task, i);
-          tasks.splice(i, 0, task as unknown as ITask);
-          break;
-        }
         if (
           tasks[i]?.status === input.destination_status &&
           !tasks[i]?.backlog
         ) {
           count_encountered_tasks++;
+        }
+        if (count_encountered_tasks === input.destination_index) {
+          console.log("i like cats", i);
+          tasks.splice(i + 1, 0, task as unknown as ITask);
+          break;
         }
       }
       await Promise.all([

@@ -4,11 +4,13 @@ import type { NextRequest } from "next/server";
 import { env } from "./env.mjs";
 
 export async function middleware(request: NextRequest) {
+  console.log("middleware", request.nextUrl.pathname);
   const authRoutes = ["/authenticate"];
   let verified = false;
   // check jwt validity
   let token = request.cookies.get("token")?.value;
   if (!token && !authRoutes.includes(request.nextUrl.pathname)) {
+    console.log("no token :(");
     return NextResponse.redirect(new URL("/authenticate", request.url));
   }
   if (token) {

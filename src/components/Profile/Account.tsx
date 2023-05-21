@@ -1,5 +1,4 @@
 import { useGlobalContext } from "@/context";
-import { api } from "@/utils/api";
 import Link from "next/link";
 import AccountChangeEmail from "./AccountChangeEmail";
 import AccountChangePassword from "./AccountChangePassword";

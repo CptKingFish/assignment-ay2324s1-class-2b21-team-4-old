@@ -139,6 +139,7 @@ const TeamChat = () => {
           isOpen={isOpen}
           handleDrawerToggle={handleDrawerToggle}
           participants={users}
+          chatroomType="team"
         />
       </div>
     </>

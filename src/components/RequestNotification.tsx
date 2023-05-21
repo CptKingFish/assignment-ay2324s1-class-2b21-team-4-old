@@ -32,41 +32,78 @@ export default function RequestNotification({
     isLoading: isLoadingDeclineFriendRequest,
   } = api.notification.declineFriendRequest.useMutation();
 
+  const { mutate: acceptTeamInvite, isLoading: isLoadingAcceptTeamInvite } =
+    api.notification.acceptTeamInvite.useMutation();
+
+  const { mutate: declineTeamInvite, isLoading: isLoadingDeclineTeamInvite } =
+    api.notification.declineTeamInvite.useMutation();
+
   const handleAcceptBtn = () => {
-    acceptFriendRequest(
-      { notification_id: notification_id },
-      {
-        onSuccess: () => {
-          handleRemoveNotification(notification_id);
-          refetchChatrooms();
-          toast.success("Friend request accepted.");
-        },
-        onError: (error) => {
-          toast.error(error.message);
-        },
-      }
-    );
+    if (type === "friend_request") {
+      acceptFriendRequest(
+        { notification_id: notification_id },
+        {
+          onSuccess: () => {
+            handleRemoveNotification(notification_id);
+            refetchChatrooms();
+            toast.success("Friend request accepted.");
+          },
+          onError: (error) => {
+            toast.error(error.message);
+          },
+        }
+      );
+    } else if (type === "team_invite") {
+      acceptTeamInvite(
+        { notification_id: notification_id },
+        {
+          onSuccess: () => {
+            handleRemoveNotification(notification_id);
+            refetchChatrooms();
+            toast.success("Team invite accepted.");
+          },
+          onError: (error) => {
+            toast.error(error.message);
+          },
+        }
+      );
+    }
   };
 
   const handleDeclineBtn = () => {
-    declineFriendRequest(
-      { notification_id: notification_id },
-      {
-        onSuccess: () => {
-          handleRemoveNotification(notification_id);
-          toast.success("Friend request declined.");
-        },
-        onError: (error) => {
-          toast.error(error.message);
-        },
-      }
-    );
+    if (type === "friend_request") {
+      declineFriendRequest(
+        { notification_id: notification_id },
+        {
+          onSuccess: () => {
+            handleRemoveNotification(notification_id);
+            toast.success("Friend request declined.");
+          },
+          onError: (error) => {
+            toast.error(error.message);
+          },
+        }
+      );
+    } else if (type === "team_invite") {
+      declineTeamInvite(
+        { notification_id: notification_id },
+        {
+          onSuccess: () => {
+            handleRemoveNotification(notification_id);
+            toast.success("Team invite declined.");
+          },
+          onError: (error) => {
+            toast.error(error.message);
+          },
+        }
+      );
+    }
   };
 
   return (
     <div className="bordered" hidden={!display}>
       <div className="mt-4 flex items-center">
-        <div className="avatar online mr-3">
+        <div className="online avatar mr-3">
           <div className="w-16 rounded-full">
             {/* <Image src={avatarUrl} alt="chat menu item" width={32} height={32} /> */}
             <img src={avatarUrl} alt="chat menu item" />

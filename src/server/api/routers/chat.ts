@@ -83,8 +83,10 @@ export const chatRouter = createTRPCRouter({
       // check if all participants exist
 
       const foundParticipants = await User.find({
-        username: { $in: participants },
+        _id: { $in: participants },
       });
+
+      console.log(foundParticipants);
 
       if (foundParticipants.length !== participants.length) {
         throw new TRPCError({
@@ -244,6 +246,7 @@ export const chatRouter = createTRPCRouter({
 
     const chatrooms = await Chatroom.find({
       participants: user._id,
+      type: "private",
     }).select("participants");
 
     const friends = chatrooms
@@ -264,6 +267,59 @@ export const chatRouter = createTRPCRouter({
 
     return friendsWithNames;
   }),
+  getFriendsNotInTeam: privateProcedure
+    .input(
+      z.object({
+        chatroom_id: z.string(),
+      })
+    )
+    .query(async ({ input, ctx }) => {
+      const { chatroom_id } = input;
+      const { user } = ctx;
+
+      const chatroom = await Chatroom.findById(chatroom_id);
+
+      if (!chatroom) {
+        throw new TRPCError({
+          code: "BAD_REQUEST",
+          message: "Chatroom not found",
+        });
+      }
+
+      if (!chatroom.participants.includes(user._id)) {
+        throw new TRPCError({
+          code: "BAD_REQUEST",
+          message: "Unauthorized",
+        });
+      }
+
+      const friends = await Chatroom.find({
+        participants: user._id,
+        type: "private",
+      }).select("participants");
+
+      const friendsNotInTeam = friends
+        .map((chatroom) => chatroom.participants)
+        .flat()
+        .filter(
+          (friend_id) =>
+            friend_id.toString() !== user._id.toString() &&
+            !chatroom.participants.includes(friend_id)
+        );
+
+      const uniqueFriends = [
+        ...new Set(friendsNotInTeam.map((friend) => friend.toString())),
+      ];
+
+      const friendsWithNames = await Promise.all(
+        uniqueFriends.map(async (friend_id) => {
+          return await User.findById(friend_id).select("username");
+        })
+      );
+
+      return friendsWithNames;
+    }),
+
   unfriendUser: privateProcedure
     .input(
       z.object({
@@ -290,6 +346,47 @@ export const chatRouter = createTRPCRouter({
         participants: { $all: [user._id, friend_id] },
         type: "private",
       });
+
+      return true;
+    }),
+  leaveTeam: privateProcedure
+    .input(
+      z.object({
+        chatroom_id: z.string(),
+      })
+    )
+    .mutation(async ({ input, ctx }) => {
+      const { chatroom_id } = input;
+      const { user } = ctx;
+
+      const chatroom = await Chatroom.findById(chatroom_id);
+
+      if (!chatroom) {
+        throw new TRPCError({
+          code: "BAD_REQUEST",
+          message: "Chatroom not found",
+        });
+      }
+
+      if (!chatroom.participants.includes(user._id)) {
+        throw new TRPCError({
+          code: "BAD_REQUEST",
+          message: "Unauthorized",
+        });
+      }
+
+      if (chatroom.type !== "team") {
+        throw new TRPCError({
+          code: "BAD_REQUEST",
+          message: "This is not a team chatroom",
+        });
+      }
+
+      chatroom.participants = chatroom.participants.filter(
+        (participant_id) => participant_id.toString() !== user._id.toString()
+      );
+
+      await chatroom.save();
 
       return true;
     }),

@@ -143,6 +143,7 @@ export default function PrivateChat() {
           isOpen={isOpen}
           handleDrawerToggle={handleDrawerToggle}
           participants={users}
+          chatroomType="private"
         />
       </div>
     </>

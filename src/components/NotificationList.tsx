@@ -6,6 +6,8 @@ import type { IUser } from "@/models/User";
 import { formatDate } from "@/utils/helper";
 import { useGlobalContext } from "@/context";
 import { Schema } from "mongoose";
+import { toast } from "react-hot-toast";
+import RequestNotificationToast from "./RequestNotificationToast";
 // import { ObjectId } from "mongoose";
 // import { Schema } from "zod";
 
@@ -49,6 +51,28 @@ NotificationListProps) {
     if (!pusherClient) return;
     pusherClient.bind("incoming-notification", (data: NotificationItem) => {
       console.log("incoming-notification", data);
+      toast.custom(
+        (t) => (
+          <div
+            className={`${
+              t.visible ? "animate-enter" : "animate-leave"
+            } pointer-events-auto flex w-full max-w-md rounded-lg bg-white shadow-lg ring-1 ring-black ring-opacity-5`}
+          >
+            <RequestNotificationToast
+              avatarUrl={"https://source.unsplash.com/random/?city,night"}
+              text={
+                data.type === "friend_request"
+                  ? `${data.sender?.username || ""} sent you a friend request.`
+                  : `${data.sender?.username || ""} invited you to join a team.`
+              }
+            />
+          </div>
+        ),
+        {
+          id: "chat-notification",
+          duration: 5000,
+        }
+      );
       setNotifications((prevNotifications) => {
         return [...prevNotifications, data];
       });

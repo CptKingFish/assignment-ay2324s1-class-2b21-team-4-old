@@ -4,16 +4,19 @@ import { api } from "@/utils/api";
 
 interface SendFriendRequestFormProps {
   setOpenAddChatroomModal: React.Dispatch<React.SetStateAction<boolean>>;
+  hidden: boolean;
 }
 
 export default function SendFriendRequestForm({
   setOpenAddChatroomModal,
+  hidden,
 }: SendFriendRequestFormProps) {
   const [username, setUsername] = React.useState("");
   const { mutate: sendFriendRequest, isLoading: isLoadingSendFriendRequest } =
     api.notification.sendFriendRequest.useMutation();
   return (
     <form
+      hidden={hidden}
       className="flex min-w-[400px] flex-col gap-3"
       onSubmit={(e) => {
         e.preventDefault();

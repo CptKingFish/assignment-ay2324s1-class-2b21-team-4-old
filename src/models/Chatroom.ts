@@ -35,6 +35,16 @@ const chatroomSchema = new mongoose.Schema<IChatroom>(
         text: String,
         timestamp: Number,
         default: [],
+        hasReplyTo: Boolean,
+        replyTo: {
+          _id: { type: mongoose.Schema.Types.ObjectId, ref: "User" },
+          sender: {
+            _id: { type: mongoose.Schema.Types.ObjectId, ref: "User" },
+            username: String,
+          },
+          text: String,
+          timestamp: Number,
+        },
       },
     ],
     participants: [

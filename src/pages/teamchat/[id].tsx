@@ -1,27 +1,25 @@
 import React, { useEffect } from "react";
 import { useGlobalContext } from "@/context";
-import { pusherClientConstructor } from "@/utils/pusherConfig";
+// import { pusherClientConstructor } from "@/utils/pusherConfig";
 import TopNav from "@/components/TopNav";
 import ChatInput from "@/components/ChatInput";
 import { useRouter } from "next/router";
 import ChatBody from "@/components/ChatBody";
-import { Message } from "@/utils/chat";
+import { type Message } from "@/utils/chat";
 import { api } from "@/utils/api";
 import UserSideBar from "@/components/UserSideBar";
 
 const TeamChat = () => {
   const router = useRouter();
   const { user, pusherClient } = useGlobalContext();
+  const [replyTo, setReplyTo] = React.useState<Message | null>(null);
   const [messages, setMessages] = React.useState<Message[]>([]);
   const [users, setUsers] = React.useState<Object[]>([]);
   // const [showDownButton, setShowDownButton] = React.useState(false);
-  const {
-    data: chatroomData,
-    refetch,
-    isLoading,
-  } = api.chat.getMessagesAndChatroomInfo.useQuery({
-    chatroom_id: router.query.id as string,
-  });
+  const { data: chatroomData, isLoading } =
+    api.chat.getMessagesAndChatroomInfo.useQuery({
+      chatroom_id: router.query.id as string,
+    });
 
   const { data: userRaw } = api.chat.getUsernamesFromChatroom.useQuery({
     chatroom_id: router.query.id as string,
@@ -120,9 +118,13 @@ const TeamChat = () => {
 
           <div className="relative flex h-full max-h-[calc(100vh-6rem)] flex-1 flex-col">
             <div className="scrollbar-thumb-blue scrollbar-thumb-rounded scrollbar-track-blue-lighter scrollbar-w-2 scrolling-touch flex h-full flex-1 flex-col-reverse gap-4 overflow-y-auto p-3 pb-16">
-              <ChatBody messages={messages} />
+              <ChatBody setReplyTo={setReplyTo} messages={messages} />
             </div>
-            <ChatInput channelCode={channelCode} />
+            <ChatInput
+              replyTo={replyTo}
+              setReplyTo={setReplyTo}
+              channelCode={channelCode}
+            />
           </div>
 
           {/*

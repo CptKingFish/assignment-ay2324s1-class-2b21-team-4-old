@@ -13,6 +13,7 @@ import type { PusherMemberStatusProps } from "@/utils/chat";
 export default function PrivateChat() {
   const router = useRouter();
   const { user, pusherClient } = useGlobalContext();
+  const [replyTo, setReplyTo] = React.useState<Message | null>(null);
   const [messages, setMessages] = React.useState<Message[]>([]);
   const [users, setUsers] = React.useState<Object[]>([]);
   const [name, setName] = React.useState("");
@@ -124,9 +125,13 @@ export default function PrivateChat() {
 
           <div className="relative flex h-full max-h-[calc(100vh-6rem)] flex-1 flex-col">
             <div className="scrollbar-thumb-blue scrollbar-thumb-rounded scrollbar-track-blue-lighter scrollbar-w-2 scrolling-touch flex h-full flex-1 flex-col-reverse gap-4 overflow-y-auto p-3 pb-16">
-              <ChatBody messages={messages} />
+              <ChatBody setReplyTo={setReplyTo} messages={messages} />
             </div>
-            <ChatInput channelCode={channelCode} />
+            <ChatInput
+              channelCode={channelCode}
+              replyTo={replyTo}
+              setReplyTo={setReplyTo}
+            />
           </div>
 
           {/*

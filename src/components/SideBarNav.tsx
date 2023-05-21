@@ -2,107 +2,100 @@ import ChatList from "./ChatList";
 import ChatMenuItem from "./ChatMenuItem";
 import React from "react";
 import TeamList from "./TeamList";
-import Profile from "./Profile";
+import Profile from "./Profile/Account";
 import Link from "next/link";
+import { api } from "@/utils/api";
+import { useGlobalContext } from "@/context";
+// import Chatroom from "@/models/Chatroom";
+import { toast } from "react-hot-toast";
+import { ChatRoom } from "@/utils/chat";
+import { IChatroom } from "@/models/Chatroom";
+import CustomModal from "./Modal";
+import CreateTeamForm from "./CreateTeamForm";
+import SendFriendRequestForm from "./SendFriendRequestForm";
+import NotificationList from "./NotificationList";
+import { Message } from "@/utils/chat";
+import { ObjectId } from "mongoose";
 
-const chatInfoArr = [
-  {
-    id: "1",
-    avatarUrl: "https://i.pravatar.cc/300?img=1",
-    name: "John Doe",
-    lastMessage: "Hello, World!",
-    lastMessageTime: "9:45 PM",
-  },
-  {
-    id: "2",
-    avatarUrl: "https://i.pravatar.cc/300?img=1",
-    name: "John Doe",
-    lastMessage: "Hello, World!",
-    lastMessageTime: "9:45 PM",
-  },
-  {
-    id: "3",
-    avatarUrl: "https://i.pravatar.cc/300?img=1",
-    name: "John Doe",
-    lastMessage: "Hello, World!",
-    lastMessageTime: "9:45 PM",
-  },
-  {
-    id: "4",
-    avatarUrl: "https://i.pravatar.cc/300?img=1",
-    name: "John Doe",
-    lastMessage: "Hello, World!",
-    lastMessageTime: "9:45 PM",
-  },
-  {
-    id: "5",
-    avatarUrl: "https://i.pravatar.cc/300?img=1",
-    name: "John Doe",
-    lastMessage: "Hello, World!",
-    lastMessageTime: "9:45 PM",
-  },
-  {
-    id: "6",
-    avatarUrl: "https://i.pravatar.cc/300?img=1",
-    name: "John Doe",
-    lastMessage: "Hello, World!",
-    lastMessageTime: "9:45 PM",
-  },
-  {
-    id: "7",
-    avatarUrl: "https://i.pravatar.cc/300?img=1",
-    name: "John Doe",
-    lastMessage: "Hello, World!",
-    lastMessageTime: "9:45 PM",
-  },
-  {
-    id: "8",
-    avatarUrl: "https://i.pravatar.cc/300?img=1",
-    name: "John Doe",
-    lastMessage: "Hello, World!",
-    lastMessageTime: "9:45 PM",
-  },
-];
-
-const teamInfoArr = [
-  {
-    id: "1",
-    avatarUrl: "https://i.pravatar.cc/300?img=1",
-    name: "Orlando",
-    lastSender: "John Doe",
-    lastMessage: "Hello, World!",
-    lastMessageTime: "9:45 PM",
-  },
-  {
-    id: "2",
-    avatarUrl: "https://i.pravatar.cc/300?img=1",
-    name: "Proj",
-    lastSender: "Mary Doe",
-    lastMessage: "Hello, World!",
-    lastMessageTime: "9:45 PM",
-  },
-];
+export interface ChatroomInfoWithParticipantNames {
+  _id: ObjectId;
+  name: string;
+  type: string;
+  participants: {
+    _id: string;
+    username: string;
+  }[];
+  messages: Message[];
+}
 
 export default function SideBarNav({
   children,
 }: {
   children: React.ReactNode;
 }) {
+  const { user } = useGlobalContext();
+  const [chatrooms, setChatrooms] = React.useState<IChatroom[]>([]);
+  // const [notifications, setNotifications] = React.useState<
+  //   typeof notificationsData
+  // >([]);
   const [activeTab, setActiveTab] = React.useState(0);
   const handleTabChange = (index: number) => {
     setActiveTab(index);
   };
+  const {
+    data: chatroomsData,
+    isLoading,
+    refetch: refetchChatrooms,
+  } = api.chat.getChatrooms.useQuery();
+  // const { data: notificationsData, isLoading: isLoadingNotifications } =
+  //   api.notification.getNotifications.useQuery();
+  const [openAddChatroomModal, setOpenAddChatroomModal] = React.useState(false);
+
+  React.useEffect(() => {
+    if (isLoading || !chatroomsData) return;
+    setChatrooms(chatroomsData);
+  }, [isLoading, chatroomsData]);
+
+  // get chatrooms with the type of team
+  const teamChatrooms: IChatroom[] = React.useMemo(() => {
+    return chatrooms.filter((chatroom: IChatroom) => chatroom.type === "team");
+  }, [chatrooms]);
+
+  // get chatrooms with the type of private
+
+  const privateChatrooms: IChatroom[] = React.useMemo(() => {
+    return chatrooms.filter(
+      (chatroom: IChatroom) => chatroom.type === "private"
+    );
+  }, [chatrooms]);
+
   return (
     <div className="drawer-mobile drawer -z-10">
       <input id="my-drawer-2" type="checkbox" className="drawer-toggle" />
       <div className="drawer-content flex flex-col">
-        <div>{children}</div>
-        <label
+        {children}
+        <CustomModal
+          modalOpen={openAddChatroomModal}
+          setModalOpen={setOpenAddChatroomModal}
+        >
+          {activeTab === 0 && (
+            <SendFriendRequestForm
+              setOpenAddChatroomModal={setOpenAddChatroomModal}
+            />
+          )}
+          {activeTab === 1 && (
+            <CreateTeamForm
+              setOpenAddChatroomModal={setOpenAddChatroomModal}
+              refetchChatrooms={refetchChatrooms}
+            />
+          )}
+        </CustomModal>
+        {/* <label
           htmlFor="my-drawer-2"
           className="btn-primary drawer-button btn lg:hidden"
         >
           Open drawer
-        </label>
+        </label> */}
       </div>
       <style>
         {` .drawer-side::-webkit-scrollbar { width: 0; background-color: transparent; } `}
@@ -110,14 +103,14 @@ export default function SideBarNav({
       <div className="drawer-side">
         <label htmlFor="my-drawer-2" className="drawer-overlay"></label>
         <ul className="base-200 menu relative w-80 bg-neutral-content p-4">
-          <div className="avatar">
+          {/* <div className="avatar">
             <div className=" w-24 content-center rounded-full ring ring-primary ring-offset-2 ring-offset-base-100">
-              <img src="https://source.unsplash.com/random/?city,night" />
+              <img src={user?.avatar || "/Profile.png"} />
             </div>
           </div>
           <Link className="btn-primary btn my-5 rounded-lg" href="/profile">
             Profile
-          </Link>
+          </Link> */}
           <div className="tabs mb-4 w-full">
             <a
               className={
@@ -186,32 +179,58 @@ export default function SideBarNav({
               </svg>
             </a>
           </div>
-          <input
-            type="text"
-            placeholder="Search chat"
-            className="input w-full max-w-xs"
-          />
-          <div>
-            {activeTab === 0 && <ChatList chatInfoArr={chatInfoArr} />}
-            {activeTab === 1 && <TeamList teamInfoArr={teamInfoArr} />}
-            {activeTab === 2 && null}
+          {activeTab !== 2 && (
+            <input
+              type="text"
+              placeholder="Search chat"
+              className="input w-full max-w-xs"
+            />
+          )}
+
+          <div className="flex-1">
+            <ChatList
+              privateChatrooms={privateChatrooms}
+              display={activeTab === 0}
+            />
+
+            <TeamList teamChatrooms={teamChatrooms} display={activeTab === 1} />
+
+            <NotificationList
+              refetchChatrooms={refetchChatrooms}
+              display={activeTab === 2}
+            />
+
+            {/* {activeTab === 0 && (
+              <ChatList privateChatrooms={privateChatrooms} />
+            )}
+            {activeTab === 1 && <TeamList teamChatrooms={teamChatrooms} />}
+            {activeTab === 2 && (
+              <NotificationList refetchChatrooms={refetchChatrooms} />
+            )} */}
           </div>
-          <button className="btn-outline glass btn-circle btn absolute bottom-10 right-10">
-            <svg
-              xmlns="http://www.w3.org/2000/svg"
-              fill="none"
-              viewBox="0 0 24 24"
-              strokeWidth={1.5}
-              stroke="currentColor"
-              className="h-6 w-6"
+          {activeTab !== 2 && (
+            <button
+              className="btn-outline glass btn-circle btn-lg btn sticky bottom-10"
+              onClick={() => {
+                setOpenAddChatroomModal(true);
+              }}
             >
-              <path
-                strokeLinecap="round"
-                strokeLinejoin="round"
-                d="M12 4.5v15m7.5-7.5h-15"
-              />
-            </svg>
-          </button>
+              <svg
+                xmlns="http://www.w3.org/2000/svg"
+                fill="none"
+                viewBox="0 0 24 24"
+                strokeWidth={1.5}
+                stroke="currentColor"
+                className="h-6 w-6"
+              >
+                <path
+                  strokeLinecap="round"
+                  strokeLinejoin="round"
+                  d="M12 4.5v15m7.5-7.5h-15"
+                />
+              </svg>
+            </button>
+          )}
         </ul>
       </div>
     </div>

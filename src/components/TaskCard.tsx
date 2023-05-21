@@ -1,136 +1,266 @@
 import React from "react";
-import { type Task, type User } from "./Tasks";
+import { Menu } from "@headlessui/react";
+import { type IUser } from "@/models/User";
+import TrashIcon from "@heroicons/react/20/solid/TrashIcon";
+import { motion } from "framer-motion";
+import ArchiveBoxIcon from "@heroicons/react/20/solid/ArchiveBoxIcon";
 import IconButton from "./IconButton";
-// import SimpleMDE from "react-simplemde-editor";
 import "rsuite/dist/rsuite.css";
 import CustomModal from "./Modal";
 import { TagPicker } from "rsuite";
 import MDEditor from "./MDEditor";
 import TaskCodeSnippets from "./TaskCodeSnippets";
+import { type ITask } from "@/models/Task";
+import { api } from "@/utils/api";
+import { toast } from "react-hot-toast";
+import clsx from "clsx";
+import { Draggable } from "react-beautiful-dnd";
 
 type Props = {
-  task: Task;
-  users: User[];
+  aggregatedTasks?: Map<string, ITask[]>;
+  task: ITask;
+  draggable: boolean;
+  users: IUser[];
+  backlog?: boolean;
+  index: number;
+  showMovement?: boolean;
+  movementInfo?: {
+    avatar?: string;
+    name: string;
+  };
+  isDragging: boolean;
 };
 
-const TaskCard = ({ task, users }: Props) => {
+const TaskCard = ({
+  movementInfo,
+  showMovement,
+  aggregatedTasks,
+  task,
+  users,
+  backlog,
+  index,
+  draggable,
+  isDragging,
+}: Props) => {
+  const utils = api.useContext();
+  const { mutate: deleteTask } = api.scrum.deleteTask.useMutation();
+  const { mutate: changeBacklog } =
+    api.scrum.changeTaskBacklogStatus.useMutation();
+  const { mutate: changePeople } = api.scrum.changePeople.useMutation();
   const [modalOpen, setModalOpen] = React.useState(false);
   const [activeTab, setActiveTab] = React.useState(0);
   return (
     <>
-      <div
-        key={task.id}
-        onClick={() => {
-          setModalOpen(true);
-        }}
-        className="flex cursor-pointer flex-col justify-center gap-2 rounded-xl bg-white px-3 py-2 shadow-sm outline outline-1 outline-[#dcdfe4] hover:bg-[#f7f8fa]"
+      <Draggable
+        draggableId={task._id}
+        index={index}
+        isDragDisabled={!draggable}
       >
-        <div className="flex flex-row items-center gap-2">
-          <div className="flex w-full flex-col">
-            <div className="flex w-full items-center justify-between">
-              <div className="text-md font-semibold">{task.text}</div>
-
-              <div onClick={(e) => e.stopPropagation()} className="dropdown">
-                <IconButton>
-                  <svg
-                    xmlns="http://www.w3.org/2000/svg"
-                    fill="none"
-                    viewBox="0 0 24 24"
-                    strokeWidth={1.5}
-                    stroke="currentColor"
-                    className="h-6 w-6"
-                  >
-                    <path
-                      strokeLinecap="round"
-                      strokeLinejoin="round"
-                      d="M6.75 12a.75.75 0 11-1.5 0 .75.75 0 011.5 0zM12.75 12a.75.75 0 11-1.5 0 .75.75 0 011.5 0zM18.75 12a.75.75 0 11-1.5 0 .75.75 0 011.5 0z"
-                    />
-                  </svg>
-                </IconButton>
-                <ul
-                  tabIndex={0}
-                  className="dropdown-content menu rounded-box mt-2 w-52 bg-base-100 p-2 text-sm shadow"
-                >
-                  <li>
-                    <p className="flex items-center gap-2 text-red-500">
-                      <svg
-                        xmlns="http://www.w3.org/2000/svg"
-                        fill="none"
-                        viewBox="0 0 24 24"
-                        strokeWidth={1.5}
-                        stroke="currentColor"
-                        className="h-6 w-6"
+        {(provided) => (
+          <motion.div layoutId={task._id}>
+            <div
+              {...provided.draggableProps}
+              {...provided.dragHandleProps}
+              ref={provided.innerRef}
+              key={task._id}
+              onClick={() => {
+                setModalOpen(true);
+              }}
+              className={clsx(
+                "relative flex cursor-pointer flex-col justify-center gap-2 rounded-xl bg-white px-3 py-2 shadow-sm outline outline-1 outline-[#dcdfe4] hover:bg-[#f7f8fa]"
+              )}
+            >
+              <div className="flex flex-row items-center gap-2">
+                <div className="flex w-full flex-col">
+                  <div className="flex w-full items-center justify-between">
+                    <div className="text-md font-semibold">{task.name}</div>
+                    <Menu as="div" className="relative inline-block text-left">
+                      <Menu.Button
+                        onClick={(e) => e.stopPropagation()}
+                        as="div"
+                        className="inline-flex w-full justify-center rounded-md text-sm font-medium text-white"
                       >
-                        <path
-                          strokeLinecap="round"
-                          strokeLinejoin="round"
-                          d="M14.74 9l-.346 9m-4.788 0L9.26 9m9.968-3.21c.342.052.682.107 1.022.166m-1.022-.165L18.16 19.673a2.25 2.25 0 01-2.244 2.077H8.084a2.25 2.25 0 01-2.244-2.077L4.772 5.79m14.456 0a48.108 48.108 0 00-3.478-.397m-12 .562c.34-.059.68-.114 1.022-.165m0 0a48.11 48.11 0 013.478-.397m7.5 0v-.916c0-1.18-.91-2.164-2.09-2.201a51.964 51.964 0 00-3.32 0c-1.18.037-2.09 1.022-2.09 2.201v.916m7.5 0a48.667 48.667 0 00-7.5 0"
-                        />
-                      </svg>
-                      Delete
-                    </p>
-                  </li>
-                  <li>
-                    <p className="flex items-center gap-2">
-                      <svg
-                        xmlns="http://www.w3.org/2000/svg"
-                        fill="none"
-                        viewBox="0 0 24 24"
-                        strokeWidth={1.5}
-                        stroke="currentColor"
-                        className="h-6 w-6"
-                      >
-                        <path
-                          strokeLinecap="round"
-                          strokeLinejoin="round"
-                          d="M15 13.5H9m4.06-7.19l-2.12-2.12a1.5 1.5 0 00-1.061-.44H4.5A2.25 2.25 0 002.25 6v12a2.25 2.25 0 002.25 2.25h15A2.25 2.25 0 0021.75 18V9a2.25 2.25 0 00-2.25-2.25h-5.379a1.5 1.5 0 01-1.06-.44z"
-                        />
-                      </svg>
-                      Move to Backlog
-                    </p>
-                  </li>
-                </ul>
-              </div>
-            </div>
-            <p className="text-sm text-gray-400">{task.description}</p>
-          </div>
-        </div>
+                        <IconButton>
+                          <svg
+                            xmlns="http://www.w3.org/2000/svg"
+                            fill="none"
+                            viewBox="0 0 24 24"
+                            strokeWidth={1.5}
+                            stroke="currentColor"
+                            className="h-6 w-6 text-black"
+                          >
+                            <path
+                              strokeLinecap="round"
+                              strokeLinejoin="round"
+                              d="M6.75 12a.75.75 0 11-1.5 0 .75.75 0 011.5 0zM12.75 12a.75.75 0 11-1.5 0 .75.75 0 011.5 0zM18.75 12a.75.75 0 11-1.5 0 .75.75 0 011.5 0z"
+                            />
+                          </svg>
+                        </IconButton>
+                      </Menu.Button>
+                      <Menu.Items className="absolute right-0 mt-2 origin-top-left divide-y divide-gray-100 rounded-md bg-white p-1 shadow-lg ring-1 ring-black ring-opacity-5 focus:outline-none">
+                        <Menu.Item>
+                          {({ active }) => (
+                            <button
+                              onClick={(e) => {
+                                e.stopPropagation();
+                                const confirm = window.confirm(
+                                  "Are you sure you want to delete this task?"
+                                );
+                                if (!confirm) return;
+                                toast.success("Task deleted");
+                                deleteTask(
+                                  { task_id: task._id },
+                                  {
+                                    onSuccess: () => {
+                                      utils.scrum.getScrumByChatId
+                                        .invalidate()
+                                        .catch(console.error);
+                                    },
+                                  }
+                                );
+                              }}
+                              className={`${
+                                active
+                                  ? "bg-gray-200 text-white"
+                                  : "text-gray-900"
+                              } text-md group flex w-full items-center space-x-1 rounded-md px-2 py-2`}
+                            >
+                              <TrashIcon className="h-6 w-6 text-red-600" />
+                              <span className="font-semibold text-red-600">
+                                Delete
+                              </span>
+                            </button>
+                          )}
+                        </Menu.Item>
+                        <Menu.Item>
+                          {({ active }) => (
+                            <button
+                              onClick={(e) => {
+                                e.stopPropagation();
+                                task.backlog = true;
+                                const curr_tasks = aggregatedTasks?.get(
+                                  task.status
+                                ) as ITask[];
+                                if (!curr_tasks) {
+                                  aggregatedTasks?.set(task.status, [task]);
+                                } else {
+                                  for (const task of curr_tasks) {
+                                    if (task._id === task._id) {
+                                      task.backlog = true;
+                                    }
+                                  }
+                                  aggregatedTasks?.set(task.status, curr_tasks);
+                                }
 
-        <div className="avatar-group flex flex-[3] -space-x-2 ">
-          {task.users.map((userId) => {
-            const user = users.find((user) => user.id === userId);
-            if (!user) {
-              return null;
-            }
-            return (
-              <div
-                key={user.id}
-                className="avatar border-[1px] border-[#dcdfe4]"
-              >
-                <div className="w-6">
-                  <img src={user?.profile_img} />
+                                changeBacklog(
+                                  {
+                                    backlog: backlog ? false : true,
+                                    task_id: task._id,
+                                  },
+                                  {
+                                    onSuccess: () => {
+                                      task.backlog = backlog ? false : true;
+                                      utils.scrum.getScrumByChatId
+                                        .invalidate()
+                                        .catch(console.error);
+                                    },
+                                  }
+                                );
+                              }}
+                              className={`${
+                                active
+                                  ? "bg-gray-200 text-white"
+                                  : "text-gray-900"
+                              } text-md group flex w-full items-center space-x-1 rounded-md px-2 py-2`}
+                            >
+                              <ArchiveBoxIcon className="h-6 w-6 text-black" />
+                              <span className="whitespace-nowrap font-semibold text-black">
+                                {backlog ? "Move to sprint" : "Move to backlog"}
+                              </span>
+                            </button>
+                          )}
+                        </Menu.Item>
+                      </Menu.Items>
+                    </Menu>
+                  </div>
+                  <p className="text-sm text-gray-400">{task.description}</p>
                 </div>
               </div>
-            );
-          })}
-        </div>
-      </div>
+
+              <div className="avatar-group flex flex-[3] -space-x-2 ">
+                {task.users.map((user) => {
+                  if (!user) {
+                    return null;
+                  }
+                  if (!user.avatar) {
+                    return (
+                      <div className="placeholder avatar" key={user._id}>
+                        <div
+                          className="justiy-center w-6 items-center rounded-full bg-neutral-focus text-neutral-content"
+                          style={{ lineHeight: "1.5rem" }}
+                        >
+                          <span className="m-0 p-0 text-xl">
+                            {user.username[0]}
+                          </span>
+                        </div>
+                      </div>
+                    );
+                  }
+                  return (
+                    <div
+                      key={user._id}
+                      className="avatar border-[1px] border-[#dcdfe4]"
+                    >
+                      <div className="w-6">
+                        <img src={user?.avatar} alt="profile img" />
+                      </div>
+                    </div>
+                  );
+                })}
+              </div>
+
+              {showMovement && (
+                <div className="absolute -left-2 -top-2">
+                  {movementInfo?.avatar ? (
+                    <div className="avatar border-[1px] border-[#dcdfe4]">
+                      <div className="w-6">
+                        <img src={movementInfo?.avatar} alt="profile img" />
+                      </div>
+                    </div>
+                  ) : (
+                    <div className="placeholder avatar">
+                      <div
+                        className="justiy-center w-6 items-center rounded-full border-2 border-rose-400 bg-neutral-focus text-neutral-content"
+                        style={{ lineHeight: "1.5rem" }}
+                      >
+                        <span className="m-0 p-0 text-xl">
+                          {movementInfo?.name[0]}
+                        </span>
+                      </div>
+                    </div>
+                  )}
+                </div>
+              )}
+            </div>
+          </motion.div>
+        )}
+      </Draggable>
       <CustomModal modalOpen={modalOpen} setModalOpen={setModalOpen}>
         <div className="h-[80vh] w-[60vw] text-black">
           <div className="flex items-center justify-between gap-4">
-            <h1 className="text-2xl font-bold">{task.text}</h1>
+            <h1 className="text-2xl font-bold">{task.name}</h1>
             <IconButton onClick={() => setModalOpen(false)}>
               <svg
                 xmlns="http://www.w3.org/2000/svg"
                 fill="none"
                 viewBox="0 0 24 24"
-                stroke-width="1.5"
+                strokeWidth="1.5"
                 stroke="currentColor"
                 className="h-6 w-6"
               >
                 <path
-                  stroke-linecap="round"
-                  stroke-linejoin="round"
+                  strokeLinecap="round"
+                  strokeLinejoin="round"
                   d="M6 18L18 6M6 6l12 12"
                 />
               </svg>
@@ -159,7 +289,7 @@ const TaskCard = ({ task, users }: Props) => {
               </div>
               <div className="flex flex-[10] justify-start">
                 <span className=" rounded-md bg-blue-500 px-[10px] py-[4px] font-semibold text-white">
-                  {task.progress}
+                  {task.status}
                 </span>
               </div>
             </div>
@@ -188,13 +318,16 @@ const TaskCard = ({ task, users }: Props) => {
                   placeholder="People"
                   data={users.map((user) => {
                     return {
-                      label: user.name,
-                      value: user.id,
+                      label: user.username,
+                      value: user._id,
                     };
                   })}
                   style={{ width: "100%", display: "block" }}
-                  onChange={console.log}
-                  value={task.users}
+                  onChange={(value: string[], _) => {
+                    changePeople({ users: value, task_id: task._id });
+                    task.users = users.filter((u) => value.includes(u._id));
+                  }}
+                  value={task.users.map((u) => u._id)}
                 />
               </div>
             </div>
@@ -214,8 +347,8 @@ const TaskCard = ({ task, users }: Props) => {
             </a>
           </div>
           <div className="mt-2">
-            {activeTab === 0 && <MDEditor />}
-            {activeTab === 1 && <TaskCodeSnippets />}
+            {activeTab === 0 && <MDEditor task={task} />}
+            {activeTab === 1 && <TaskCodeSnippets task={task} />}
           </div>
         </div>
       </CustomModal>

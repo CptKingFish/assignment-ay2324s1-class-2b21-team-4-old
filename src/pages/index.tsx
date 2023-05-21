@@ -1,10 +1,12 @@
 import { useGlobalContext } from "@/context";
+import { api } from "@/utils/api";
 import { type NextPage } from "next";
 import Head from "next/head";
 import Link from "next/link";
 
 const Home: NextPage = () => {
   const { user } = useGlobalContext();
+  // const { mutate: seed } = api.user.seedRedis.useMutation();
   return (
     <>
       <Head>

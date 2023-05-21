@@ -2,10 +2,16 @@ import React from "react";
 import { useRouter } from "next/router";
 import Login from "@/components/Login";
 import Register from "@/components/Register";
+import { useGlobalContext } from "@/context";
 
 const Authenticate = () => {
   const router = useRouter();
   const [activeTab, setActiveTab] = React.useState(0);
+  const { user } = useGlobalContext();
+  // React.useEffect(() => {
+  //   if (!user) return;
+  //   router.push("/chat").catch(console.error);
+  // }, [user, router]);
   const { message, type } = router.query;
 
   const handleTabChange = (index: number) => {

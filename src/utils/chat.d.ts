@@ -18,6 +18,7 @@ interface TeamMenuItemProps {
 }
 
 interface Message {
+  hasReplyTo: boolean;
   _id: ObjectId;
   sender: {
     _id: ObjectId;
@@ -25,6 +26,15 @@ interface Message {
   };
   text: string;
   timestamp: number;
+  replyTo?: {
+    _id: ObjectId;
+    sender: {
+      _id: ObjectId;
+      username: string;
+    };
+    text: string;
+    timestamp: number;
+  };
 }
 
 interface ChatRoom {

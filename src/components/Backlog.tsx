@@ -21,7 +21,7 @@ type Props = {
 };
 
 const Backlog = ({ scrum, users }: Props) => {
-  if (!scrum) return;
+  if (!scrum) return <></>;
   if (scrum.tasks.filter((t) => t.backlog).length === 0) {
     return (
       <div className="alert alert-success mt-4 shadow-lg">

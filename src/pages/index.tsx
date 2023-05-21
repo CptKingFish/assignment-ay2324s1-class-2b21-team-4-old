@@ -5,7 +5,7 @@ import Head from "next/head";
 import Link from "next/link";
 
 const Home: NextPage = () => {
-  const { user } = useGlobalContext();
+  const { user, isLoadingUser } = useGlobalContext();
   // const { mutate: seed } = api.user.seedRedis.useMutation();
   return (
     <>
@@ -16,7 +16,9 @@ const Home: NextPage = () => {
         <h1 className="inline-block bg-gradient-to-r from-green-500 to-blue-500 bg-clip-text text-6xl font-semibold text-transparent">
           Welcome to Swifty
         </h1>
-        {user ? (
+        {isLoadingUser ? (
+          <button className="btn">Loading...</button>
+        ) : user ? (
           <Link className="btn-primary btn" href="/chat">
             Go to chat
           </Link>

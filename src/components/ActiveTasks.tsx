@@ -5,7 +5,7 @@ import axios from "axios";
 import CustomModal from "./Modal";
 import { type IUser } from "@/models/User";
 import { type IScrum } from "@/models/Scrum";
-import { set, type Document } from "mongoose";
+import { type Document } from "mongoose";
 import { type ITask } from "@/models/Task";
 import { TagPicker } from "rsuite";
 import { api } from "@/utils/api";
@@ -104,19 +104,6 @@ const Tasks = ({
       scrum_id: scrum?._id,
       task_id: task._id,
     });
-    axios
-      .post("/api/pusher/scrum/rearrange", {
-        channel: `scrum-${scrum._id}`,
-        user_id: user?._id,
-        source_status,
-        source_index: source.index,
-        destination_status,
-        destination_index,
-        task_id: task._id,
-        name: user?.username,
-        avatar: user?.avatar,
-      })
-      .catch(console.error);
   };
 
   React.useEffect(() => {
@@ -130,32 +117,18 @@ const Tasks = ({
     channel.bind(
       "rearrange",
       (data: {
-        source_status: keyof typeof PROGRESS;
-        destination_status: keyof typeof PROGRESS;
-        destination_index: number;
-        source_index: number;
         task_id: string;
         user_id: string;
         name: string;
         avatar: string;
       }) => {
-        const {
-          source_status,
-          destination_status,
-          source_index,
-          destination_index,
-          task_id,
-          name,
-          avatar,
-        } = data;
+        const { task_id, name, avatar } = data;
         if (data.user_id === user._id) return;
+        utils.scrum.getScrumByChatId
+          .invalidate({ chat_id: scrum.chat_id })
+          .catch(console.error);
         const task = scrum?.tasks.find((task) => task._id === task_id);
         if (!task) return;
-        // first delete the task from the source
-        aggregatedTasks.get(source_status)?.splice(source_index, 1);
-        aggregatedTasks
-          .get(destination_status)
-          ?.splice(destination_index, 0, task);
         setMovementInfo({
           task_id: task._id,
           name,
@@ -168,17 +141,39 @@ const Tasks = ({
             avatar: "",
           });
         }, 2000);
-        // then add the task to the destination
+        return;
       }
     );
-    // channel.bind("task-updated", (data: ITask) => {
-    //   console.log("task updated");
-    //   const task = aggregatedTasks
-    //     .get(data.status)
-    //     ?.find((task) => task._id === data._id);
-    //   if (!task) return;
-    //   Object.assign(task, data);
-    // });
+    channel.bind(
+      "task-created",
+      (data: {
+        user_id: string;
+        task_id: string;
+        name: string;
+        avatar: string;
+      }) => {
+        console.log("task created");
+        if (data.user_id === user._id) return;
+        utils.scrum.getScrumByChatId
+          .invalidate({ chat_id: scrum.chat_id })
+          .catch(console.error);
+        const { task_id, name, avatar } = data;
+        const task = scrum?.tasks.find((task) => task._id === task_id);
+        if (!task) return;
+        setMovementInfo({
+          task_id: task._id,
+          name,
+          avatar,
+        });
+        setTimeout(() => {
+          setMovementInfo({
+            task_id: "",
+            name: "",
+            avatar: "",
+          });
+        }, 2000);
+      }
+    );
     // channel.bind("task-deleted", (data: ITask) => {
     //   console.log("task deleted");
     //   const task = aggregatedTasks

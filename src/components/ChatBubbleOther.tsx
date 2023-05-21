@@ -18,6 +18,18 @@ interface ChatBubbleOtherProps {
   setReplyTo: React.Dispatch<React.SetStateAction<Message | null>>;
   time: string;
   date: string;
+  hasReplyTo: boolean;
+  replyTo:
+    | {
+        _id: ObjectId;
+        sender: {
+          _id: ObjectId;
+          username: string;
+        };
+        text: string;
+        timestamp: number;
+      }
+    | undefined;
   senderName: string;
   avatarUrl: string;
   message_id: string;
@@ -27,6 +39,8 @@ export default function ChatBubbleOther({
   senderId,
   text,
   message_id,
+  replyTo,
+  hasReplyTo,
   time,
   date,
   setReplyTo,
@@ -60,8 +74,14 @@ export default function ChatBubbleOther({
           <img src={avatarUrl} />
         </div>
       </div>
-      <div className="chat-bubble">
-        <span className="mr-2 text-blue-500">{senderName}</span>
+      <div className="chat-bubble flex flex-col gap-1">
+        <span className="mr-2 text-green-500">{senderName}</span>
+        {hasReplyTo && (
+          <div className="rounded-sm border-l-4 border-l-blue-500 bg-slate-700 p-2">
+            <div className="text-blue-400">{replyTo?.sender.username}</div>
+            <div className="text-white">{replyTo?.text}</div>
+          </div>
+        )}
         <div className="flex items-end">
           <p>{text}</p>
           <div className="chat-footer ml-2 text-[0.8rem] opacity-50">

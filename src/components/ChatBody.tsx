@@ -33,6 +33,8 @@ export default function ChatBody({ messages, setReplyTo }: ChatBodyProps) {
         } else {
           return (
             <ChatBubbleOther
+              hasReplyTo={message.hasReplyTo}
+              replyTo={message.replyTo}
               key={message._id.toString()}
               message_id={message._id.toString()}
               setReplyTo={setReplyTo}

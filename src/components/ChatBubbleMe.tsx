@@ -67,7 +67,7 @@ export default function ChatBubbleMe({
       <div className="chat-bubble flex flex-col gap-1">
         <span className="mr-2 text-green-500">{senderName}</span>
         {hasReplyTo && (
-          <div className="rounded-sm border-l-4 border-l-green-500 bg-slate-700 p-2">
+          <div className="rounded-sm border-l-4 border-l-blue-500 bg-slate-700 p-2">
             <div className="text-blue-400">{replyTo?.sender.username}</div>
             <div className="text-white">{replyTo?.text}</div>
           </div>

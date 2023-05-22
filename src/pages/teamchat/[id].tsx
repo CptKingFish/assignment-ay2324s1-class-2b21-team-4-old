@@ -78,7 +78,7 @@ const TeamChat = () => {
     const messageHandler = (message: Message) => {
       console.log("incoming message", message);
 
-      setMessages((prev) => [message, ...prev]);
+      setMessages((prev) => [...prev, message]);
     };
 
     channel.bind("incoming-message", messageHandler);

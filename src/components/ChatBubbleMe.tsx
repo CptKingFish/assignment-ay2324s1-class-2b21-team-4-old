@@ -42,10 +42,14 @@ export default function ChatBubbleMe({
   //   timestamp: timestamp,
   return (
     <div
-      className="chat chat-end"
+      className="chat chat-end transition-all duration-[400]"
+      id={message_id}
       onClick={(e) => {
         if (e.detail === 2) {
-          document.querySelector("#chat-input").focus();
+          const chatInputElement = document.querySelector(
+            "#chat-input"
+          ) as HTMLInputElement;
+          chatInputElement.focus();
           setReplyTo({
             hasReplyTo: true,
             _id: message_id as unknown as ObjectId,
@@ -67,7 +71,24 @@ export default function ChatBubbleMe({
       <div className="chat-bubble flex flex-col gap-1">
         <span className="mr-2 text-green-500">{senderName}</span>
         {hasReplyTo && (
-          <div className="rounded-sm border-l-4 border-l-blue-500 bg-slate-700 p-2">
+          <div
+            onClick={() => {
+              if (!replyTo) return;
+              const replyElement = document.getElementById(
+                replyTo._id.toString()
+              ) as HTMLDivElement;
+              replyElement.scrollIntoView({
+                behavior: "smooth",
+                block: "center",
+                inline: "nearest",
+              });
+              replyElement.classList.add("opacity-70");
+              setTimeout(() => {
+                replyElement.classList.remove("opacity-70");
+              }, 600);
+            }}
+            className="cursor-pointer rounded-sm border-l-4 border-l-blue-500 bg-slate-700 p-2"
+          >
             <div className="text-blue-400">{replyTo?.sender.username}</div>
             <div className="text-white">{replyTo?.text}</div>
           </div>

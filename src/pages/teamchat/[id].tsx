@@ -117,7 +117,10 @@ const TeamChat = () => {
           )} */}
 
           <div className="relative flex h-full max-h-[calc(100vh-6rem)] flex-1 flex-col">
-            <div className="scrollbar-thumb-blue scrollbar-thumb-rounded scrollbar-track-blue-lighter scrollbar-w-2 scrolling-touch flex h-full flex-1 flex-col-reverse gap-4 overflow-y-auto p-3 pb-16">
+            <div
+              id="chat-body"
+              className="scrollbar-thumb-blue scrollbar-thumb-rounded scrollbar-track-blue-lighter scrollbar-w-2 scrolling-touch flex h-full flex-1 flex-col-reverse gap-4 overflow-y-auto scroll-smooth p-3 pb-16"
+            >
               <ChatBody setReplyTo={setReplyTo} messages={messages} />
             </div>
             <ChatInput

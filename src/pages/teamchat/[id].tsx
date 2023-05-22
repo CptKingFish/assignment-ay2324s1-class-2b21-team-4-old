@@ -9,6 +9,10 @@ import { type Message } from "@/utils/chat";
 import { api } from "@/utils/api";
 import UserSideBar from "@/components/UserSideBar";
 
+interface Admin {
+  admins: string[];
+}
+
 const TeamChat = () => {
   const router = useRouter();
   const { user, pusherClient } = useGlobalContext();
@@ -27,7 +31,7 @@ const TeamChat = () => {
 
   const {data:admin} = api.chat.getAdminFromChatroom.useQuery({
     chatroom_id: router.query.id as string,
-  });
+  }) as {data:Admin};
 
   const [isOpen, setIsOpen] = React.useState(false);
 
@@ -134,7 +138,7 @@ const TeamChat = () => {
               id="chat-body"
               className="scrollbar-thumb-blue scrollbar-thumb-rounded scrollbar-track-blue-lighter scrollbar-w-2 scrolling-touch flex h-full flex-1 flex-col-reverse gap-4 overflow-y-auto scroll-smooth p-3 pb-16"
             >
-              <ChatBody setReplyTo={setReplyTo} messages={messages} />
+              <ChatBody setReplyTo={setReplyTo} messages={messages} users={users} />
             </div>
             <ChatInput
               replyTo={replyTo}

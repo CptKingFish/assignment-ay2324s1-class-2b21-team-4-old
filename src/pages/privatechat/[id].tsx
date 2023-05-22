@@ -133,7 +133,7 @@ export default function PrivateChat() {
               id="chat-body"
               className="scrollbar-thumb-blue scrollbar-thumb-rounded scrollbar-track-blue-lighter scrollbar-w-2 scrolling-touch flex h-full flex-1 flex-col-reverse gap-4 overflow-y-auto scroll-smooth p-3 pb-16"
             >
-              <ChatBody setReplyTo={setReplyTo} messages={messages} />
+              <ChatBody setReplyTo={setReplyTo} messages={messages} users={users} />
             </div>
             <ChatInput
               channelCode={channelCode}

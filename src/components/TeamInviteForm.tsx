@@ -106,7 +106,7 @@ export default function TeamInviteForm({
       <button
         className={`btn-success h-10 w-full rounded-md  border border-gray-300 bg-white shadow-sm outline-none focus:border-primary focus:outline-none`}
       >
-        Create
+        Invite
       </button>
     </form>
   );

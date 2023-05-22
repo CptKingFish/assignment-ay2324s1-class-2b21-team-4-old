@@ -110,7 +110,9 @@ export default function RequestNotification({
           </div>
         </div>
         <div className="ml-2">
-          <div className="text-sm font-semibold">{`${sender_username} sent you a ${type} request.`}</div>
+          <div className="text-sm font-semibold">{`${sender_username} sent you a ${
+            type === "friend_request" ? "friend request" : "team invite"
+          }.`}</div>
         </div>
         <div className="ml-auto text-xs">{time}</div>
       </div>

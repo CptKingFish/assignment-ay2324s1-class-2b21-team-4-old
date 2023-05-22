@@ -5,7 +5,7 @@ import TopNav from "@/components/TopNav";
 import ChatInput from "@/components/ChatInput";
 import { useRouter } from "next/router";
 import ChatBody from "@/components/ChatBody";
-import { Message } from "@/utils/chat";
+import { Message, PendingMessage } from "@/utils/chat";
 import { api } from "@/utils/api";
 import UserSideBar from "@/components/UserSideBar";
 import type { PusherMemberStatusProps } from "@/utils/chat";
@@ -18,7 +18,11 @@ export default function PrivateChat() {
   const [users, setUsers] = React.useState<Object[]>([]);
   const [name, setName] = React.useState("");
   const [otherUserIsOnline, setOtherUserIsOnline] = React.useState(false);
-  // const [showDownButton, setShowDownButton] = React.useState(false);
+
+  const [pendingMessages, setPendingMessages] = React.useState<
+    PendingMessage[]
+  >([]);
+
   const {
     data: chatroomData,
     refetch,
@@ -31,7 +35,33 @@ export default function PrivateChat() {
     chatroom_id: router.query.id as string,
   });
 
-  // get the other user's name
+  console.log("msg", messages);
+  console.log("pending", pendingMessages);
+
+  // add pending message
+
+  const addPendingMessage = (message: PendingMessage) => {
+    setPendingMessages((prev) => [...prev, message]);
+  };
+
+  // remove pending message
+
+  const removePendingMessage = (message_id: string) => {
+    setPendingMessages((prev) => {
+      return prev.filter((message) => message._id !== message_id);
+    });
+  };
+
+  const setPendingMessageHasFailed = (message_id: string) => {
+    setPendingMessages((prev) => {
+      return prev.map((message) => {
+        if (message._id === message_id) {
+          return { ...message, hasFailed: true };
+        }
+        return message;
+      });
+    });
+  };
 
   React.useEffect(() => {
     if (!user || !userRaw) return;
@@ -62,8 +92,10 @@ export default function PrivateChat() {
   const channelCode = React.useMemo(() => {
     return "presence-" + (router.query.id as string);
   }, [router.query.id]);
+  console.log("excusem e");
 
   React.useEffect(() => {
+    // console.log(pusherClient);
     if (!pusherClient) return;
 
     // const pusherClient = pusherClientConstructor(user?._id);
@@ -71,9 +103,9 @@ export default function PrivateChat() {
     const channel = pusherClient.subscribe(channelCode);
 
     const messageHandler = (message: Message) => {
-      // console.log("incfoming message", message);
-
+      console.log("this da msg", message);
       setMessages((prev) => [...prev, message]);
+      removePendingMessage(message._id.toString());
     };
 
     const memberAddedHandler = (data: PusherMemberStatusProps) => {
@@ -92,6 +124,8 @@ export default function PrivateChat() {
 
     return () => {
       channel.unbind("incoming-message", messageHandler);
+      channel.unbind("pusher:member_added", memberAddedHandler);
+      channel.unbind("pusher:member_removed", memberRemovedHandler);
       pusherClient.unsubscribe(channelCode);
     };
   }, [user, channelCode, pusherClient]);
@@ -128,12 +162,18 @@ export default function PrivateChat() {
               id="chat-body"
               className="scrollbar-thumb-blue scrollbar-thumb-rounded scrollbar-track-blue-lighter scrollbar-w-2 scrolling-touch flex h-full flex-1 flex-col-reverse gap-4 overflow-y-auto scroll-smooth p-3 pb-16"
             >
-              <ChatBody setReplyTo={setReplyTo} messages={messages} />
+              <ChatBody
+                setReplyTo={setReplyTo}
+                messages={messages}
+                pendingMessages={pendingMessages}
+              />
             </div>
             <ChatInput
               channelCode={channelCode}
               replyTo={replyTo}
               setReplyTo={setReplyTo}
+              addPendingMessage={addPendingMessage}
+              setPendingMessageHasFailed={setPendingMessageHasFailed}
             />
           </div>
 

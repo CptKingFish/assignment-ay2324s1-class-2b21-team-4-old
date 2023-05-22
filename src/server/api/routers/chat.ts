@@ -186,6 +186,7 @@ export const chatRouter = createTRPCRouter({
   sendMessage: privateProcedure
     .input(
       z.object({
+        _id: z.string(),
         channel: z.string(),
         text: z.string(),
         replyTo: z
@@ -202,7 +203,7 @@ export const chatRouter = createTRPCRouter({
       })
     )
     .mutation(async ({ input, ctx }) => {
-      const { channel, text } = input;
+      const { _id, channel, text } = input;
       const { user } = ctx;
       const chatroom_id = channel.split("-")[1];
 
@@ -235,7 +236,7 @@ export const chatRouter = createTRPCRouter({
 
       const messageData = {
         hasReplyTo: !!input.replyTo,
-        _id: new mongoose.Types.ObjectId() as unknown as ObjectId,
+        _id: new mongoose.Types.ObjectId(_id) as unknown as ObjectId,
         sender: {
           _id: new mongoose.Types.ObjectId(user._id) as unknown as ObjectId,
           username: user.username,

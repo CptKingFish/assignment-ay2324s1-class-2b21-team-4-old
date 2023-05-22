@@ -27,6 +27,7 @@ interface NotificationItem {
   sender_id: Schema.Types.ObjectId;
   receiver_id: Schema.Types.ObjectId;
   chatroom_id?: Schema.Types.ObjectId | undefined;
+  chatroom_name: string;
   createdAt: Date;
 }
 
@@ -63,7 +64,9 @@ NotificationListProps) {
               text={
                 data.type === "friend_request"
                   ? `${data.sender?.username || ""} sent you a friend request.`
-                  : `${data.sender?.username || ""} invited you to join a team.`
+                  : `${data.sender?.username || ""} invited you to join ${
+                      data.chatroom_name
+                    }.`
               }
             />
           </div>

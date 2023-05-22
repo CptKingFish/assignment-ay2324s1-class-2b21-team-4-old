@@ -200,6 +200,15 @@ export const notificationRouter = createTRPCRouter({
       const { receiver_ids, chatroom_id } = input;
       const { user } = ctx;
 
+      const chatroom = await Chatroom.findById(chatroom_id);
+
+      if (!chatroom) {
+        throw new TRPCError({
+          code: "BAD_REQUEST",
+          message: "Chatroom does not exist",
+        });
+      }
+
       if (receiver_ids.includes(user._id.toString())) {
         throw new TRPCError({
           code: "BAD_REQUEST",
@@ -253,6 +262,7 @@ export const notificationRouter = createTRPCRouter({
             sender_id: notification.sender_id.toString(),
             receiver_id: notification.receiver_id.toString(),
             chatroom_id: notification.chatroom_id?.toString() || "",
+            chatroom_name: chatroom.name || "",
             createdAt: notification.createdAt,
           });
 

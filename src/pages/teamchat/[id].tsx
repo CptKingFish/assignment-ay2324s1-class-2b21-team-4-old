@@ -14,7 +14,7 @@ const TeamChat = () => {
   const { user, pusherClient } = useGlobalContext();
   const [replyTo, setReplyTo] = React.useState<Message | null>(null);
   const [messages, setMessages] = React.useState<Message[]>([]);
-  const [users, setUsers] = React.useState<Object[]>([]);
+  const [users, setUsers] = React.useState<any[]>([]);
   // const [showDownButton, setShowDownButton] = React.useState(false);
   const { data: chatroomData, isLoading } =
     api.chat.getMessagesAndChatroomInfo.useQuery({
@@ -22,6 +22,10 @@ const TeamChat = () => {
     });
 
   const { data: userRaw } = api.chat.getUsernamesFromChatroom.useQuery({
+    chatroom_id: router.query.id as string,
+  });
+
+  const {data:admin} = api.chat.getAdminFromChatroom.useQuery({
     chatroom_id: router.query.id as string,
   });
 
@@ -59,11 +63,19 @@ const TeamChat = () => {
   useEffect(() => {
     if (isLoading || !chatroomData) return;
     setMessages(chatroomData.messages);
+
     setUsers(
       (userRaw || []).map((user) => {
-        return { key: user._id, username: user.username };
+        return {
+          key: user._id,
+          username: user.username,
+          imageUrl: user.avatar || "/profile.png",
+          admin: admin.admins.includes(user._id),
+        };
       })
     );
+    
+
   }, [isLoading, chatroomData, userRaw]);
 
   const channelCode = React.useMemo(() => {
@@ -98,6 +110,7 @@ const TeamChat = () => {
   return (
     <>
       <TopNav
+        avatar={chatroomData?.avatarUrl || "/GroupProfile.png"}
         chatroom_name={chatroomData?.name || ""}
         openSidebarDetails={handleDrawerToggle}
       />
@@ -138,6 +151,8 @@ const TeamChat = () => {
           </button> */}
         </div>
         <UserSideBar
+          chatRoomAvatar={chatroomData?.avatarUrl ||"/GroupProfile.png"}
+          chatRoomName={chatroomData?.name || ""}
           isOpen={isOpen}
           handleDrawerToggle={handleDrawerToggle}
           participants={users}

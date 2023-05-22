@@ -3,6 +3,7 @@ import ChatBubbleMe from "@/components/ChatBubbleMe";
 import ChatBubbleOther from "@/components/ChatBubbleOther";
 import type { Message } from "@/utils/chat";
 import { useGlobalContext } from "@/context";
+import { api } from "@/utils/api";
 
 interface ChatBodyProps {
   messages: Message[];
@@ -27,7 +28,7 @@ export default function ChatBody({ messages, setReplyTo }: ChatBodyProps) {
               text={message.text}
               time={formatTimestampToTime(message.timestamp)}
               date={formatTimeStampToDate(message.timestamp)}
-              avatarUrl="https://source.unsplash.com/random/?city,night"
+              avatarUrl={user?.avatar || ""}
             />
           );
         } else {
@@ -43,7 +44,7 @@ export default function ChatBody({ messages, setReplyTo }: ChatBodyProps) {
               text={message.text}
               time={formatTimestampToTime(message.timestamp)}
               date={formatTimeStampToDate(message.timestamp)}
-              avatarUrl="https://source.unsplash.com/random/?city,night"
+              avatarUrl={api.user.getAvatarUrl.useQuery({user_id:message.sender._id.toString()})?.data?.avatar || "/Profile.png"}
             />
           );
         }

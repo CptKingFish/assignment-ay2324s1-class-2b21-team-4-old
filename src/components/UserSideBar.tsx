@@ -12,29 +12,13 @@ interface participant{
 }
 
 interface UserSideBarProps{
+    chatRoomName:string;
     isOpen:boolean;
     handleDrawerToggle:()=>void;
     participants: participant[];
 }
- const UserSideBar:React.FC<UserSideBarProps> = ({isOpen,handleDrawerToggle,participants}) => {
-    // const participants = [
-    //     { key: '1', name: 'You', imageUrl: '', admin: false },
-    //     { key: '2', name: 'Tim', imageUrl: '', admin: true },
-    //     { key: '3', name: 'Elliott', imageUrl: '', admin: false },
-    //     { key: '4', name: 'Sithu', imageUrl: '', admin: false },
-    //     { key: '5', name: 'You', imageUrl: '', admin: false },
-    //     { key: '6', name: 'Tim', imageUrl: '', admin: true },
-    //     { key: '7', name: 'Elliott', imageUrl: '', admin: false },
-    //     { key: '8', name: 'Sithu', imageUrl: '', admin: false },
-    //     { key: '9', name: 'You', imageUrl: '', admin: false },
-    //     { key: '10', name: 'Tim', imageUrl: '', admin: true },
-    //     { key: '11', name: 'Elliott', imageUrl: '', admin: false },
-    //     { key: '12', name: 'Sithu', imageUrl: '', admin: false },
-    //     { key: '13', name: 'You', imageUrl: '', admin: false },
-    //     { key: '14', name: 'Tim', imageUrl: '', admin: true },
-    //     { key: '15', name: 'Elliott', imageUrl: '', admin: false },
-    //     { key: '16', name: 'Sithu', imageUrl: '', admin: false },
-    // ];
+ const UserSideBar:React.FC<UserSideBarProps> = ({chatRoomName,isOpen,handleDrawerToggle,participants}) => {
+
 
     return (
         <>
@@ -59,7 +43,7 @@ interface UserSideBarProps{
                                 <img src="https://picsum.photos/200/300" />
                             </div>
                         </div>
-                        <div className="mt-2 font-bold">ADES</div>
+                        <div className="mt-2 font-bold">{chatRoomName}</div>
                         <div className="mt-2">Group | {participants.length} participants</div>
                     </div>
                     <div className="divider mx-2"></div>

@@ -6,9 +6,10 @@ import { useGlobalContext } from "@/context";
 
 interface ChatBodyProps {
   messages: Message[];
+  setReplyTo: React.Dispatch<React.SetStateAction<Message | null>>;
 }
 
-export default function ChatBody({ messages }: ChatBodyProps) {
+export default function ChatBody({ messages, setReplyTo }: ChatBodyProps) {
   const { user } = useGlobalContext();
   return (
     <>
@@ -16,9 +17,13 @@ export default function ChatBody({ messages }: ChatBodyProps) {
         if (message.sender._id.toString() === user?._id) {
           return (
             <ChatBubbleMe
+              hasReplyTo={message.hasReplyTo}
+              replyTo={message.replyTo}
+              message_id={message._id.toString()}
               key={message._id.toString()}
               senderId={message.sender._id.toString()}
               senderName={message.sender.username}
+              setReplyTo={setReplyTo}
               text={message.text}
               time={formatTimestampToTime(message.timestamp)}
               date={formatTimeStampToDate(message.timestamp)}
@@ -28,7 +33,11 @@ export default function ChatBody({ messages }: ChatBodyProps) {
         } else {
           return (
             <ChatBubbleOther
+              hasReplyTo={message.hasReplyTo}
+              replyTo={message.replyTo}
               key={message._id.toString()}
+              message_id={message._id.toString()}
+              setReplyTo={setReplyTo}
               senderId={message.sender._id.toString()}
               senderName={message.sender.username}
               text={message.text}

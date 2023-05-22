@@ -17,6 +17,7 @@ export default function PrivateChat() {
   const [messages, setMessages] = React.useState<Message[]>([]);
   const [users, setUsers] = React.useState<Object[]>([]);
   const [name, setName] = React.useState("");
+  const [otherUserId, setOtherUserId] = React.useState("");
   const [otherUserIsOnline, setOtherUserIsOnline] = React.useState(false);
   // const [showDownButton, setShowDownButton] = React.useState(false);
   const {
@@ -39,8 +40,8 @@ export default function PrivateChat() {
     const otherUser = userRaw.find(
       (participant) => user._id !== participant._id
     );
-
     setName(otherUser?.username || "");
+    setOtherUserId(otherUser?._id || "");
   }, [user, userRaw]);
 
   const [isOpen, setIsOpen] = React.useState(false);
@@ -105,6 +106,7 @@ export default function PrivateChat() {
   return (
     <>
       <TopNav
+        avatar={api.user.getAvatarUrl.useQuery({ user_id: otherUserId })?.data?.avatar || "/Profile.png"} 
         chatroom_name={name || ""}
         openSidebarDetails={handleDrawerToggle}
       />

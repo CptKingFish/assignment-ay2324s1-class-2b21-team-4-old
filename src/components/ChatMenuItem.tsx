@@ -26,7 +26,6 @@ export default function ChatMenuItem({
   lastMessage,
   display,
 }: ChatMenuItemProps) {
-  console.log("participants", participants);
 
   const { user, pusherClient, watchlistStatus } = useGlobalContext();
   // const [name, setName] = React.useState("");

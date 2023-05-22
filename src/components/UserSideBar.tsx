@@ -2,6 +2,7 @@ import Link from "next/link";
 import GroupParticipants from "./GroupParticipants";
 import GroupParticipantModal from "./GroupParticipantsModal";
 import React from "react";
+import { api } from "@/utils/api";
 
 interface participant{
     key:string;
@@ -12,13 +13,13 @@ interface participant{
 }
 
 interface UserSideBarProps{
+    chatRoomAvatar?:string;
     chatRoomName:string;
     isOpen:boolean;
     handleDrawerToggle:()=>void;
     participants: participant[];
 }
- const UserSideBar:React.FC<UserSideBarProps> = ({chatRoomName,isOpen,handleDrawerToggle,participants}) => {
-
+ const UserSideBar:React.FC<UserSideBarProps> = ({chatRoomAvatar,chatRoomName,isOpen,handleDrawerToggle,participants}) => {
 
     return (
         <>
@@ -40,7 +41,7 @@ interface UserSideBarProps{
                     <div className="self-center text-center">
                         <div className="avatar mt-5 self-center">
                             <div className="w-24 rounded-full">
-                                <img src="https://picsum.photos/200/300" />
+                                <img src={chatRoomAvatar || "/GroupProfile.png"}/>
                             </div>
                         </div>
                         <div className="mt-2 font-bold">{chatRoomName}</div>

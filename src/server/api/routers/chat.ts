@@ -39,7 +39,7 @@ export const chatRouter = createTRPCRouter({
         });
       }
 
-      chatroom.messages.reverse();
+      // chatroom.messages.reverse();
 
       return chatroom;
     }),
@@ -177,10 +177,10 @@ export const chatRouter = createTRPCRouter({
         replyTo: input.replyTo,
       };
 
+      console.log("messageData", messageData);
       chatroom.messages.push(messageData);
 
       await chatroom.save();
-      console.log(chatroom.messages[chatroom.messages.length - 1]);
 
       const result = await pusherServer.trigger(channel, "incoming-message", {
         ...messageData,

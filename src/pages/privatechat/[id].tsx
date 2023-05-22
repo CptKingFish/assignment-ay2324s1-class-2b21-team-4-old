@@ -73,7 +73,7 @@ export default function PrivateChat() {
     const messageHandler = (message: Message) => {
       // console.log("incfoming message", message);
 
-      setMessages((prev) => [message, ...prev]);
+      setMessages((prev) => [...prev, message]);
     };
 
     const memberAddedHandler = (data: PusherMemberStatusProps) => {

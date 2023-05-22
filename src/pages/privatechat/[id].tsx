@@ -7,7 +7,7 @@ import { useRouter } from "next/router";
 import ChatBody from "@/components/ChatBody";
 import { Message } from "@/utils/chat";
 import { api } from "@/utils/api";
-import UserSideBar from "@/components/UserSideBar";
+import PrivateSideBar from "@/components/PrivateSideBar";
 import type { PusherMemberStatusProps } from "@/utils/chat";
 import { participant } from "@/utils/participant";
 
@@ -33,6 +33,10 @@ export default function PrivateChat() {
     chatroom_id: router.query.id as string,
   });
 
+  const {data:avatarRaw} = api.user.getAvatarUrl.useQuery({
+    user_id: otherUserId
+  })
+
   // get the other user's name
 
   React.useEffect(() => {
@@ -56,7 +60,7 @@ export default function PrivateChat() {
     setMessages(chatroomData.messages);
     setUsers(
       (userRaw || []).map((user) => {
-        return { key: user._id, username: user.username,imageUrl:user.avatar||"/profile.png" };
+        return { key: user._id, username: user.username, imageUrl: user.avatar || "/profile.png" };
       })
     );
   }, [isLoading, chatroomData, userRaw]);
@@ -104,12 +108,10 @@ export default function PrivateChat() {
   //   scrollDownRef.current?.scrollIntoView({ behavior: "smooth" });
   // };
 
-  
-
   return (
     <>
       <TopNav
-        avatar={api.user.getAvatarUrl.useQuery({ user_id: otherUserId })?.data?.avatar || "/Profile.png"} 
+        avatar={api.user.getAvatarUrl.useQuery({ user_id: otherUserId })?.data?.avatar || "/Profile.png"}
         chatroom_name={name || ""}
         openSidebarDetails={handleDrawerToggle}
       />
@@ -152,7 +154,8 @@ export default function PrivateChat() {
             {"<"}
           </button> */}
         </div>
-        <UserSideBar
+        <PrivateSideBar
+          chatRoomAvatar={api.user.getAvatarUrl.useQuery({ user_id: otherUserId })?.data?.avatar || "/Profile.png"}
           chatRoomName={name}
           isOpen={isOpen}
           handleDrawerToggle={handleDrawerToggle}

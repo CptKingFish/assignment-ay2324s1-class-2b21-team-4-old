@@ -12,14 +12,14 @@ interface participant{
 
 }
 
-interface UserSideBarProps{
+interface PrivateSideBarProps{
     chatRoomAvatar?:string;
     chatRoomName:string;
     isOpen:boolean;
     handleDrawerToggle:()=>void;
     participants: participant[];
 }
- const UserSideBar:React.FC<UserSideBarProps> = ({chatRoomAvatar,chatRoomName,isOpen,handleDrawerToggle,participants}) => {
+ const PrivateSideBar:React.FC<PrivateSideBarProps> = ({chatRoomAvatar,chatRoomName,isOpen,handleDrawerToggle,participants}) => {
 
     return (
         <>
@@ -79,4 +79,4 @@ interface UserSideBarProps{
     );
 }
 
-export default UserSideBar;
+export default PrivateSideBar;

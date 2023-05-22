@@ -7,7 +7,7 @@ import { useRouter } from "next/router";
 import ChatBody from "@/components/ChatBody";
 import { type Message } from "@/utils/chat";
 import { api } from "@/utils/api";
-import UserSideBar from "@/components/UserSideBar";
+import GroupSideBar from "@/components/GroupSideBar";
 
 interface Admin {
   admins: string[];
@@ -157,7 +157,7 @@ const TeamChat = () => {
             {"<"}
           </button> */}
         </div>
-        <UserSideBar
+        <GroupSideBar
           chatRoomAvatar={chatroomData?.avatarUrl ||"/GroupProfile.png"}
           chatRoomName={chatroomData?.name || ""}
           isOpen={isOpen}

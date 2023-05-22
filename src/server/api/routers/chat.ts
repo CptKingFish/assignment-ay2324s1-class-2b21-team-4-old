@@ -188,6 +188,17 @@ export const chatRouter = createTRPCRouter({
       z.object({
         channel: z.string(),
         text: z.string(),
+        replyTo: z
+          .object({
+            _id: z.string(),
+            sender: z.object({
+              _id: z.string(),
+              username: z.string(),
+            }),
+            text: z.string(),
+            timestamp: z.number(),
+          })
+          .optional(),
       })
     )
     .mutation(async ({ input, ctx }) => {
@@ -223,6 +234,7 @@ export const chatRouter = createTRPCRouter({
       const timestamp = Date.now();
 
       const messageData = {
+        hasReplyTo: !!input.replyTo,
         _id: new mongoose.Types.ObjectId() as unknown as ObjectId,
         sender: {
           _id: new mongoose.Types.ObjectId(user._id) as unknown as ObjectId,
@@ -230,11 +242,13 @@ export const chatRouter = createTRPCRouter({
         },
         text: text,
         timestamp: timestamp,
+        replyTo: input.replyTo,
       };
 
       chatroom.messages.push(messageData);
 
       await chatroom.save();
+      console.log(chatroom.messages[chatroom.messages.length - 1]);
 
       const result = await pusherServer.trigger(channel, "incoming-message", {
         ...messageData,

@@ -252,6 +252,21 @@ export const userRouter = createTRPCRouter({
         });
       }
     }),
+    getAvatarUrl: publicProcedure
+    .input(z.object({ user_id: z.string() }))
+    .query(async ({ input }) => {
+      try{
+        return await User.findById(input.user_id).select("avatar");
+      }catch(error){
+        console.log(error)
+        throw new TRPCError({
+          code: "BAD_REQUEST",
+          message: "Error getting user avatar",
+        });
+      }
+    }),
+      
+
 
 
   // seedRedis: publicProcedure.mutation(async () => {

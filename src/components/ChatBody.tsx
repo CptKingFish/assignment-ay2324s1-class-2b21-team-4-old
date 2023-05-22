@@ -4,14 +4,17 @@ import ChatBubbleOther from "@/components/ChatBubbleOther";
 import type { Message } from "@/utils/chat";
 import { useGlobalContext } from "@/context";
 import IconButton from "./IconButton";
+import { api } from "@/utils/api";
 
 interface ChatBodyProps {
   messages: Message[];
   setReplyTo: React.Dispatch<React.SetStateAction<Message | null>>;
+  users:any[];
 }
 
-export default function ChatBody({ messages, setReplyTo }: ChatBodyProps) {
+export default function ChatBody({ messages, setReplyTo,users }: ChatBodyProps) {
   const { user } = useGlobalContext();
+  console.log(users)
   return (
     <>
       <div className="relative">
@@ -29,7 +32,7 @@ export default function ChatBody({ messages, setReplyTo }: ChatBodyProps) {
                 text={message.text}
                 time={formatTimestampToTime(message.timestamp)}
                 date={formatTimeStampToDate(message.timestamp)}
-                avatarUrl="https://source.unsplash.com/random/?city,night"
+                avatarUrl={user?.avatar || ""}
               />
             );
           } else {
@@ -45,7 +48,7 @@ export default function ChatBody({ messages, setReplyTo }: ChatBodyProps) {
                 text={message.text}
                 time={formatTimestampToTime(message.timestamp)}
                 date={formatTimeStampToDate(message.timestamp)}
-                avatarUrl="https://source.unsplash.com/random/?city,night"
+                avatarUrl={users.find(user => user.key === message.sender._id.toString()).imageUrl || "/Profile.png"}
               />
             );
           }

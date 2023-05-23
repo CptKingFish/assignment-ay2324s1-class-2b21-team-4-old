@@ -58,3 +58,16 @@ interface WatchListEventProps {
   name: "online" | "offline";
   user_ids: string[];
 }
+
+interface PendingMessage {
+  _id: string;
+  name: string;
+  avatarUrl: string;
+  text: string;
+  hasFailed: boolean;
+  hasReplyTo: boolean;
+  replyTo?: {
+    username: string;
+    text: string;
+  };
+}

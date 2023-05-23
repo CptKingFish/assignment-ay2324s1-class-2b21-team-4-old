@@ -42,7 +42,7 @@ export default function ChatBubbleMe({
   //   timestamp: timestamp,
   return (
     <div
-      className="chat chat-end transition-all duration-[400]"
+      className={`chat chat-end transition-all duration-[400]`}
       id={message_id}
       onClick={(e) => {
         if (e.detail === 2) {

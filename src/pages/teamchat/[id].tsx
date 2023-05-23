@@ -5,7 +5,7 @@ import TopNav from "@/components/TopNav";
 import ChatInput from "@/components/ChatInput";
 import { useRouter } from "next/router";
 import ChatBody from "@/components/ChatBody";
-import { type Message } from "@/utils/chat";
+import type { Message, PendingMessage } from "@/utils/chat";
 import { api } from "@/utils/api";
 import UserSideBar from "@/components/UserSideBar";
 
@@ -19,7 +19,10 @@ const TeamChat = () => {
   const [replyTo, setReplyTo] = React.useState<Message | null>(null);
   const [messages, setMessages] = React.useState<Message[]>([]);
   const [users, setUsers] = React.useState<any[]>([]);
-  // const [showDownButton, setShowDownButton] = React.useState(false);
+  const [pendingMessages, setPendingMessages] = React.useState<
+    PendingMessage[]
+  >([]);
+
   const { data: chatroomData, isLoading } =
     api.chat.getMessagesAndChatroomInfo.useQuery({
       chatroom_id: router.query.id as string,
@@ -29,9 +32,9 @@ const TeamChat = () => {
     chatroom_id: router.query.id as string,
   });
 
-  const {data:admin} = api.chat.getAdminFromChatroom.useQuery({
+  const { data: admin } = api.chat.getAdminFromChatroom.useQuery({
     chatroom_id: router.query.id as string,
-  }) as {data:Admin};
+  }) as { data: Admin };
 
   const [isOpen, setIsOpen] = React.useState(false);
 
@@ -39,30 +42,30 @@ const TeamChat = () => {
     setIsOpen(!isOpen);
   }
 
-  // useEffect(() => {
-  //   const handleScroll = () => {
-  //     console.log("window.pageYOffset", window.pageYOffset);
+  // add pending message
 
-  //     if (window.pageYOffset > 100) {
-  //       setShowDownButton(true);
-  //     } else {
-  //       setShowDownButton(false);
-  //     }
-  //   };
+  const addPendingMessage = (message: PendingMessage) => {
+    setPendingMessages((prev) => [...prev, message]);
+  };
 
-  //   window.addEventListener("scroll", handleScroll);
+  // remove pending message
 
-  //   return () => {
-  //     window.removeEventListener("scroll", handleScroll);
-  //   };
-  // }, []);
+  const removePendingMessage = (message_id: string) => {
+    setPendingMessages((prev) => {
+      return prev.filter((message) => message._id !== message_id);
+    });
+  };
 
-  // const handleDownButtonClick = () => {
-  //   window.scrollTo({
-  //     top: document.body.scrollHeight,
-  //     behavior: "smooth",
-  //   });
-  // };
+  const setPendingMessageHasFailed = (message_id: string) => {
+    setPendingMessages((prev) => {
+      return prev.map((message) => {
+        if (message._id === message_id) {
+          return { ...message, hasFailed: true };
+        }
+        return message;
+      });
+    });
+  };
 
   useEffect(() => {
     if (isLoading || !chatroomData) return;
@@ -78,8 +81,6 @@ const TeamChat = () => {
         };
       })
     );
-    
-
   }, [isLoading, chatroomData, userRaw]);
 
   const channelCode = React.useMemo(() => {
@@ -92,9 +93,9 @@ const TeamChat = () => {
     const channel = pusherClient.subscribe(channelCode);
 
     const messageHandler = (message: Message) => {
-      console.log("incoming message", message);
-
+      console.log("this da msg", message);
       setMessages((prev) => [...prev, message]);
+      removePendingMessage(message._id.toString());
     };
 
     channel.bind("incoming-message", messageHandler);
@@ -138,12 +139,19 @@ const TeamChat = () => {
               id="chat-body"
               className="scrollbar-thumb-blue scrollbar-thumb-rounded scrollbar-track-blue-lighter scrollbar-w-2 scrolling-touch flex h-full flex-1 flex-col-reverse gap-4 overflow-y-auto scroll-smooth p-3 pb-16"
             >
-              <ChatBody setReplyTo={setReplyTo} messages={messages} users={users} />
+              <ChatBody
+                setReplyTo={setReplyTo}
+                messages={messages}
+                users={users}
+                pendingMessages={pendingMessages}
+              />
             </div>
             <ChatInput
               replyTo={replyTo}
               setReplyTo={setReplyTo}
               channelCode={channelCode}
+              addPendingMessage={addPendingMessage}
+              setPendingMessageHasFailed={setPendingMessageHasFailed}
             />
           </div>
 
@@ -158,11 +166,12 @@ const TeamChat = () => {
           </button> */}
         </div>
         <UserSideBar
-          chatRoomAvatar={chatroomData?.avatarUrl ||"/GroupProfile.png"}
+          chatRoomAvatar={chatroomData?.avatarUrl || "/GroupProfile.png"}
           chatRoomName={chatroomData?.name || ""}
           isOpen={isOpen}
           handleDrawerToggle={handleDrawerToggle}
           participants={users}
+          chatroomType="team"
         />
       </div>
     </>

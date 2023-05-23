@@ -4,6 +4,7 @@ import GroupParticipantModal from "./GroupParticipantsModal";
 import React from "react";
 import { api } from "@/utils/api";
 import toast from "react-hot-toast";
+import { useGlobalContext } from "@/context";
 
 interface participant{
     key:string;
@@ -23,7 +24,7 @@ interface GroupSideBarProps{
 }
  const GroupSideBar:React.FC<GroupSideBarProps> = ({chatRoomId,chatRoomAvatar,chatRoomName,isOpen,handleDrawerToggle,participants}) => {
     const {mutate:leaveTeam} = api.chat.leaveTeam.useMutation();
-
+    const {user} = useGlobalContext();
     function handleLeave(){
         leaveTeam({chatroom_id:chatRoomId}, {
             onSuccess: (data) => {
@@ -79,6 +80,7 @@ interface GroupSideBarProps{
                                 name={participant.username}
                                 imageUrl={participant.imageUrl}
                                 admin={participant.admin}
+                                self = {user?.username === participant.username}
                             />
                         ))}
                     </div>

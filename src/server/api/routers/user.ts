@@ -279,3 +279,11 @@ export const userRouter = createTRPCRouter({
   //   console.log("yayyy");
   // }),
 });
+
+export const config = {
+  api: {
+    bodyParser: {
+      sizeLimit: '5mb',
+    },
+  },
+};

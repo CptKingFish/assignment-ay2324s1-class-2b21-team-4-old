@@ -9,7 +9,7 @@ import { Message, PendingMessage } from "@/utils/chat";
 import { api } from "@/utils/api";
 import UserSideBar from "@/components/UserSideBar";
 import type { PusherMemberStatusProps } from "@/utils/chat";
-import { participant } from "@/utils/participant";
+import { toast } from "react-hot-toast";
 
 export default function PrivateChat() {
   const router = useRouter();
@@ -20,6 +20,7 @@ export default function PrivateChat() {
   const [name, setName] = React.useState("");
   const [otherUserId, setOtherUserId] = React.useState("");
   const [otherUserIsOnline, setOtherUserIsOnline] = React.useState(false);
+  // const [msgCounter, setMsgCounter] = React.useState(0);
 
   const [pendingMessages, setPendingMessages] = React.useState<
     PendingMessage[]
@@ -94,8 +95,17 @@ export default function PrivateChat() {
 
   const channelCode = React.useMemo(() => {
     return "presence-" + (router.query.id as string);
-  }, [router.query.id]);
-  console.log("excusem e");
+  }, [router]);
+
+  // const [chatroom_id, setChatroom_id] = React.useState("");
+
+  // React.useEffect(() => {
+  //   console.log(window.location.href);
+  //   const url = window.location.href;
+  //   setChatroom_id(url.substring(url.lastIndexOf("/") + 1));
+  // }, []);
+
+  // console.log("leid", chatroom_id);
 
   React.useEffect(() => {
     // console.log(pusherClient);
@@ -133,11 +143,82 @@ export default function PrivateChat() {
     };
   }, [user, channelCode, pusherClient]);
 
-  // const scrollDownRef = React.useRef<HTMLDivElement | null>(null);
+  // /// // / /
 
-  // const scrollToBottom = () => {
-  //   scrollDownRef.current?.scrollIntoView({ behavior: "smooth" });
-  // };
+  const scrollDownRef = React.useRef<HTMLDivElement | null>(null);
+
+  const scrollToBottom = () => {
+    scrollDownRef.current?.scrollIntoView({ behavior: "smooth" });
+  };
+
+  const chatroom_id = React.useMemo(() => {
+    return router.query.id as string;
+  }, [router.query.id]);
+
+  const { mutate: getMoreMessages } = api.chat.getMoreMessages.useMutation();
+
+  const scrollableRef = React.useRef<HTMLDivElement>(null);
+  const counter = React.useRef(0);
+  const msgCounter = React.useMemo(() => {
+    return messages.length;
+  }, [messages]);
+
+  const [getMoreMessagesIsLoading, setGetMoreMessagesIsLoading] =
+    React.useState(false);
+
+  React.useEffect(() => {
+    const scrollableElement = scrollableRef.current;
+
+    const handleScroll = () => {
+      if (!scrollableElement) return;
+      const scrollTop = scrollableElement.scrollTop;
+      const clientHeight = scrollableElement.clientHeight;
+      const scrollHeight = scrollableElement.scrollHeight;
+
+      console.log(scrollTop, clientHeight, scrollHeight);
+
+      if (-scrollTop + clientHeight >= scrollHeight - 200) {
+        console.log("Scrolled to the top!");
+        console.log(chatroom_id);
+
+        // if (counter.current === 3) return;
+        counter.current++;
+
+        if (!chatroom_id || getMoreMessagesIsLoading) return;
+
+        setGetMoreMessagesIsLoading(true);
+
+        getMoreMessages(
+          {
+            chatroom_id: chatroom_id,
+            skipCount: 20,
+            limitValue: 20,
+          },
+          {
+            onSuccess: (data) => {
+              console.log(data);
+              setMessages((prev) => [...data, ...prev]);
+            },
+
+            onError: (error) => {
+              toast.error(error.message);
+            },
+            onSettled: () => {
+              setGetMoreMessagesIsLoading(false);
+            },
+          }
+        );
+      }
+    };
+
+    if (!scrollableElement) return;
+
+    scrollableElement.addEventListener("scroll", handleScroll);
+
+    return () => {
+      scrollableElement.removeEventListener("scroll", handleScroll);
+    };
+  }, []);
 
   return (
     <>
@@ -167,6 +248,7 @@ export default function PrivateChat() {
           <div className="relative flex h-full max-h-[calc(100vh-6rem)] flex-1 flex-col">
             <div
               id="chat-body"
+              ref={scrollableRef}
               className="scrollbar-thumb-blue scrollbar-thumb-rounded scrollbar-track-blue-lighter scrollbar-w-2 scrolling-touch flex h-full flex-1 flex-col-reverse gap-4 overflow-y-auto scroll-smooth p-3 pb-16"
             >
               <ChatBody
@@ -205,4 +287,12 @@ export default function PrivateChat() {
       </div>
     </>
   );
+}
+
+export function getServerSideProps({ req, query }: { req: any; query: any }) {
+  return {
+    props: {
+      initQuery: query,
+    },
+  };
 }

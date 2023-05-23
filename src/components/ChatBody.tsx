@@ -1,3 +1,4 @@
+import React from "react";
 import { formatTimeStampToDate, formatTimestampToTime } from "@/utils/helper";
 import ChatBubbleMe from "@/components/ChatBubbleMe";
 import ChatBubbleOther from "@/components/ChatBubbleOther";
@@ -21,7 +22,27 @@ export default function ChatBody({
   users,
 }: ChatBodyProps) {
   const { user } = useGlobalContext();
-  console.log(users);
+  // const scrollableRef = React.useRef<HTMLDivElement>(null);
+  // React.useEffect(() => {
+  //   const scrollableElement = scrollableRef.current;
+
+  //   const handleScroll = () => {
+  //     if (!scrollableElement) return;
+  //     console.log(scrollableElement.scrollTop);
+  //     if (scrollableElement.scrollTop === 0) {
+  //       // Scrolled to the top of the element
+  //       console.log("Scrolled to the top!");
+  //     }
+  //   };
+
+  //   if (!scrollableElement) return;
+
+  //   scrollableElement.addEventListener("scroll", handleScroll);
+
+  //   return () => {
+  //     scrollableElement.removeEventListener("scroll", handleScroll);
+  //   };
+  // }, []);
   return (
     <>
       <div className="relative">
@@ -79,52 +100,6 @@ export default function ChatBody({
           );
         })}
 
-        {/* <div className={`chat chat-end transition-all duration-[400]`}>
-          <div className="chat-image avatar">
-            <div className="w-10 rounded-full">
-              <img
-                src={"https://source.unsplash.com/random/?city,night"}
-                alt="profile img"
-              />
-            </div>
-          </div>
-          <div className="chat-bubble relative flex cursor-pointer flex-col gap-1 opacity-25">
-            <div className="flex justify-between">
-              <span className="mr-2 text-green-500">{"sithulol"}</span>
-              <button className="opacity-100">
-                <svg
-                  xmlns="http://www.w3.org/2000/svg"
-                  fill="none"
-                  viewBox="0 0 24 24"
-                  strokeWidth={1.5}
-                  stroke="currentColor"
-                  className="h-5 w-5"
-                >
-                  <path
-                    strokeLinecap="round"
-                    strokeLinejoin="round"
-                    d="M16.023 9.348h4.992v-.001M2.985 19.644v-4.992m0 0h4.992m-4.993 0l3.181 3.183a8.25 8.25 0 0013.803-3.7M4.031 9.865a8.25 8.25 0 0113.803-3.7l3.181 3.182m0-4.991v4.99"
-                  />
-                </svg>
-              </button>
-            </div>
-
-            <div className="cursor-pointer rounded-sm border-l-4 border-l-blue-500 bg-slate-700 p-2">
-              <div className="text-blue-400">{"nik"}</div>
-              <div className="text-white">{"ha"}</div>
-            </div>
-
-            <div className="flex items-end">
-              <p>{"has"}</p>
-
-              <div className="chat-footer ml-2 text-[0.8rem] opacity-50"> </div>
-            </div>
-          </div>
-
-          <div className="chat-footer text-[0.8rem] opacity-50">{"."}</div>
-        </div> */}
-
-        {/* fff */}
         <div
           className="fixed right-8"
           onClick={() => {

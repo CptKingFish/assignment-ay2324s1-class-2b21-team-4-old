@@ -15,6 +15,7 @@ import { m } from "framer-motion";
 import mongoose, { ObjectId } from "mongoose";
 import { pusherServer } from "@/utils/pusherConfig";
 import Notification from "@/models/Notification";
+import { ChatRoom } from "@/utils/chat";
 
 export const chatRouter = createTRPCRouter({
   getMessagesAndChatroomInfo: privateProcedure
@@ -26,23 +27,169 @@ export const chatRouter = createTRPCRouter({
     .query(async ({ input, ctx }) => {
       const { chatroom_id } = input;
       const { user } = ctx;
-      const chatroom = await Chatroom.findById(chatroom_id);
+
+      const skipCount = 0; // Number of messages to skip
+      const limitValue = 20; // Maximum number of messages to retrieve
+
+      const chatroom_id_obj = new mongoose.Types.ObjectId(chatroom_id);
+
+      const chatroom: ChatRoom = (
+        await Chatroom.aggregate([
+          { $match: { _id: chatroom_id_obj } },
+          { $unwind: { path: "$messages", preserveNullAndEmptyArrays: true } },
+          { $sort: { "messages.timestamp": -1 } },
+          {
+            $group: {
+              _id: "$_id",
+              name: { $first: "$name" },
+              type: { $first: "$type" },
+              participants: { $first: "$participants" },
+              admins: { $first: "$admins" },
+              messages: { $push: "$messages" },
+            },
+          },
+          {
+            $project: {
+              name: 1,
+              type: 1,
+              participants: 1,
+              admins: 1,
+              messages: {
+                $slice: [
+                  { $cond: [{ $isArray: "$messages" }, "$messages", []] },
+                  skipCount,
+                  limitValue,
+                ],
+              },
+            },
+          },
+        ]).exec()
+      )[0] as unknown as ChatRoom;
+
+      console.log("name", chatroom.name);
+      console.log("messages", chatroom.messages[0]);
+
       if (!chatroom) {
         throw new TRPCError({
           code: "BAD_REQUEST",
           message: "Chatroom not found",
         });
       }
-      if (!chatroom.participants.includes(user._id)) {
+
+      const participantIds = chatroom.participants.map((participant) =>
+        participant.toString()
+      );
+
+      if (!participantIds.includes(user._id.toString())) {
         throw new TRPCError({
           code: "BAD_REQUEST",
           message: "Unauthorized",
         });
       }
 
-      // chatroom.messages.reverse();
+      chatroom.messages.reverse();
+
+      // chatroom.messages.sort((a, b) => a.timestamp - b.timestamp);
 
       return chatroom;
+    }),
+  getMoreMessages: privateProcedure
+    .input(
+      z.object({
+        chatroom_id: z.string(),
+        skipCount: z.number(),
+        limitValue: z.number(),
+      })
+    )
+    .mutation(async ({ input, ctx }) => {
+      const { chatroom_id, skipCount, limitValue } = input;
+      const { user } = ctx;
+
+      console.log(chatroom_id, skipCount, limitValue);
+
+      const chatroom_id_obj = new mongoose.Types.ObjectId(chatroom_id);
+
+      // check if skip count has exceeded the number of messages in the chatroom
+      // const numberOfMessages = await Chatroom.aggregate([
+      //   { $match: { _id: chatroom_id_obj } },
+      //   { $unwind: { path: "$messages", preserveNullAndEmptyArrays: true } },
+      //   { $sort: { "messages.timestamp": -1 } },
+      //   {
+      //     $group: {
+      //       _id: "$_id",
+      //       messages: { $push: "$messages" },
+      //     },
+      //   },
+      //   {
+      //     $project: {
+      //       messages: {
+      //         $slice: [
+      //           { $cond: [{ $isArray: "$messages" }, "$messages", []] },
+      //           0,
+      //           1,
+      //         ],
+      //       },
+      //     },
+      //   },
+      // ]);
+
+      // console.log("numberOfMessages", numberOfMessages[0].messages);
+
+      // if (skipCount >= numberOfMessages.length) {
+      //   throw new TRPCError({
+      //     code: "BAD_REQUEST",
+      //     message: "No more messages to retrieve",
+      //   });
+      // }
+
+      const chatroom: ChatRoom = (
+        await Chatroom.aggregate([
+          { $match: { _id: chatroom_id_obj } },
+          { $unwind: { path: "$messages", preserveNullAndEmptyArrays: true } },
+          { $sort: { "messages.timestamp": -1 } },
+          {
+            $group: {
+              _id: "$_id",
+              messages: { $push: "$messages" },
+            },
+          },
+          {
+            $project: {
+              messages: {
+                $slice: [
+                  { $cond: [{ $isArray: "$messages" }, "$messages", []] },
+                  skipCount,
+                  limitValue,
+                ],
+              },
+            },
+          },
+        ]).exec()
+      )[0] as unknown as ChatRoom;
+
+      if (!chatroom) {
+        throw new TRPCError({
+          code: "BAD_REQUEST",
+          message: "Chatroom not found",
+        });
+      }
+
+      // const participantIds = chatroom.participants.map((participant) =>
+      //   participant.toString()
+      // );
+
+      // if (!participantIds.includes(user._id.toString())) {
+      //   throw new TRPCError({
+      //     code: "BAD_REQUEST",
+      //     message: "Unauthorized",
+      //   });
+      // }
+
+      chatroom.messages.reverse();
+
+      // console.log("the new messages", chatroom.messages);
+
+      return chatroom.messages;
     }),
   createChatroom: privateProcedure
     .input(

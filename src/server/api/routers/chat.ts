@@ -14,6 +14,7 @@ import { env } from "@/env.mjs";
 import { m } from "framer-motion";
 import mongoose, { ObjectId } from "mongoose";
 import { pusherServer } from "@/utils/pusherConfig";
+import Notification from "@/models/Notification";
 
 export const chatRouter = createTRPCRouter({
   getMessagesAndChatroomInfo: privateProcedure
@@ -63,6 +64,73 @@ export const chatRouter = createTRPCRouter({
         messages: [],
         type: type,
       });
+
+      return chatroom;
+    }),
+
+  createTeam: privateProcedure
+    .input(
+      z.object({
+        chatroom_name: z.string(),
+        participants: z.array(z.string()),
+      })
+    )
+    .mutation(async ({ input, ctx }) => {
+      console.log(input);
+
+      const { chatroom_name, participants } = input;
+      const { user } = ctx;
+
+      // check if all participants exist
+
+      const foundParticipants = await User.find({
+        _id: { $in: participants },
+      });
+
+      console.log(foundParticipants);
+
+      if (foundParticipants.length !== participants.length) {
+        throw new TRPCError({
+          code: "BAD_REQUEST",
+          message: "One or more participants do not exist.",
+        });
+      }
+
+      const chatroom = await Chatroom.create({
+        name: chatroom_name,
+        participants: [new mongoose.Types.ObjectId(user._id)],
+        messages: [],
+        type: "team",
+      });
+
+      const notifications = await Promise.all(
+        participants.map(async (participant_id) => {
+          const notification = await Notification.create({
+            type: "team_invite",
+            sender_id: new mongoose.Types.ObjectId(user._id),
+            receiver_id: new mongoose.Types.ObjectId(participant_id),
+            chatroom_id: chatroom._id,
+          });
+
+          await pusherServer.sendToUser(
+            participant_id,
+            "incoming-notification",
+            {
+              _id: notification._id.toString(),
+              type: notification.type,
+              sender: {
+                _id: user._id.toString(),
+                username: user.username,
+              },
+              sender_id: notification.sender_id.toString(),
+              receiver_id: notification.receiver_id.toString(),
+              createdAt: notification.createdAt,
+            }
+          );
+
+          return notification;
+        })
+      );
 
       return chatroom;
     }),
@@ -119,6 +187,7 @@ export const chatRouter = createTRPCRouter({
   sendMessage: privateProcedure
     .input(
       z.object({
+        _id: z.string(),
         channel: z.string(),
         text: z.string(),
         replyTo: z
@@ -135,7 +204,7 @@ export const chatRouter = createTRPCRouter({
       })
     )
     .mutation(async ({ input, ctx }) => {
-      const { channel, text } = input;
+      const { _id, channel, text } = input;
       const { user } = ctx;
       const chatroom_id = channel.split("-")[1];
 
@@ -168,7 +237,7 @@ export const chatRouter = createTRPCRouter({
 
       const messageData = {
         hasReplyTo: !!input.replyTo,
-        _id: new mongoose.Types.ObjectId() as unknown as ObjectId,
+        _id: new mongoose.Types.ObjectId(_id) as unknown as ObjectId,
         sender: {
           _id: new mongoose.Types.ObjectId(user._id) as unknown as ObjectId,
           username: user.username,
@@ -188,16 +257,165 @@ export const chatRouter = createTRPCRouter({
       });
       return result;
     }),
-    getAdminFromChatroom: privateProcedure
+  getFriends: privateProcedure.query(async ({ ctx }) => {
+    const { user } = ctx;
+
+    const chatrooms = await Chatroom.find({
+      participants: user._id,
+      type: "private",
+    }).select("participants");
+
+    const friends = chatrooms
+      .map((chatroom) => chatroom.participants)
+      .flat()
+      .filter((friend_id) => friend_id.toString() !== user._id.toString());
+
+    const uniqueFriends = [
+      ...new Set(friends.map((friend) => friend.toString())),
+    ];
+
+    const friendsWithNames = await Promise.all(
+      uniqueFriends.map(async (friend_id) => {
+        const friend = await User.findById(friend_id).select("username");
+        return friend;
+      })
+    );
+
+    return friendsWithNames;
+  }),
+  getFriendsNotInTeam: privateProcedure
     .input(
       z.object({
         chatroom_id: z.string(),
       })
     )
     .query(async ({ input, ctx }) => {
-      try{
+      const { chatroom_id } = input;
+      const { user } = ctx;
+
+      const chatroom = await Chatroom.findById(chatroom_id);
+
+      if (!chatroom) {
+        throw new TRPCError({
+          code: "BAD_REQUEST",
+          message: "Chatroom not found",
+        });
+      }
+
+      if (!chatroom.participants.includes(user._id)) {
+        throw new TRPCError({
+          code: "BAD_REQUEST",
+          message: "Unauthorized",
+        });
+      }
+
+      const friends = await Chatroom.find({
+        participants: user._id,
+        type: "private",
+      }).select("participants");
+
+      const friendsNotInTeam = friends
+        .map((chatroom) => chatroom.participants)
+        .flat()
+        .filter(
+          (friend_id) =>
+            friend_id.toString() !== user._id.toString() &&
+            !chatroom.participants.includes(friend_id)
+        );
+
+      const uniqueFriends = [
+        ...new Set(friendsNotInTeam.map((friend) => friend.toString())),
+      ];
+
+      const friendsWithNames = await Promise.all(
+        uniqueFriends.map(async (friend_id) => {
+          return await User.findById(friend_id).select("username");
+        })
+      );
+
+      return friendsWithNames;
+    }),
+
+  unfriendUser: privateProcedure
+    .input(
+      z.object({
+        friend_id: z.string(),
+      })
+    )
+    .mutation(async ({ input, ctx }) => {
+      const { friend_id } = input;
+      const { user } = ctx;
+
+      const chatroom = await Chatroom.findOne({
+        participants: { $all: [user._id, friend_id] },
+        type: "private",
+      });
+
+      if (!chatroom) {
+        throw new TRPCError({
+          code: "BAD_REQUEST",
+          message: "You are not friends with this person.",
+        });
+      }
+
+      await Chatroom.deleteOne({
+        participants: { $all: [user._id, friend_id] },
+        type: "private",
+      });
+
+      return true;
+    }),
+  leaveTeam: privateProcedure
+    .input(
+      z.object({
+        chatroom_id: z.string(),
+      })
+    )
+    .mutation(async ({ input, ctx }) => {
+      const { chatroom_id } = input;
+      const { user } = ctx;
+
+      const chatroom = await Chatroom.findById(chatroom_id);
+
+      if (!chatroom) {
+        throw new TRPCError({
+          code: "BAD_REQUEST",
+          message: "Chatroom not found",
+        });
+      }
+
+      if (!chatroom.participants.includes(user._id)) {
+        throw new TRPCError({
+          code: "BAD_REQUEST",
+          message: "Unauthorized",
+        });
+      }
+
+      if (chatroom.type !== "team") {
+        throw new TRPCError({
+          code: "BAD_REQUEST",
+          message: "This is not a team chatroom",
+        });
+      }
+
+      chatroom.participants = chatroom.participants.filter(
+        (participant_id) => participant_id.toString() !== user._id.toString()
+      );
+
+      await chatroom.save();
+
+      return true;
+    }),
+  getAdminFromChatroom: privateProcedure
+    .input(
+      z.object({
+        chatroom_id: z.string(),
+      })
+    )
+    .query(async ({ input, ctx }) => {
+      try {
         return await Chatroom.findById(input.chatroom_id).select("admins");
-      }catch(err){
+      } catch (err) {
         return err;
       }
     }),

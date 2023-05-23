@@ -78,7 +78,17 @@ export default function SideBarNav({
           modalOpen={openAddChatroomModal}
           setModalOpen={setOpenAddChatroomModal}
         >
-          {activeTab === 0 && (
+          <SendFriendRequestForm
+            setOpenAddChatroomModal={setOpenAddChatroomModal}
+            hidden={activeTab !== 0}
+          />
+          <CreateTeamForm
+            setOpenAddChatroomModal={setOpenAddChatroomModal}
+            refetchChatrooms={refetchChatrooms}
+            hidden={activeTab !== 1}
+          />
+
+          {/* {activeTab === 0 && (
             <SendFriendRequestForm
               setOpenAddChatroomModal={setOpenAddChatroomModal}
             />
@@ -88,7 +98,7 @@ export default function SideBarNav({
               setOpenAddChatroomModal={setOpenAddChatroomModal}
               refetchChatrooms={refetchChatrooms}
             />
-          )}
+          )} */}
         </CustomModal>
         {/* <label
           htmlFor="my-drawer-2"

@@ -12,9 +12,9 @@ export default function TopNav({
   chatroom_name,
   openSidebarDetails,
 }: TopNavProps) {
-  const { user } = useGlobalContext()
+  const { user } = useGlobalContext();
   return (
-    <div className="navbar bg-base-300 h-20">
+    <div className="navbar h-20 bg-base-300">
       <div className="flex-1 cursor-pointer" onClick={openSidebarDetails}>
         <div className="avatar pl-5">
           <div className="w-16 rounded-xl">
@@ -27,11 +27,11 @@ export default function TopNav({
         </div>
       </div>
       <div className="flex-1">
-        <span
+        {/* <span
           className="ms-5 cursor-pointer text-xl normal-case"
         // onClick={drawer}
         >
-        </span>
+        </span> */}
       </div>
     </div>
   );

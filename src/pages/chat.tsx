@@ -4,7 +4,7 @@ const Chat = () => {
   return (
     <div className="flex h-full w-full flex-col items-center justify-center">
       <Image
-        src="/undraw_chat.svg"
+        src="/images/undraw_chat.svg"
         alt="undraw illustration"
         width={300}
         height={400}

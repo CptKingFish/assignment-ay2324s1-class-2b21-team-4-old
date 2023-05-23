@@ -5,19 +5,23 @@ import type { Message, PendingMessage } from "@/utils/chat";
 import { useGlobalContext } from "@/context";
 import IconButton from "./IconButton";
 import PendingChatBubble from "./PendingChatBubble";
+import { api } from "@/utils/api";
 
 interface ChatBodyProps {
   messages: Message[];
   pendingMessages: PendingMessage[];
   setReplyTo: React.Dispatch<React.SetStateAction<Message | null>>;
+  users:any[];
 }
 
 export default function ChatBody({
   messages,
   pendingMessages,
   setReplyTo,
+  users
 }: ChatBodyProps) {
   const { user } = useGlobalContext();
+  console.log(users)
   return (
     <>
       <div className="relative">
@@ -35,7 +39,7 @@ export default function ChatBody({
                 text={message.text}
                 time={formatTimestampToTime(message.timestamp)}
                 date={formatTimeStampToDate(message.timestamp)}
-                avatarUrl="https://source.unsplash.com/random/?city,night"
+                avatarUrl={user?.avatar || ""}
               />
             );
           } else {
@@ -51,7 +55,7 @@ export default function ChatBody({
                 text={message.text}
                 time={formatTimestampToTime(message.timestamp)}
                 date={formatTimeStampToDate(message.timestamp)}
-                avatarUrl="https://source.unsplash.com/random/?city,night"
+                avatarUrl={users.find(user => user.key === message.sender._id.toString()).imageUrl || "/Profile.png"}
               />
             );
           }

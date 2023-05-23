@@ -60,6 +60,7 @@ export const chatRouter = createTRPCRouter({
       const chatroom = await Chatroom.create({
         name: chatroom_name,
         participants: [new mongoose.Types.ObjectId(user._id)],
+        admins: [new mongoose.Types.ObjectId(user._id)],
         messages: [],
         type: type,
       });
@@ -180,7 +181,7 @@ export const chatRouter = createTRPCRouter({
       }
       const usernames = await User.find({
         _id: { $in: chatroom.participants },
-      }).select("username");
+      }).select("username avatar");
       return usernames;
     }),
   sendMessage: privateProcedure
@@ -404,5 +405,18 @@ export const chatRouter = createTRPCRouter({
       await chatroom.save();
 
       return true;
+    }),
+  getAdminFromChatroom: privateProcedure
+    .input(
+      z.object({
+        chatroom_id: z.string(),
+      })
+    )
+    .query(async ({ input, ctx }) => {
+      try {
+        return await Chatroom.findById(input.chatroom_id).select("admins");
+      } catch (err) {
+        return err;
+      }
     }),
 });

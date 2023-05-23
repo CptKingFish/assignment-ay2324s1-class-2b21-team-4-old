@@ -2,11 +2,13 @@ import { useGlobalContext } from "@/context";
 import React from "react";
 
 interface TopNavProps {
+  avatar:string;
   chatroom_name: string;
   openSidebarDetails: () => void;
 }
 
 export default function TopNav({
+  avatar,
   chatroom_name,
   openSidebarDetails,
 }: TopNavProps) {
@@ -17,7 +19,7 @@ export default function TopNav({
         <div className="avatar pl-5">
           <div className="w-16 rounded-xl">
             {/* <span className="text-3xl">K</span> */}
-            <img src="https://source.unsplash.com/random/?city,night" />
+            <img src={avatar} />
           </div>
         </div>
         <div className="">

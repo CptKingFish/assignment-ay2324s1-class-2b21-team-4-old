@@ -8,6 +8,7 @@ interface GroupParticipantModalProps {
     imageUrl: string;
     admin: boolean;
   }[];
+  children?: React.ReactNode;
 }
 
 const GroupParticipantModal: React.FC<GroupParticipantModalProps> = ({ participants }) => {
@@ -40,6 +41,7 @@ const GroupParticipantModal: React.FC<GroupParticipantModalProps> = ({ participa
             placeholder="Name"
             value={searchQuery}
             onChange={handleSearchChange}
+            autoComplete="off"
           />
         </div>
         <div className="overflow-visible">

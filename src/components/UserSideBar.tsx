@@ -18,13 +18,16 @@ interface participant {
 }
 
 interface UserSideBarProps {
+  chatRoomAvatar?: string;
   chatRoomName: string;
   isOpen: boolean;
   handleDrawerToggle: () => void;
   participants: participant[];
   chatroomType: "private" | "team";
 }
+
 const UserSideBar: React.FC<UserSideBarProps> = ({
+  chatRoomAvatar,
   chatRoomName,
   isOpen,
   handleDrawerToggle,
@@ -127,7 +130,7 @@ const UserSideBar: React.FC<UserSideBarProps> = ({
           <div className="self-center text-center">
             <div className="avatar mt-5 self-center">
               <div className="w-24 rounded-full">
-                <img src="https://picsum.photos/200/300" />
+                <img src={chatRoomAvatar || "/GroupProfile.png"} />
               </div>
             </div>
             <div className="mt-2 font-bold">{chatRoomName}</div>

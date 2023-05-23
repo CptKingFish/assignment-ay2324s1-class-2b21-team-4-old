@@ -9,14 +9,16 @@ import { Message, PendingMessage } from "@/utils/chat";
 import { api } from "@/utils/api";
 import UserSideBar from "@/components/UserSideBar";
 import type { PusherMemberStatusProps } from "@/utils/chat";
+import { participant } from "@/utils/participant";
 
 export default function PrivateChat() {
   const router = useRouter();
   const { user, pusherClient } = useGlobalContext();
   const [replyTo, setReplyTo] = React.useState<Message | null>(null);
   const [messages, setMessages] = React.useState<Message[]>([]);
-  const [users, setUsers] = React.useState<Object[]>([]);
+  const [users, setUsers] = React.useState<any[]>([]);
   const [name, setName] = React.useState("");
+  const [otherUserId, setOtherUserId] = React.useState("");
   const [otherUserIsOnline, setOtherUserIsOnline] = React.useState(false);
 
   const [pendingMessages, setPendingMessages] = React.useState<
@@ -69,8 +71,8 @@ export default function PrivateChat() {
     const otherUser = userRaw.find(
       (participant) => user._id !== participant._id
     );
-
     setName(otherUser?.username || "");
+    setOtherUserId(otherUser?._id || "");
   }, [user, userRaw]);
 
   const [isOpen, setIsOpen] = React.useState(false);
@@ -84,7 +86,11 @@ export default function PrivateChat() {
     setMessages(chatroomData.messages);
     setUsers(
       (userRaw || []).map((user) => {
-        return { key: user._id, username: user.username };
+        return {
+          key: user._id,
+          username: user.username,
+          imageUrl: user.avatar || "/profile.png",
+        };
       })
     );
   }, [isLoading, chatroomData, userRaw]);
@@ -139,6 +145,10 @@ export default function PrivateChat() {
   return (
     <>
       <TopNav
+        avatar={
+          api.user.getAvatarUrl.useQuery({ user_id: otherUserId })?.data
+            ?.avatar || "/Profile.png"
+        }
         chatroom_name={name || ""}
         openSidebarDetails={handleDrawerToggle}
       />
@@ -166,6 +176,7 @@ export default function PrivateChat() {
                 setReplyTo={setReplyTo}
                 messages={messages}
                 pendingMessages={pendingMessages}
+                users={users}
               />
             </div>
             <ChatInput
@@ -188,6 +199,7 @@ export default function PrivateChat() {
           </button> */}
         </div>
         <UserSideBar
+          chatRoomName={name}
           isOpen={isOpen}
           handleDrawerToggle={handleDrawerToggle}
           participants={users}

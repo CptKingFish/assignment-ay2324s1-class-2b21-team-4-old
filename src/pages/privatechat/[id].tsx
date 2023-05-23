@@ -37,9 +37,6 @@ export default function PrivateChat() {
     chatroom_id: router.query.id as string,
   });
 
-  console.log("msg", messages);
-  console.log("pending", pendingMessages);
-
   // add pending message
 
   const addPendingMessage = (message: PendingMessage) => {

@@ -11,17 +11,17 @@ interface ChatBodyProps {
   messages: Message[];
   pendingMessages: PendingMessage[];
   setReplyTo: React.Dispatch<React.SetStateAction<Message | null>>;
-  users:any[];
+  users: any[];
 }
 
 export default function ChatBody({
   messages,
   pendingMessages,
   setReplyTo,
-  users
+  users,
 }: ChatBodyProps) {
   const { user } = useGlobalContext();
-  console.log(users)
+  console.log(users);
   return (
     <>
       <div className="relative">
@@ -39,7 +39,7 @@ export default function ChatBody({
                 text={message.text}
                 time={formatTimestampToTime(message.timestamp)}
                 date={formatTimeStampToDate(message.timestamp)}
-                avatarUrl={user?.avatar || ""}
+                avatarUrl={user?.avatar || "/Profile.png"}
               />
             );
           } else {
@@ -55,7 +55,11 @@ export default function ChatBody({
                 text={message.text}
                 time={formatTimestampToTime(message.timestamp)}
                 date={formatTimeStampToDate(message.timestamp)}
-                avatarUrl={users.find(user => user.key === message.sender._id.toString()).imageUrl || "/Profile.png"}
+                avatarUrl={
+                  users.find(
+                    (user) => user.key === message.sender._id.toString()
+                  ).imageUrl || "/Profile.png"
+                }
               />
             );
           }
@@ -67,7 +71,7 @@ export default function ChatBody({
               _id={message._id.toString()}
               text={message.text}
               name={message.name}
-              avatarUrl="https://source.unsplash.com/random/?city,night"
+              avatarUrl={user?.avatar || "/Profile.png"}
               hasFailed={message.hasFailed}
               hasReplyTo={message.hasReplyTo}
               replyTo={message.replyTo}

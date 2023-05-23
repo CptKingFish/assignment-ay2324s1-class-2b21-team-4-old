@@ -3,6 +3,7 @@ import { api } from "@/utils/api";
 import { toast } from "react-hot-toast";
 import { useGlobalContext } from "@/context";
 import { useRouter } from "next/router";
+import { formatTimestampToTime } from "@/utils/helper";
 
 interface PendingChatBubbleProps {
   _id: string;
@@ -38,64 +39,53 @@ export default function PendingChatBubble({
 
   const [retrying, setRetrying] = React.useState(false);
 
-  const sendMessage = async () => {
-    if (!text || !hasFailed || retrying) return;
+  // const sendMessage = async () => {
+  //   if (!text || !hasFailed || retrying) return;
 
-    try {
-      console.log("sending message");
+  //   try {
+  //     console.log("sending message");
+  //     setRetrying(true);
 
-      //   if (replyTo) {
-      //     await sendMessageMutation({
-      //       _id: _id.toString(),
-      //       channel: channelCode,
-      //       text: input,
-      //       replyTo: {
-      //         _id: replyTo._id as unknown as string,
-      //         text: replyTo.text,
-      //         sender: {
-      //           _id: replyTo.sender._id as unknown as string,
-      //           username: replyTo.sender.username,
-      //         },
-      //         timestamp: new Date().getTime(),
-      //       },
-      //     });
-      //   } else {
-      // const _id = new mongoose.Types.ObjectId();
+  //     if (replyTo) {
+  //       await sendMessageMutation({
+  //         _id: _id.toString(),
+  //         channel: channelCode,
+  //         text: text,
+  //         replyTo: {
+  //           _id: replyTo._id as unknown as string,
+  //           text: replyTo.text,
+  //           sender: {
+  //             _id: replyTo.sender._id as unknown as string,
+  //             username: replyTo.sender.username,
+  //           },
+  //           timestamp: new Date().getTime(),
+  //         },
+  //       });
+  //     } else {
+  //       await sendMessageMutation(
+  //         {
+  //           _id: _id.toString(),
+  //           channel: channelCode,
+  //           text: text,
+  //         },
+  //         {
+  //           onError: (err) => {
+  //             console.log(err);
+  //             setRetrying(false);
+  //           },
+  //         }
+  //       );
+  //     }
 
-      //   addPendingMessage({
-      //     _id: _id.toString(),
-      //     name: user?.username as string,
-      //     avatarUrl: "https://source.unsplash.com/random/?city,night",
-      //     text: text,
-      //     hasFailed: false,
-      //   });
-      setRetrying(true);
-      await sendMessageMutation(
-        {
-          _id: _id.toString(),
-          channel: channelCode,
-          text: text,
-        },
-        {
-          onError: (err) => {
-            console.log(err);
-            setRetrying(false);
-            // setPendingMessageHasFailed(_id.toString());
-          },
-        }
-      );
-      //   }
-
-      //   setInput("");
-      //   setReplyTo(null);
-    } catch (e) {
-      console.log(e);
-
-      toast.error("Something went wrong. Please try again later.");
-    } finally {
-      //   setIsLoading(false);
-    }
-  };
+  //     //   setInput("");
+  //     //   setReplyTo(null);
+  //   } catch (e) {
+  //     console.log(e);
+  //     toast.error("Something went wrong. Please try again later.");
+  //   } finally {
+  //     //   setIsLoading(false);
+  //   }
+  // };
 
   return (
     <div
@@ -140,11 +130,11 @@ export default function PendingChatBubble({
         <div className="flex items-end">
           <p>{text}</p>
           <div className="chat-footer ml-2 text-[0.8rem] opacity-50">
-            {"00:00"}
+            {formatTimestampToTime(new Date().getTime())}
           </div>
         </div>
       </div>
-      <div className="chat-footer text-[0.8rem] opacity-50">{"."}</div>
+      <div className="chat-footer text-[0.8rem] opacity-50">{"Sending..."}</div>
     </div>
   );
 }

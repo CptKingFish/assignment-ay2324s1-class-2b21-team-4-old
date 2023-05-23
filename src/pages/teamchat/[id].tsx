@@ -167,6 +167,7 @@ const TeamChat = () => {
           </button> */}
         </div>
         <GroupSideBar
+          chatRoomId={router.query.id as string}
           chatRoomAvatar={chatroomData?.avatarUrl || "/GroupProfile.png"}
           chatRoomName={chatroomData?.name || ""}
           isOpen={isOpen}

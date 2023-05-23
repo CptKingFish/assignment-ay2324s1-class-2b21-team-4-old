@@ -3,6 +3,7 @@ import GroupParticipants from "./GroupParticipants";
 import GroupParticipantModal from "./GroupParticipantsModal";
 import React from "react";
 import { api } from "@/utils/api";
+import toast from "react-hot-toast";
 
 interface participant{
     key:string;
@@ -13,14 +14,28 @@ interface participant{
 }
 
 interface GroupSideBarProps{
+    chatRoomId:string;
     chatRoomAvatar?:string;
     chatRoomName:string;
     isOpen:boolean;
     handleDrawerToggle:()=>void;
     participants: participant[];
 }
- const GroupSideBar:React.FC<GroupSideBarProps> = ({chatRoomAvatar,chatRoomName,isOpen,handleDrawerToggle,participants}) => {
+ const GroupSideBar:React.FC<GroupSideBarProps> = ({chatRoomId,chatRoomAvatar,chatRoomName,isOpen,handleDrawerToggle,participants}) => {
+    const {mutate:leaveTeam} = api.chat.leaveTeam.useMutation();
 
+    function handleLeave(){
+        leaveTeam({chatroom_id:chatRoomId}, {
+            onSuccess: (data) => {
+                toast.success("Left the team successfully!");
+                window.location.href = "/chat";
+            },
+            onError: (error) => {
+                toast.error("Error when leaving Team!");
+            },
+        });;
+        
+    }
     return (
         <>
             <input type="checkbox" id="my-modal-3" className="modal-toggle" />
@@ -68,10 +83,10 @@ interface GroupSideBarProps{
                         ))}
                     </div>
                     <div className="divider"></div>
-                    <div className="btn btn-outline btn-error mx-5 mb-5"><svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" strokeWidth={1.5} stroke="currentColor" className="w-6 h-6">
+                    <button onClick = {handleLeave} className="btn btn-outline btn-error mx-5 mb-5"><svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" strokeWidth={1.5} stroke="currentColor" className="w-6 h-6">
                         <path strokeLinecap="round" strokeLinejoin="round" d="M15.75 9V5.25A2.25 2.25 0 0013.5 3h-6a2.25 2.25 0 00-2.25 2.25v13.5A2.25 2.25 0 007.5 21h6a2.25 2.25 0 002.25-2.25V15M12 9l-3 3m0 0l3 3m-3-3h12.75" />
                     </svg>
-                        Leave Group</div>
+                        Leave Group</button>
                 </ul>
 
             </div>

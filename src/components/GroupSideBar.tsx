@@ -6,12 +6,13 @@ import { api } from "@/utils/api";
 import toast from "react-hot-toast";
 import { useGlobalContext } from "@/context";
 
+
 interface participant{
     key:string;
     username:string;
     imageUrl:string;
     admin:boolean;
-
+    friends:any[];
 }
 
 interface GroupSideBarProps{
@@ -77,10 +78,13 @@ interface GroupSideBarProps{
                         {participants.map((participant, index) => (
                             <GroupParticipants
                                 key={index}
+                                id = {participant.key}
                                 name={participant.username}
                                 imageUrl={participant.imageUrl}
                                 admin={participant.admin}
+                                friend={participant.friends && participant.friends.includes(user?._id)}
                                 self = {user?.username === participant.username}
+                                selfAdmin = {participants.some(participant => participant.username === user?.username && participant.admin)}
                             />
                         ))}
                     </div>

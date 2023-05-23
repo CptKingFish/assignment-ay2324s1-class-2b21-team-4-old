@@ -78,6 +78,7 @@ const TeamChat = () => {
           username: user.username,
           imageUrl: user.avatar || "/profile.png",
           admin: admin.admins.includes(user._id),
+          friends: user.friends,
         };
       })
     );

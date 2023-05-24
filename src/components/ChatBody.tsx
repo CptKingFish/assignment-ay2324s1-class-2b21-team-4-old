@@ -50,14 +50,16 @@ export default function ChatBody({
                 message_id={message._id.toString()}
                 setReplyTo={setReplyTo}
                 senderId={message.sender._id.toString()}
-                senderName={message.sender.username}
+                senderName={users.find(
+                  (user) => user.key === message.sender._id.toString()
+                )?.username || "Removed User"}
                 text={message.text}
                 time={formatTimestampToTime(message.timestamp)}
                 date={formatTimeStampToDate(message.timestamp)}
                 avatarUrl={
                   users.find(
                     (user) => user.key === message.sender._id.toString()
-                  ).imageUrl || "/Profile.png"
+                  )?.imageUrl || "/Profile.png"
                 }
               />
             );

@@ -32,7 +32,7 @@ const AccountChangeProfile: React.FC<AccountChangeProfileProps> = ({}) => {
 
   const validateFile = (file: File) => {
     const allowedExtensions = ["jpg", "jpeg", "png"];
-    const allowedSize = 5 * 1024 * 1024; // 5MB
+    const allowedSize = 10 * 1024 * 1024; // 5MB
 
     const extension = file.name.split(".").pop()?.toLowerCase();
     if (!(extension && allowedExtensions.includes(extension))) {

@@ -265,9 +265,54 @@ export const userRouter = createTRPCRouter({
         });
       }
     }),
+    addFriend: privateProcedure
+    .input(z.object({ friend_id: z.string(), chat_id: z.string() }))
+    .mutation(async ({ input, ctx }) => {
+      try{
+        return await User.findByIdAndUpdate(
+          ctx.user._id,
+          {
+            $push: {
+              friends: {
+                friendID: input.friend_id,
+                chatID: input.chat_id,
+              },
+            },
+          },
+          { new: true }
+        );
+      }catch(error){
+        console.log(error)
+        throw new TRPCError({
+          code: "BAD_REQUEST",
+          message: "Error adding friend",
+        });
+      }
+    }),
+    removeFriend: privateProcedure
+    .input(z.object({ friend_id: z.string() }))
+    .mutation(async ({ input, ctx }) => {
+      try{
+        return await User.findByIdAndUpdate(
+          ctx.user._id,
+          {
+            $pull: {
+              friends: {
+                friendID: input.friend_id,
+              },
+            },
+          },
+          { new: true }
+        );
+      }catch(error){
+        console.log(error)
+        throw new TRPCError({
+          code: "BAD_REQUEST",
+          message: "Error removing friend",
+        });
+      }
+    }),
       
-
-
 
   // seedRedis: publicProcedure.mutation(async () => {
   //   // add all user_ids to redis
@@ -279,11 +324,3 @@ export const userRouter = createTRPCRouter({
   //   console.log("yayyy");
   // }),
 });
-
-export const config = {
-  api: {
-    bodyParser: {
-      sizeLimit: '5mb',
-    },
-  },
-};

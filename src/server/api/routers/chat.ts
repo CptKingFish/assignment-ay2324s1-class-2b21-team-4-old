@@ -420,4 +420,189 @@ export const chatRouter = createTRPCRouter({
         return err;
       }
     }),
+  addAdminToChatroom: privateProcedure
+    .input(
+      z.object({
+        chatroom_id: z.string(),
+        admin_id: z.string(),
+      })
+    )
+    .mutation(async ({ input, ctx }) => {
+      const { chatroom_id, admin_id } = input;
+      const { user } = ctx;
+
+      const chatroom = await Chatroom.findById(chatroom_id);
+
+      if (!chatroom) {
+        throw new TRPCError({
+          code: "BAD_REQUEST",
+          message: "Chatroom not found",
+        });
+      }
+
+      if (!chatroom.participants.includes(user._id)) {
+        throw new TRPCError({
+          code: "BAD_REQUEST",
+          message: "Unauthorized",
+        });
+      }
+
+      if (!chatroom.admins.includes(user._id)) {
+        throw new TRPCError({
+          code: "BAD_REQUEST",
+          message: "You are not an admin",
+        });
+      }
+
+      if (chatroom.admins.includes(admin_id)) {
+        throw new TRPCError({
+          code: "BAD_REQUEST",
+          message: "User is already an admin",
+        });
+      }
+
+      chatroom.admins.push(admin_id);
+
+      await chatroom.save();
+
+      return true;
+    }),
+  removeAdminFromChatroom: privateProcedure
+    .input(
+      z.object({
+        chatroom_id: z.string(),
+        admin_id: z.string(),
+      })
+    )
+    .mutation(async ({ input, ctx }) => {
+      const { chatroom_id, admin_id } = input;
+      const { user } = ctx;
+
+      const chatroom = await Chatroom.findById(chatroom_id);
+
+      if (!chatroom) {
+        throw new TRPCError({
+          code: "BAD_REQUEST",
+          message: "Chatroom not found",
+        });
+      }
+
+      if (!chatroom.participants.includes(user._id)) {
+        throw new TRPCError({
+          code: "BAD_REQUEST",
+          message: "Unauthorized",
+        });
+      }
+
+      if (!chatroom.admins.includes(user._id)) {
+        throw new TRPCError({
+          code: "BAD_REQUEST",
+          message: "You are not an admin",
+        });
+      }
+
+      if (!chatroom.admins.includes(admin_id)) {
+        throw new TRPCError({
+          code: "BAD_REQUEST",
+          message: "User is not an admin",
+        });
+      }
+
+      chatroom.admins = chatroom.admins.filter(
+        (admin) => admin.toString() !== admin_id.toString()
+      );
+
+      await chatroom.save();
+
+      return true;
+    }),
+    removeParticipantFromChatroom: privateProcedure
+    .input(
+      z.object({
+        chatroom_id: z.string(),
+        participant_id: z.string(),
+      })
+    )
+    .mutation(async ({ input, ctx }) => {
+      const { chatroom_id, participant_id } = input;
+      const { user } = ctx;
+
+      const chatroom = await Chatroom.findById(chatroom_id);
+
+      if (!chatroom) {
+        throw new TRPCError({
+          code: "BAD_REQUEST",
+          message: "Chatroom not found",
+        });
+      }
+
+      if (!chatroom.participants.includes(user._id)) {
+        throw new TRPCError({
+          code: "BAD_REQUEST",
+          message: "Unauthorized",
+        });
+      }
+
+      if (!chatroom.admins.includes(user._id)) {
+        throw new TRPCError({
+          code: "BAD_REQUEST",
+          message: "You are not an admin",
+        });
+      }
+
+      if (!chatroom.participants.includes(participant_id)) {
+        throw new TRPCError({
+          code: "BAD_REQUEST",
+          message: "User is not a participant",
+        });
+      }
+
+      chatroom.participants = chatroom.participants.filter(
+        (participant) => participant.toString() !== participant_id.toString()
+      );
+
+      await chatroom.save();
+
+      return true;
+    }),
+    changeChatroomName: privateProcedure
+    .input(
+      z.object({
+        chatroom_id: z.string(),
+        chatroom_name: z.string(),
+      })
+    )
+    .mutation(async ({ input, ctx }) => {
+      const { chatroom_id, chatroom_name } = input;
+      const { user } = ctx;
+
+      const chatroom = await Chatroom.findById(chatroom_id);
+
+      if (!chatroom) {
+        throw new TRPCError({
+          code: "BAD_REQUEST",
+          message: "Chatroom not found",
+        });
+      }
+
+      if (!chatroom.participants.includes(user._id)) {
+        throw new TRPCError({
+          code: "BAD_REQUEST",
+          message: "Unauthorized",
+        });
+      }
+
+      if (!chatroom.admins.includes(user._id)) {
+        throw new TRPCError({
+          code: "BAD_REQUEST",
+          message: "You are not an admin",
+        });
+      }
+
+      chatroom.name = chatroom_name;
+
+      await chatroom.save();
+
+      return true;
+    }),
 });

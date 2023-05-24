@@ -7,7 +7,7 @@ import { useRouter } from "next/router";
 import ChatBody from "@/components/ChatBody";
 import type { Message, PendingMessage } from "@/utils/chat";
 import { api } from "@/utils/api";
-import UserSideBar from "@/components/UserSideBar";
+import GroupSideBar from "@/components/GroupSideBar";
 
 interface Admin {
   admins: string[];
@@ -78,6 +78,7 @@ const TeamChat = () => {
           username: user.username,
           imageUrl: user.avatar || "/profile.png",
           admin: admin.admins.includes(user._id),
+          friends: user.friends,
         };
       })
     );
@@ -114,11 +115,7 @@ const TeamChat = () => {
 
   return (
     <>
-      <TopNav
-        avatar={chatroomData?.avatarUrl || "/GroupProfile.png"}
-        chatroom_name={chatroomData?.name || ""}
-        openSidebarDetails={handleDrawerToggle}
-      />
+
       <div className="drawer-mobile drawer drawer-end">
         <input id="my-drawer-4" type="checkbox" className="drawer-toggle" />
 
@@ -134,7 +131,12 @@ const TeamChat = () => {
             </div>
           )} */}
 
-          <div className="relative flex h-full max-h-[calc(100vh-6rem)] flex-1 flex-col">
+          <div className="relative flex h-full max-h-[calc(100vh-1rem)] flex-1 flex-col">
+            <TopNav
+              avatar={chatroomData?.avatarUrl || "/GroupProfile.png"}
+              chatroom_name={chatroomData?.name || ""}
+              openSidebarDetails={handleDrawerToggle}
+            />
             <div
               id="chat-body"
               className="scrollbar-thumb-blue scrollbar-thumb-rounded scrollbar-track-blue-lighter scrollbar-w-2 scrolling-touch flex h-full flex-1 flex-col-reverse gap-4 overflow-y-auto scroll-smooth p-3 pb-16"
@@ -165,13 +167,13 @@ const TeamChat = () => {
             {"<"}
           </button> */}
         </div>
-        <UserSideBar
+        <GroupSideBar
+          chatRoomId={router.query.id as string}
           chatRoomAvatar={chatroomData?.avatarUrl || "/GroupProfile.png"}
           chatRoomName={chatroomData?.name || ""}
           isOpen={isOpen}
           handleDrawerToggle={handleDrawerToggle}
           participants={users}
-          chatroomType="team"
         />
       </div>
     </>

@@ -1,11 +1,12 @@
 // import axios from "axios";
 import React from "react";
 import { toast } from "react-hot-toast";
-import { useGlobalContext } from "@/context";
 import { api } from "@/utils/api";
 import { AnimatePresence, motion } from "framer-motion";
 import { Message } from "@/utils/chat";
 import IconButton from "./IconButton";
+import Circle from "@/components/Circle"
+import { Previews } from "@/components/Dropzone";
 
 interface ChatInputProps {
   channelCode: string;
@@ -14,12 +15,14 @@ interface ChatInputProps {
 }
 
 const ChatInput = ({ channelCode, replyTo, setReplyTo }: ChatInputProps) => {
-  const { user } = useGlobalContext();
+
+
   const [input, setInput] = React.useState("");
   const [isLoading, setIsLoading] = React.useState(false);
   const { mutateAsync: sendMessageMutation } =
-    api.chat.sendMessage.useMutation();
-
+    api.chat.sendMessage.useMutation(); 
+    
+    
   const sendMessage = async () => {
     console.log("sendMessage");
 
@@ -65,7 +68,8 @@ const ChatInput = ({ channelCode, replyTo, setReplyTo }: ChatInputProps) => {
   };
 
   const uploadImage = () => {
-    const formData = new FormData();
+    console.log("uploadImage");
+    
     // Add your image upload logic here
   };
 
@@ -86,38 +90,8 @@ const ChatInput = ({ channelCode, replyTo, setReplyTo }: ChatInputProps) => {
   };
 
   return (
-    <div className="z-10 mx-4 bg-transparent">
-      <div className="flex items-end gap-2 bg-transparent">
-        <div className="dropdown-top dropdown">
-          <label tabIndex={0} className="btn">
-            <svg
-              xmlns="http://www.w3.org/2000/svg"
-              fill="none"
-              viewBox="0 0 24 24"
-              strokeWidth={1.5}
-              stroke="currentColor"
-              className="h-6 w-6"
-            >
-              <path
-                strokeLinecap="round"
-                strokeLinejoin="round"
-                d="M18.375 12.739l-7.693 7.693a4.5 4.5 0 01-6.364-6.364l10.94-10.94A3 3 0 1119.5 7.372L8.552 18.32m.009-.01l-.01.01m5.699-9.941l-7.81 7.81a1.5 1.5 0 002.112 2.13"
-              />
-            </svg>
-          </label>
-          <ul
-            tabIndex={0}
-            className="dropdown-content menu rounded-box w-52 bg-transparent p-2 shadow"
-          >
-            <li>
-              <a>Item 1</a>
-            </li>
-            <li>
-              <a>Item 2</a>
-            </li>
-          </ul>
-        </div>
-        <div className="relative w-full bg-transparent">
+    <div className="z-10 mx-4 flex flex-col ">
+        <div className="relative w-full items-end ">
           <AnimatePresence>
             {replyTo && (
               <motion.div
@@ -157,17 +131,20 @@ const ChatInput = ({ channelCode, replyTo, setReplyTo }: ChatInputProps) => {
               </motion.div>
             )}
           </AnimatePresence>
-          <input
-            type="text"
-            id="chat-input"
-            placeholder="Type your message"
-            className="relative z-[4] w-full flex-1 rounded-md border-2 border-gray-200 p-2  focus:outline-none focus:ring-2 focus:ring-blue-500"
-            value={input}
-            onChange={(e) => setInput(e.target.value)}
-            onKeyDown={handleKeyDown}
-          />
-        </div>
       </div>
+      <div className="flex flex-row justify-center items-center ">
+          <Circle />
+          <input
+              type="text"
+              id="chat-input"
+              placeholder="Type your message"
+              className="relative z-[4] w-5/6 h-20 flex-1 rounded-full border-2 border-gray-200 p-2  focus:outline-none focus:ring-2 focus:ring-blue-500"
+              value={input}
+              onChange={(e) => setInput(e.target.value)}
+              onKeyDown={handleKeyDown}
+            />
+      </div>
+      
     </div>
   );
 };

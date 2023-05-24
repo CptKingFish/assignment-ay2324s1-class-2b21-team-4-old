@@ -21,6 +21,7 @@ const AccountChangeProfile: React.FC<AccountChangeProfileProps> = ({}) => {
         reader.onload = () => {
           setProfilePic(reader.result as string);
           setPreviewUrl(reader.result as string);
+
         };
         reader.readAsDataURL(file);
       } else {
@@ -31,7 +32,7 @@ const AccountChangeProfile: React.FC<AccountChangeProfileProps> = ({}) => {
   };
 
   const validateFile = (file: File) => {
-    const allowedExtensions = ["jpg", "jpeg", "png"];
+    const allowedExtensions = ["jpg", "jpeg", "png", "gif"];
     const allowedSize = 5 * 1024 * 1024; // 5MB
 
     const extension = file.name.split(".").pop()?.toLowerCase();

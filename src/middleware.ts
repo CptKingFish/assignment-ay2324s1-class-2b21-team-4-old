@@ -4,13 +4,12 @@ import type { NextRequest } from "next/server";
 import { env } from "./env.mjs";
 
 export async function middleware(request: NextRequest) {
-  console.log("middleware", request.nextUrl.pathname);
   const authRoutes = ["/authenticate"];
   let verified = false;
+  let user_id;
   // check jwt validity
   let token = request.cookies.get("token")?.value;
   if (!token && !authRoutes.includes(request.nextUrl.pathname)) {
-    console.log("no token :(");
     return NextResponse.redirect(new URL("/authenticate", request.url));
   }
   if (token) {
@@ -22,10 +21,12 @@ export async function middleware(request: NextRequest) {
       },
       body: JSON.stringify({ token }),
     });
-    const data = (await response.json()) as { verified: boolean };
-    console.log(request.nextUrl.pathname, data);
+    const data = (await response.json()) as {
+      verified: boolean;
+      user_id: string;
+    };
+    if (data.user_id) user_id = data.user_id;
     if (!data.verified && authRoutes.includes(request.nextUrl.pathname)) {
-      console.log("ee4");
       return NextResponse.next();
     }
     // if (!data.verified) {
@@ -34,19 +35,33 @@ export async function middleware(request: NextRequest) {
     verified = data.verified;
   }
   if (verified && authRoutes.includes(request.nextUrl.pathname)) {
-    console.log("eeredirecting to /chat");
     return NextResponse.redirect(new URL("/chat", request.url));
   }
   if (!verified && authRoutes.includes(request.nextUrl.pathname)) {
-    console.log("ee1");
     return NextResponse.next();
   }
   if (verified && !authRoutes.includes(request.nextUrl.pathname)) {
-    console.log("ee2");
+    if (request.nextUrl.pathname.startsWith("/scrum")) {
+      const response = await fetch(`${env.BASE_URL}/api/verify_scrum`, {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+        },
+        body: JSON.stringify({
+          room_id: request.nextUrl.pathname.replace("/scrum/", ""),
+          user_id,
+        }),
+      });
+      const data = (await response.json()) as { verified: boolean };
+      if (!data.verified) {
+        return NextResponse.redirect(new URL("/chat", request.url));
+      } else {
+        return NextResponse.next();
+      }
+    }
     return NextResponse.next();
   }
   if (!verified && !authRoutes.includes(request.nextUrl.pathname)) {
-    console.log("ee3");
     return NextResponse.redirect(new URL("/authenticate", request.url));
   }
 }

@@ -15,6 +15,8 @@ import { m } from "framer-motion";
 import mongoose, { ObjectId } from "mongoose";
 import { pusherServer } from "@/utils/pusherConfig";
 import Notification from "@/models/Notification";
+import Scrum from "@/models/Scrum";
+import { redis } from "@/utils/redis";
 
 export const chatRouter = createTRPCRouter({
   getMessagesAndChatroomInfo: privateProcedure
@@ -103,6 +105,16 @@ export const chatRouter = createTRPCRouter({
         messages: [],
         type: "team",
       });
+
+      await Promise.all([
+        Scrum.create({
+          chat_id: chatroom._id,
+        }),
+        ...participants.map(async (participant_id) => {
+          return redis.sadd("team:" + participant_id, chatroom._id.toString());
+        }),
+        redis.sadd("team:" + user._id, chatroom._id.toString()),
+      ]);
 
       const notifications = await Promise.all(
         participants.map(async (participant_id) => {

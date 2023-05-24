@@ -8,6 +8,7 @@ export interface IChatroom {
   type: "private" | "team";
   messages: Message[];
   participants: string[];
+  admins: string[];
 }
 
 // export interface IMessage {
@@ -48,6 +49,9 @@ const chatroomSchema = new mongoose.Schema<IChatroom>(
       },
     ],
     participants: [
+      { type: mongoose.Schema.Types.ObjectId, ref: "User", required: true },
+    ],
+    admins: [
       { type: mongoose.Schema.Types.ObjectId, ref: "User", required: true },
     ],
   },

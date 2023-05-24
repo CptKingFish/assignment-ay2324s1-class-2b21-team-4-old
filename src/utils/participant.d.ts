@@ -1,6 +1,6 @@
 import type { ObjectId } from "mongoose";
 
-interface Participant{
+interface participant{
     key:ObjectId;
     username:string;
     imageUrl:string;

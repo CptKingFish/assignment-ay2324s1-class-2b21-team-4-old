@@ -2,22 +2,24 @@ import { useGlobalContext } from "@/context";
 import React from "react";
 
 interface TopNavProps {
+  avatar:string;
   chatroom_name: string;
   openSidebarDetails: () => void;
 }
 
 export default function TopNav({
+  avatar,
   chatroom_name,
   openSidebarDetails,
 }: TopNavProps) {
-  const { user } = useGlobalContext()
+  const { user } = useGlobalContext();
   return (
-    <div className="navbar bg-base-300 h-20">
+    <div className="navbar h-20 bg-base-300">
       <div className="flex-1 cursor-pointer" onClick={openSidebarDetails}>
         <div className="avatar pl-5">
           <div className="w-16 rounded-xl">
             {/* <span className="text-3xl">K</span> */}
-            <img src="https://source.unsplash.com/random/?city,night" />
+            <img src={avatar} />
           </div>
         </div>
         <div className="">
@@ -25,11 +27,11 @@ export default function TopNav({
         </div>
       </div>
       <div className="flex-1">
-        <span
+        {/* <span
           className="ms-5 cursor-pointer text-xl normal-case"
         // onClick={drawer}
         >
-        </span>
+        </span> */}
       </div>
     </div>
   );

@@ -19,7 +19,7 @@ export default function TeamList({ teamChatrooms, display }: TeamListProps) {
         <li key={team._id.toString()} hidden={!display}>
           <TeamMenuItem
             id={team._id.toString()}
-            avatarUrl={"https://i.pravatar.cc/300?img=1"}
+            avatarUrl={team.avatarUrl || "/GroupProfile.png"}
             name={team.name || ""}
             lastMessage={team.messages[0]}
           />

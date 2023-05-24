@@ -12,7 +12,7 @@ const GroupParticipants: React.FC<GroupParticipantsProps> = ({ name, imageUrl, a
       <div className="flex py-4 flex-wrap btn btn-ghost justify-start w-full h-full">
         <div className="avatar justify-self-center">
           <div className="w-10 rounded-full">
-            <img src="https://picsum.photos/200/300" alt={name} />
+            <img src={imageUrl} />
           </div>
         </div>
         <div className="font-bold ms-5 normal-case">{name}</div>

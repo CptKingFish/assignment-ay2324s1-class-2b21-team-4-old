@@ -3,20 +3,28 @@ import React from "react";
 import { toast } from "react-hot-toast";
 import { api } from "@/utils/api";
 import { AnimatePresence, motion } from "framer-motion";
-import { Message } from "@/utils/chat";
+import { Message, PendingMessage } from "@/utils/chat";
 import IconButton from "./IconButton";
 import Circle from "@/components/Circle"
 import { Previews } from "@/components/Dropzone";
+import mongoose from "mongoose";
 
 interface ChatInputProps {
   channelCode: string;
   replyTo: Message | null;
   setReplyTo: React.Dispatch<React.SetStateAction<Message | null>>;
+  addPendingMessage: (message: PendingMessage) => void;
+  setPendingMessageHasFailed: (message_id: string) => void;
 }
 
-const ChatInput = ({ channelCode, replyTo, setReplyTo }: ChatInputProps) => {
-
-
+const ChatInput = ({
+  channelCode,
+  replyTo,
+  setReplyTo,
+  addPendingMessage,
+  setPendingMessageHasFailed,
+}: ChatInputProps) => {
+  const { user } = useGlobalContext();
   const [input, setInput] = React.useState("");
   const [isLoading, setIsLoading] = React.useState(false);
   const { mutateAsync: sendMessageMutation } =
@@ -24,16 +32,28 @@ const ChatInput = ({ channelCode, replyTo, setReplyTo }: ChatInputProps) => {
     
     
   const sendMessage = async () => {
-    console.log("sendMessage");
-
-    if (!input) return;
+    if (!input || isLoading) return;
     setIsLoading(true);
 
     try {
       console.log("sending message");
+      const _id = new mongoose.Types.ObjectId();
 
       if (replyTo) {
+        addPendingMessage({
+          _id: _id.toString(),
+          name: user?.username as string,
+          avatarUrl: "https://source.unsplash.com/random/?city,night",
+          text: input,
+          hasFailed: false,
+          hasReplyTo: true,
+          replyTo: {
+            username: replyTo.sender.username,
+            text: replyTo.text,
+          },
+        });
         await sendMessageMutation({
+          _id: _id.toString(),
           channel: channelCode,
           text: input,
           replyTo: {
@@ -47,20 +67,37 @@ const ChatInput = ({ channelCode, replyTo, setReplyTo }: ChatInputProps) => {
           },
         });
       } else {
-        await sendMessageMutation({
-          channel: channelCode,
+        // const _id = new mongoose.Types.ObjectId();
+
+        addPendingMessage({
+          _id: _id.toString(),
+          name: user?.username as string,
+          avatarUrl: "https://source.unsplash.com/random/?city,night",
           text: input,
+          hasFailed: false,
+          hasReplyTo: false,
         });
+
+        await sendMessageMutation(
+          {
+            _id: _id.toString(),
+            channel: channelCode,
+            text: input,
+          },
+          {
+            onError: (err) => {
+              console.log(err);
+              setPendingMessageHasFailed(_id.toString());
+            },
+          }
+        );
       }
 
-      // await axios.post("/api/pusher/message/send", {
-      //   user_id: user?._id,
-      //   channel: channelCode,
-      //   text: input,
-      // });
       setInput("");
       setReplyTo(null);
     } catch (e) {
+      console.log(e);
+
       toast.error("Something went wrong. Please try again later.");
     } finally {
       setIsLoading(false);
@@ -83,10 +120,6 @@ const ChatInput = ({ channelCode, replyTo, setReplyTo }: ChatInputProps) => {
     if (e.key === "Escape") {
       setReplyTo(null);
     }
-  };
-
-  const handleSend = () => {
-    void sendMessage();
   };
 
   return (

@@ -6,6 +6,7 @@ export interface IUser {
   avatar?: string;
   password: string;
   isEmailVerified: boolean;
+  friends: string[];
 }
 
 const userSchema = new mongoose.Schema<IUser>(
@@ -25,6 +26,12 @@ const userSchema = new mongoose.Schema<IUser>(
       required: true,
       unique: true,
     },
+    friends: [
+      {
+        type: mongoose.Schema.Types.ObjectId,
+        ref: "User",
+      }
+    ],
   },
   { timestamps: true }
 );

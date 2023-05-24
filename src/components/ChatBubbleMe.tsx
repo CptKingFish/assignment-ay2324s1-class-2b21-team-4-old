@@ -94,7 +94,7 @@ export default function ChatBubbleMe({
           </div>
         )}
         <div className="flex items-end">
-          <p>{text}</p>
+          <p className = "break-all">{text}</p>
           <div className="chat-footer ml-2 text-[0.8rem] opacity-50">
             {time}
           </div>

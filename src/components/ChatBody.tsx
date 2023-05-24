@@ -21,7 +21,6 @@ export default function ChatBody({
   users,
 }: ChatBodyProps) {
   const { user } = useGlobalContext();
-  console.log(users);
   return (
     <>
       <div className="relative">

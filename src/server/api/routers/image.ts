@@ -124,3 +124,11 @@ export const imageRouter = createTRPCRouter({
       return image_id;
     }),
 });
+
+export const config = {
+  api: {
+    bodyParser: {
+      sizeLimit: '5mb',
+    },
+  },
+};

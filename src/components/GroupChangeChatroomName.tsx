@@ -18,18 +18,22 @@ const GroupChangeChatroomName: React.FC<AccountChangeUsernameProps> = ({chatRoom
 
     React.useEffect(() => {
         setRoomName(chatRoomName || "")
-    }, [user])
+    }, [chatRoomName])
     const handleEditChatroomName= ()=>{
-        if(roomName){
+        if(roomName && roomName.length < 30){
             editChatroomName({chatroom_id:chatRoomId, chatroom_name:roomName},{
                 onSuccess: (data) => {
                     toast.success("Changed group name successfully!");
                     utils.chat.getMessagesAndChatroomInfo.invalidate()
+                    utils.chat.getChatrooms.invalidate()
                 },
                 onError: (error) => {
                     toast.error("Error when changing group name!");
                 },
             });
+        }else{
+            if (!roomName) toast.error("Group name cannot be empty!")
+            else toast.error("Group name must be less than 30 characters!")
         }
     }
 

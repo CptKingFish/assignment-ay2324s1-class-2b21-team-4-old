@@ -15,6 +15,7 @@ import { m } from "framer-motion";
 import mongoose, { ObjectId } from "mongoose";
 import { pusherServer } from "@/utils/pusherConfig";
 import Notification from "@/models/Notification";
+import { cloudConfig } from "@/utils/cloudconfig";
 
 export const chatRouter = createTRPCRouter({
   getMessagesAndChatroomInfo: privateProcedure
@@ -604,5 +605,47 @@ export const chatRouter = createTRPCRouter({
       await chatroom.save();
 
       return true;
+    }),
+    changeGroupIcon: privateProcedure
+    .input(z.object({ chatRoomID:z.string(),groupIcon: z.string().url() }))
+    .mutation(async ({ input }) => {
+      const response = await Chatroom.findById(input.chatRoomID);
+      if (!response) {
+        throw new TRPCError({
+          code: "BAD_REQUEST",
+          message: "User not found",
+        });
+      }
+
+      try {
+        const promises = [input.groupIcon].map(async (image) => {
+          const result = await cloudConfig.uploader.upload(image, {
+            upload_preset: "ml_default",
+          });
+          return result.secure_url;
+        });
+        const uploadResponse = await Promise.all(promises);
+
+        // Delete the old group icon from Cloudinary
+        if (response.avatarUrl) {
+          await cloudConfig.uploader.destroy(response.avatarUrl);
+        }
+
+        // Update the Group Icon URL in the user document
+        const updatedChatroom = await Chatroom.findByIdAndUpdate(
+          input.chatRoomID,
+          {
+            avatarUrl: uploadResponse[0],
+          },
+          { new: true }
+        );
+        return updatedChatroom;
+      } catch (error) {
+        console.log(error)
+        throw new TRPCError({
+          code: "BAD_REQUEST",
+          message: "Error uploading Group Icon",
+        });
+      }
     }),
 });

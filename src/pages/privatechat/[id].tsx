@@ -97,16 +97,6 @@ export default function PrivateChat() {
     return "presence-" + (router.query.id as string);
   }, [router]);
 
-  // const [chatroom_id, setChatroom_id] = React.useState("");
-
-  // React.useEffect(() => {
-  //   console.log(window.location.href);
-  //   const url = window.location.href;
-  //   setChatroom_id(url.substring(url.lastIndexOf("/") + 1));
-  // }, []);
-
-  // console.log("leid", chatroom_id);
-
   React.useEffect(() => {
     // console.log(pusherClient);
     if (!pusherClient) return;
@@ -158,13 +148,13 @@ export default function PrivateChat() {
   const { mutate: getMoreMessages } = api.chat.getMoreMessages.useMutation();
 
   const scrollableRef = React.useRef<HTMLDivElement>(null);
-  const counter = React.useRef(0);
-  const msgCounter = React.useMemo(() => {
-    return messages.length;
-  }, [messages]);
 
   const [getMoreMessagesIsLoading, setGetMoreMessagesIsLoading] =
     React.useState(false);
+
+  const messagesLength = React.useMemo(() => {
+    return messages.length;
+  }, [messages]);
 
   React.useEffect(() => {
     const scrollableElement = scrollableRef.current;
@@ -175,14 +165,9 @@ export default function PrivateChat() {
       const clientHeight = scrollableElement.clientHeight;
       const scrollHeight = scrollableElement.scrollHeight;
 
-      console.log(scrollTop, clientHeight, scrollHeight);
-
       if (-scrollTop + clientHeight >= scrollHeight - 200) {
         console.log("Scrolled to the top!");
         console.log(chatroom_id);
-
-        // if (counter.current === 3) return;
-        counter.current++;
 
         if (!chatroom_id || getMoreMessagesIsLoading) return;
 
@@ -191,8 +176,8 @@ export default function PrivateChat() {
         getMoreMessages(
           {
             chatroom_id: chatroom_id,
-            skipCount: 20,
-            limitValue: 20,
+            skipCount: messagesLength,
+            limitValue: 50,
           },
           {
             onSuccess: (data) => {
@@ -218,11 +203,10 @@ export default function PrivateChat() {
     return () => {
       scrollableElement.removeEventListener("scroll", handleScroll);
     };
-  }, []);
+  }, [chatroom_id, getMoreMessages, getMoreMessagesIsLoading, messagesLength]);
 
   return (
     <>
-
       <div className="drawer-mobile drawer drawer-end">
         <input id="my-drawer-4" type="checkbox" className="drawer-toggle" />
 
@@ -279,7 +263,10 @@ export default function PrivateChat() {
           </button> */}
         </div>
         <PrivateSideBar
-          chatRoomAvatar={api.user.getAvatarUrl.useQuery({ user_id: otherUserId })?.data?.avatar || "/Profile.png"}
+          chatRoomAvatar={
+            api.user.getAvatarUrl.useQuery({ user_id: otherUserId })?.data
+              ?.avatar || "/Profile.png"
+          }
           chatRoomName={name}
           isOpen={isOpen}
           handleDrawerToggle={handleDrawerToggle}

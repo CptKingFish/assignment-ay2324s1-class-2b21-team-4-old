@@ -29,7 +29,7 @@ export const chatRouter = createTRPCRouter({
       const { user } = ctx;
 
       const skipCount = 0; // Number of messages to skip
-      const limitValue = 20; // Maximum number of messages to retrieve
+      const limitValue = 50; // Maximum number of messages to retrieve
 
       const chatroom_id_obj = new mongoose.Types.ObjectId(chatroom_id);
 
@@ -110,37 +110,47 @@ export const chatRouter = createTRPCRouter({
       const chatroom_id_obj = new mongoose.Types.ObjectId(chatroom_id);
 
       // check if skip count has exceeded the number of messages in the chatroom
-      // const numberOfMessages = await Chatroom.aggregate([
-      //   { $match: { _id: chatroom_id_obj } },
-      //   { $unwind: { path: "$messages", preserveNullAndEmptyArrays: true } },
-      //   { $sort: { "messages.timestamp": -1 } },
-      //   {
-      //     $group: {
-      //       _id: "$_id",
-      //       messages: { $push: "$messages" },
-      //     },
-      //   },
-      //   {
-      //     $project: {
-      //       messages: {
-      //         $slice: [
-      //           { $cond: [{ $isArray: "$messages" }, "$messages", []] },
-      //           0,
-      //           1,
-      //         ],
-      //       },
-      //     },
-      //   },
-      // ]);
+      const numberOfMessages = await Chatroom.aggregate([
+        { $match: { _id: chatroom_id_obj } },
+        {
+          $project: {
+            numberOfMessages: {
+              $cond: {
+                if: { $isArray: "$messages" },
+                then: { $size: "$messages" },
+                else: "NA",
+              },
+            },
+          },
+        },
+      ]).exec();
 
-      // console.log("numberOfMessages", numberOfMessages[0].messages);
+      console.log("numberOfMessages", numberOfMessages);
 
-      // if (skipCount >= numberOfMessages.length) {
-      //   throw new TRPCError({
-      //     code: "BAD_REQUEST",
-      //     message: "No more messages to retrieve",
-      //   });
-      // }
+      // check if numberOfMessages[0].numberOfMessages is not undefined
+
+      if (!numberOfMessages[0]) {
+        throw new TRPCError({
+          code: "BAD_REQUEST",
+          message: "Chatroom not found",
+        });
+      }
+
+      if (
+        numberOfMessages[0].numberOfMessages === undefined ||
+        numberOfMessages[0].numberOfMessages === null
+      ) {
+        throw new TRPCError({
+          code: "BAD_REQUEST",
+          message: "Chatroom not found",
+        });
+      }
+
+      // check if skipCount is greater than or equal to numberOfMessages[0].numberOfMessages
+
+      if (skipCount >= numberOfMessages[0].numberOfMessages) {
+        return [];
+      }
 
       const chatroom: ChatRoom = (
         await Chatroom.aggregate([

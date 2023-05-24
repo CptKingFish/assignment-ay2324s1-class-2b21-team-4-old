@@ -8,6 +8,7 @@ import ChatBody from "@/components/ChatBody";
 import type { Message, PendingMessage } from "@/utils/chat";
 import { api } from "@/utils/api";
 import GroupSideBar from "@/components/GroupSideBar";
+import { toast } from "react-hot-toast";
 
 interface Admin {
   admins: string[];
@@ -107,15 +108,72 @@ const TeamChat = () => {
     };
   }, [user, channelCode, pusherClient]);
 
-  // const scrollDownRef = React.useRef<HTMLDivElement | null>(null);
+  const chatroom_id = React.useMemo(() => {
+    return router.query.id as string;
+  }, [router.query.id]);
 
-  // const scrollToBottom = () => {
-  //   scrollDownRef.current?.scrollIntoView({ behavior: "smooth" });
-  // };
+  const { mutate: getMoreMessages } = api.chat.getMoreMessages.useMutation();
+
+  const scrollableRef = React.useRef<HTMLDivElement>(null);
+
+  const [getMoreMessagesIsLoading, setGetMoreMessagesIsLoading] =
+    React.useState(false);
+
+  const messagesLength = React.useMemo(() => {
+    return messages.length;
+  }, [messages]);
+
+  React.useEffect(() => {
+    const scrollableElement = scrollableRef.current;
+
+    const handleScroll = () => {
+      if (!scrollableElement) return;
+      const scrollTop = scrollableElement.scrollTop;
+      const clientHeight = scrollableElement.clientHeight;
+      const scrollHeight = scrollableElement.scrollHeight;
+
+      if (-scrollTop + clientHeight >= scrollHeight - 200) {
+        console.log("Scrolled to the top!");
+        console.log(chatroom_id);
+
+        if (!chatroom_id || getMoreMessagesIsLoading) return;
+
+        setGetMoreMessagesIsLoading(true);
+
+        getMoreMessages(
+          {
+            chatroom_id: chatroom_id,
+            skipCount: messagesLength,
+            limitValue: 50,
+          },
+          {
+            onSuccess: (data) => {
+              console.log(data);
+              setMessages((prev) => [...data, ...prev]);
+            },
+
+            onError: (error) => {
+              toast.error(error.message);
+            },
+            onSettled: () => {
+              setGetMoreMessagesIsLoading(false);
+            },
+          }
+        );
+      }
+    };
+
+    if (!scrollableElement) return;
+
+    scrollableElement.addEventListener("scroll", handleScroll);
+
+    return () => {
+      scrollableElement.removeEventListener("scroll", handleScroll);
+    };
+  }, [chatroom_id, getMoreMessages, getMoreMessagesIsLoading, messagesLength]);
 
   return (
     <>
-
       <div className="drawer-mobile drawer drawer-end">
         <input id="my-drawer-4" type="checkbox" className="drawer-toggle" />
 
@@ -139,6 +197,7 @@ const TeamChat = () => {
             />
             <div
               id="chat-body"
+              ref={scrollableRef}
               className="scrollbar-thumb-blue scrollbar-thumb-rounded scrollbar-track-blue-lighter scrollbar-w-2 scrolling-touch flex h-full flex-1 flex-col-reverse gap-4 overflow-y-auto scroll-smooth p-3 pb-16"
             >
               <ChatBody

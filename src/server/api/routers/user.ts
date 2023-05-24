@@ -209,7 +209,7 @@ export const userRouter = createTRPCRouter({
       );
       return updatedUser;
     }),
-    changeProfilePicture: privateProcedure
+  changeProfilePicture: privateProcedure
     .input(z.object({ profilePic: z.string().url() }))
     .mutation(async ({ input, ctx }) => {
       const response = await User.findById(ctx.user._id);
@@ -245,20 +245,20 @@ export const userRouter = createTRPCRouter({
 
         return updatedUser;
       } catch (error) {
-        console.log(error)
+        console.log(error);
         throw new TRPCError({
           code: "BAD_REQUEST",
           message: "Error uploading profile picture",
         });
       }
     }),
-    getAvatarUrl: publicProcedure
+  getAvatarUrl: publicProcedure
     .input(z.object({ user_id: z.string() }))
     .query(async ({ input }) => {
-      try{
+      try {
         return await User.findById(input.user_id).select("avatar");
-      }catch(error){
-        console.log(error)
+      } catch (error) {
+        console.log(error);
         throw new TRPCError({
           code: "BAD_REQUEST",
           message: "Error getting user avatar",
@@ -311,6 +311,18 @@ export const userRouter = createTRPCRouter({
           message: "Error removing friend",
         });
       }
+    }),
+    logout: privateProcedure.mutation(({ ctx }) => {
+      ctx.res.setHeader(
+        "Set-Cookie",
+        `token=;expires=${new Date(
+          Date.now() - 1000 * 60 * 60 * 24
+        ).toUTCString()};sameSite=Strict;path=/;secure`
+      );
+      return {
+        message: "Logged out successfully!",
+        code: "SUCCESS",
+      };
     }),
       
 

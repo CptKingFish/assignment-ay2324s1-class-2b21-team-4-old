@@ -7,7 +7,7 @@ import { useRouter } from "next/router";
 import ChatBody from "@/components/ChatBody";
 import { Message, PendingMessage } from "@/utils/chat";
 import { api } from "@/utils/api";
-import UserSideBar from "@/components/UserSideBar";
+import PrivateSideBar from "@/components/PrivateSideBar";
 import type { PusherMemberStatusProps } from "@/utils/chat";
 import { toast } from "react-hot-toast";
 
@@ -222,14 +222,7 @@ export default function PrivateChat() {
 
   return (
     <>
-      <TopNav
-        avatar={
-          api.user.getAvatarUrl.useQuery({ user_id: otherUserId })?.data
-            ?.avatar || "/Profile.png"
-        }
-        chatroom_name={name || ""}
-        openSidebarDetails={handleDrawerToggle}
-      />
+
       <div className="drawer-mobile drawer drawer-end">
         <input id="my-drawer-4" type="checkbox" className="drawer-toggle" />
 
@@ -245,7 +238,15 @@ export default function PrivateChat() {
             </div>
           )} */}
 
-          <div className="relative flex h-full max-h-[calc(100vh-6rem)] flex-1 flex-col">
+          <div className="relative flex h-full max-h-[calc(100vh-1rem)] flex-1 flex-col">
+            <TopNav
+              avatar={
+                api.user.getAvatarUrl.useQuery({ user_id: otherUserId })?.data
+                  ?.avatar || "/Profile.png"
+              }
+              chatroom_name={name || ""}
+              openSidebarDetails={handleDrawerToggle}
+            />
             <div
               id="chat-body"
               ref={scrollableRef}
@@ -277,12 +278,12 @@ export default function PrivateChat() {
             {"<"}
           </button> */}
         </div>
-        <UserSideBar
+        <PrivateSideBar
+          chatRoomAvatar={api.user.getAvatarUrl.useQuery({ user_id: otherUserId })?.data?.avatar || "/Profile.png"}
           chatRoomName={name}
           isOpen={isOpen}
           handleDrawerToggle={handleDrawerToggle}
           participants={users}
-          chatroomType="private"
         />
       </div>
     </>

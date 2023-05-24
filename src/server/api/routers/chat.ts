@@ -246,6 +246,7 @@ export const chatRouter = createTRPCRouter({
       const chatroom = await Chatroom.create({
         name: chatroom_name,
         participants: [new mongoose.Types.ObjectId(user._id)],
+        admins: [new mongoose.Types.ObjectId(user._id)],
         messages: [],
         type: "team",
       });
@@ -328,7 +329,7 @@ export const chatRouter = createTRPCRouter({
       }
       const usernames = await User.find({
         _id: { $in: chatroom.participants },
-      }).select("username avatar");
+      }).select("username avatar friends");
       return usernames;
     }),
   sendMessage: privateProcedure

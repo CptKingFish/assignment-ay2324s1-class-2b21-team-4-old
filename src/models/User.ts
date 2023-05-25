@@ -28,8 +28,14 @@ const userSchema = new mongoose.Schema<IUser>(
     },
     friends: [
       {
-        type: mongoose.Schema.Types.ObjectId,
-        ref: "User",
+        friendID: {
+          type:mongoose.Schema.Types.ObjectId,
+          ref: "User",
+        },
+        chatID:{
+          type:mongoose.Schema.Types.ObjectId,
+          ref: "Chat",
+        }
       }
     ],
   },

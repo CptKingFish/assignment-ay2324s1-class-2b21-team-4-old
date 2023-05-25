@@ -10,23 +10,6 @@ export default function Account() {
 
   return (
     <>
-      <input type="checkbox" id="profile" className="modal-toggle" />
-      <div className="modal">
-        <div className="w-8/9 max-w-l modal-box justify-center">
-          <label
-            htmlFor="profile"
-            className="btn-sm btn-circle btn absolute right-2 top-2"
-          >
-            ✕
-          </label>
-          <div className="">
-            <button className="btn-outline btn-success btn absolute bottom-2 right-2 ms-5 mt-5">
-              Upload Image
-            </button>
-            {/* {preview && <img src={preview} alt="Preview" />} */}
-          </div>
-        </div>
-      </div>
       <AccountChangeProfile />
       <AccountChangeUsername />
       <AccountChangeEmail />

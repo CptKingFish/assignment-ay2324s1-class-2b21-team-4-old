@@ -7,6 +7,7 @@ import { formatTimestampToTime } from "@/utils/helper";
 import { toast } from "react-hot-toast";
 import ChatNotification from "./ChatNotification";
 import { truncateString } from "@/utils/helper";
+import Link from "next/link";
 
 interface TeamMenuItemProps {
   id: string;
@@ -122,12 +123,12 @@ export default function TeamMenuItem({
         </div>
       </div>
       {collapsed ? null : (
-        <ul className="menu rounded-box w-full self-end bg-base-100 bg-primary-content">
+        <ul className="menu rounded-box w-full self-end bg-base-100">
           <li className={`${isInChatroom ? "bordered" : ""}`}>
             <a onClick={handleChatBtnClick}>Chat</a>
           </li>
           <li className={`${isInScrum ? "bordered" : ""}`}>
-            <a>Scrum</a>
+            <Link href={`/scrum/${id}`}>Scrum</Link>
           </li>
         </ul>
       )}

@@ -1,11 +1,10 @@
 import { type NextApiRequest, type NextApiResponse } from "next";
 import { redis } from "@/utils/redis";
-import jwt from "jsonwebtoken";
-import { env } from "@/env.mjs";
 
 interface ExtendedNextApiRequest extends NextApiRequest {
   body: {
-    token: string;
+    room_id: string;
+    user_id: string;
   };
 }
 
@@ -14,12 +13,10 @@ export default async function handler(
   res: NextApiResponse
 ) {
   try {
-    const { token } = req.body;
-    const decoded = jwt.verify(token, env.JWT_SECRET) as { user_id: string };
-    const user_id = decoded.user_id;
-    const all_users = await redis.smembers("users");
-    if (all_users.includes(user_id)) {
-      return res.status(200).json({ verified: true, user_id });
+    const { room_id, user_id } = req.body;
+    const all_users = await redis.smembers(`team:${user_id}`);
+    if (all_users.includes(room_id)) {
+      return res.status(200).json({ verified: true });
     }
     return res.status(200).json({ verified: false });
   } catch (error) {

@@ -1,10 +1,10 @@
 import React from "react";
 import { formatTimeStampToDate, formatTimestampToTime } from "@/utils/helper";
-import ChatBubbleMe from "@/components/ChatBubbleMe";
-import ChatBubbleOther from "@/components/ChatBubbleOther";
+import ChatBubbleMe from "@/components/Chat/ChatBubbleMe";
+import ChatBubbleOther from "@/components/Chat/ChatBubbleOther";
 import type { Message, PendingMessage } from "@/utils/chat";
 import { useGlobalContext } from "@/context";
-import IconButton from "./IconButton";
+import IconButton from "../IconButton";
 import PendingChatBubble from "./PendingChatBubble";
 import { api } from "@/utils/api";
 
@@ -72,9 +72,11 @@ export default function ChatBody({
                 message_id={message._id.toString()}
                 setReplyTo={setReplyTo}
                 senderId={message.sender._id.toString()}
-                senderName={users.find(
-                  (user) => user.key === message.sender._id.toString()
-                )?.username || "Removed User"}
+                senderName={
+                  users.find(
+                    (user) => user.key === message.sender._id.toString()
+                  )?.username || "Removed User"
+                }
                 text={message.text}
                 time={formatTimestampToTime(message.timestamp)}
                 date={formatTimeStampToDate(message.timestamp)}

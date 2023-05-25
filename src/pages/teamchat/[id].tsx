@@ -2,9 +2,9 @@ import React, { useEffect } from "react";
 import { useGlobalContext } from "@/context";
 // import { pusherClientConstructor } from "@/utils/pusherConfig";
 import TopNav from "@/components/TopNav";
-import ChatInput from "@/components/ChatInput";
+import ChatInput from "@/components/Chat/ChatInput";
 import { useRouter } from "next/router";
-import ChatBody from "@/components/ChatBody";
+import ChatBody from "@/components/Chat/ChatBody";
 import type { Message, PendingMessage } from "@/utils/chat";
 import { api } from "@/utils/api";
 import GroupSideBar from "@/components/GroupSideBar";
@@ -23,6 +23,7 @@ const TeamChat = () => {
   const [pendingMessages, setPendingMessages] = React.useState<
     PendingMessage[]
   >([]);
+  const [hasLoadedAllMessages, setHasLoadedAllMessages] = React.useState(false);
 
   const { data: chatroomData, isLoading } =
     api.chat.getMessagesAndChatroomInfo.useQuery({
@@ -90,6 +91,16 @@ const TeamChat = () => {
   }, [router.query.id]);
 
   React.useEffect(() => {
+    // if router is null route to /
+    if (!router.query.id) {
+      router
+        .push("/chat")
+        .catch((err) => console.log("error from private chat", err));
+      return;
+    }
+  }, [router, router.query.id]);
+
+  React.useEffect(() => {
     if (!pusherClient) return;
 
     const channel = pusherClient.subscribe(channelCode);
@@ -128,6 +139,7 @@ const TeamChat = () => {
 
     const handleScroll = () => {
       if (!scrollableElement) return;
+      if (hasLoadedAllMessages) return;
       const scrollTop = scrollableElement.scrollTop;
       const clientHeight = scrollableElement.clientHeight;
       const scrollHeight = scrollableElement.scrollHeight;
@@ -148,6 +160,7 @@ const TeamChat = () => {
           },
           {
             onSuccess: (data) => {
+              if (data.length === 0) setHasLoadedAllMessages(true);
               console.log(data);
               setMessages((prev) => [...data, ...prev]);
             },
@@ -193,6 +206,7 @@ const TeamChat = () => {
             <TopNav
               avatar={chatroomData?.avatarUrl || "/GroupProfile.png"}
               chatroom_name={chatroomData?.name || ""}
+              chatroom_type="team"
               openSidebarDetails={handleDrawerToggle}
             />
             <div

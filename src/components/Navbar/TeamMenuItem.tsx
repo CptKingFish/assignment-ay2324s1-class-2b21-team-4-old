@@ -2,39 +2,32 @@ import Image from "next/image";
 import React from "react";
 import { useRouter } from "next/router";
 import { useGlobalContext } from "@/context";
-import { Message, WatchListEventProps } from "@/utils/chat";
+import type { Message } from "@/utils/chat";
 import { formatTimestampToTime } from "@/utils/helper";
 import { toast } from "react-hot-toast";
-import ChatNotification from "./ChatNotification";
+import ChatNotification from "../Chat/ChatNotification";
 import { truncateString } from "@/utils/helper";
+import Link from "next/link";
 
-interface ChatMenuItemProps {
+interface TeamMenuItemProps {
   id: string;
   avatarUrl: string;
-  participants: {
-    _id: string;
-    username: string;
-  }[];
+  name: string;
   lastMessage: Message | undefined;
-  display: boolean;
 }
 
-export default function ChatMenuItem({
+export default function TeamMenuItem({
   id,
   avatarUrl,
-  participants,
+  name,
   lastMessage,
-  display,
-}: ChatMenuItemProps) {
-
-  const { user, pusherClient, watchlistStatus } = useGlobalContext();
-  // const [name, setName] = React.useState("");
-  const [otherUser, setOtherUser] = React.useState(participants[0]);
+}: TeamMenuItemProps) {
+  const { user, pusherClient } = useGlobalContext();
+  const router = useRouter();
+  const [collapsed, setCollapsed] = React.useState(true);
   const [latestMessage, setLatestMessage] = React.useState<Message | undefined>(
     lastMessage
   );
-  const [otherUserIsOnline, setOtherUserIsOnline] = React.useState(false);
-  const router = useRouter();
 
   const queryId = React.useMemo(() => {
     return router.query.id as string;
@@ -45,12 +38,12 @@ export default function ChatMenuItem({
   }, [id]);
 
   React.useEffect(() => {
-    if (!pusherClient || !otherUser) return;
+    if (!user || !pusherClient) return;
 
     const channel = pusherClient.subscribe(channelCode);
 
     const messageHandler = (message: Message) => {
-      console.log("incoming message item", message);
+      console.log("incoming message", message);
 
       if (message.sender._id.toString() !== user?._id && queryId !== id) {
         toast.custom(
@@ -61,10 +54,10 @@ export default function ChatMenuItem({
               } pointer-events-auto flex w-full max-w-md rounded-lg bg-white shadow-lg ring-1 ring-black ring-opacity-5`}
             >
               <ChatNotification
-                type={"private"}
+                type={"team"}
                 avatarUrl={avatarUrl}
                 text={message?.text || ""}
-                team={null}
+                team={name}
                 username={message.sender.username || ""}
                 chatroom_id={id}
               />
@@ -86,55 +79,42 @@ export default function ChatMenuItem({
       channel.unbind("incoming-message", messageHandler);
       pusherClient.unsubscribe(channelCode);
     };
-  }, [user, channelCode, pusherClient, otherUser, queryId, id, avatarUrl]);
-
-  React.useEffect(() => {
-    if (!pusherClient || !otherUser) return;
-    setOtherUserIsOnline(watchlistStatus[otherUser?._id] || false);
-  }, [watchlistStatus, otherUser, pusherClient]);
-
-  React.useEffect(() => {
-    if (!user || !participants) return;
-
-    const otherUser = participants.find(
-      (participant) => user._id !== participant._id
-    );
-
-    setOtherUser(otherUser);
-
-    // setName(otherUser?.username || "");
-  }, [participants, user]);
-
-  const isInChatroom = React.useMemo(() => {
-    return router.query.id === id;
-  }, [router.query.id, id]);
+  }, [user, channelCode, pusherClient, queryId, id, avatarUrl]);
 
   const handleChatBtnClick = () => {
-    router.push(`/privatechat/${id}`).catch(console.error);
+    router.push(`/teamchat/${id}`).catch(console.error);
   };
 
-  // if text is too long, truncate it
+  const isInChatroom = React.useMemo(() => {
+    return router.query.id === id && router.pathname.includes("teamchat");
+  }, [router.query.id, router.pathname, id]);
+
+  const isInScrum = React.useMemo(() => {
+    return router.query.id === id && router.pathname.includes("scrum");
+  }, [router.query.id, router.pathname, id]);
+
   const truncatedText = React.useMemo(() => {
     if (!latestMessage) return "";
-    return truncateString(latestMessage.text, 18);
+    return truncateString(latestMessage?.text || "", 20);
   }, [latestMessage]);
 
   return (
-    <li
-      className={`${isInChatroom ? "bordered" : ""}`}
-      onClick={handleChatBtnClick}
-      hidden={!display}
-    >
-      <div className="mt-4 flex items-center">
-        <div className={`${otherUserIsOnline ? "online" : "offline"} avatar`}>
-          <div className="w-16 rounded-full">
+    <>
+      <div
+        className="mt-4 flex items-center"
+        onClick={() => setCollapsed((prev) => !prev)}
+      >
+        <div className="avatar">
+          <div className="w-16 rounded-xl">
             {/* <Image src={avatarUrl} alt="chat menu item" width={32} height={32} /> */}
             <img src={avatarUrl} alt="chat menu item" />
           </div>
         </div>
         <div className="ml-2">
-          <div className="text-lg font-semibold">
-            {otherUser?.username || ""}
+          <div className="text-lg font-semibold">{name}</div>
+          <div className="pr-1 text-sm font-semibold">
+            {(latestMessage?.sender.username || "") +
+              (latestMessage ? ": " : "")}
           </div>
           <div className="text-sm">{truncatedText}</div>
         </div>
@@ -142,6 +122,16 @@ export default function ChatMenuItem({
           {formatTimestampToTime(latestMessage?.timestamp || 0)}
         </div>
       </div>
-    </li>
+      {collapsed ? null : (
+        <ul className="menu rounded-box w-full self-end bg-base-100">
+          <li className={`${isInChatroom ? "bordered" : ""}`}>
+            <a onClick={handleChatBtnClick}>Chat</a>
+          </li>
+          <li className={`${isInScrum ? "bordered" : ""}`}>
+            <Link href={`/scrum/${id}`}>Scrum</Link>
+          </li>
+        </ul>
+      )}
+    </>
   );
 }

@@ -2,9 +2,9 @@ import React, { useEffect } from "react";
 import { useGlobalContext } from "@/context";
 import { pusherClientConstructor } from "@/utils/pusherConfig";
 import TopNav from "@/components/TopNav";
-import ChatInput from "@/components/ChatInput";
+import ChatInput from "@/components/Chat/ChatInput";
 import { useRouter } from "next/router";
-import ChatBody from "@/components/ChatBody";
+import ChatBody from "@/components/Chat/ChatBody";
 import { Message, PendingMessage } from "@/utils/chat";
 import { api } from "@/utils/api";
 import PrivateSideBar from "@/components/PrivateSideBar";
@@ -20,6 +20,7 @@ export default function PrivateChat() {
   const [name, setName] = React.useState("");
   const [otherUserId, setOtherUserId] = React.useState("");
   const [otherUserIsOnline, setOtherUserIsOnline] = React.useState(false);
+  const [hasLoadedAllMessages, setHasLoadedAllMessages] = React.useState(false);
   // const [msgCounter, setMsgCounter] = React.useState(0);
 
   const [pendingMessages, setPendingMessages] = React.useState<
@@ -95,18 +96,28 @@ export default function PrivateChat() {
 
   const channelCode = React.useMemo(() => {
     return "presence-" + (router.query.id as string);
-  }, [router]);
+  }, [router.query.id]);
 
   React.useEffect(() => {
-    // console.log(pusherClient);
-    if (!pusherClient) return;
+    // if router is null route to /
+    if (!router.query.id) {
+      router
+        .push("/chat")
+        .catch((err) => console.log("error from private chat", err));
+      return;
+    }
+  }, [router, router.query.id]);
 
-    // const pusherClient = pusherClientConstructor(user?._id);
+  React.useEffect(() => {
+    if (!pusherClient || !router.isReady || !router.query.id) return;
 
     const channel = pusherClient.subscribe(channelCode);
 
+    console.log("channel from private", channel);
+
     const messageHandler = (message: Message) => {
       console.log("this da msg", message);
+
       setMessages((prev) => [...prev, message]);
       removePendingMessage(message._id.toString());
     };
@@ -121,6 +132,8 @@ export default function PrivateChat() {
       setOtherUserIsOnline(false);
     };
 
+    // presence-646b6c35c61cbeca5a4c0460
+
     channel.bind("incoming-message", messageHandler);
     channel.bind("pusher:member_added", memberAddedHandler);
     channel.bind("pusher:member_removed", memberRemovedHandler);
@@ -131,7 +144,7 @@ export default function PrivateChat() {
       channel.unbind("pusher:member_removed", memberRemovedHandler);
       pusherClient.unsubscribe(channelCode);
     };
-  }, [user, channelCode, pusherClient]);
+  }, [user, pusherClient, router.query.id, router.isReady, channelCode]);
 
   // /// // / /
 
@@ -161,6 +174,7 @@ export default function PrivateChat() {
 
     const handleScroll = () => {
       if (!scrollableElement) return;
+      if (hasLoadedAllMessages) return;
       const scrollTop = scrollableElement.scrollTop;
       const clientHeight = scrollableElement.clientHeight;
       const scrollHeight = scrollableElement.scrollHeight;
@@ -182,6 +196,7 @@ export default function PrivateChat() {
           {
             onSuccess: (data) => {
               console.log(data);
+              if (data.length === 0) setHasLoadedAllMessages(true);
               setMessages((prev) => [...data, ...prev]);
             },
 
@@ -211,17 +226,6 @@ export default function PrivateChat() {
         <input id="my-drawer-4" type="checkbox" className="drawer-toggle" />
 
         <div className="flex-no-wrap drawer-content flex">
-          {/* {showDownButton && (
-            <div className="fixed bottom-10 right-4 z-50">
-              <button
-                onClick={handleDownButtonClick}
-                className="rounded-full bg-blue-500 px-4 py-2 font-bold text-white shadow hover:bg-blue-700"
-              >
-                Scroll down
-              </button>
-            </div>
-          )} */}
-
           <div className="relative flex h-full max-h-[calc(100vh-1rem)] flex-1 flex-col">
             <TopNav
               avatar={
@@ -229,6 +233,7 @@ export default function PrivateChat() {
                   ?.avatar || "/Profile.png"
               }
               chatroom_name={name || ""}
+              chatroom_type="private"
               openSidebarDetails={handleDrawerToggle}
             />
             <div
@@ -251,16 +256,6 @@ export default function PrivateChat() {
               setPendingMessageHasFailed={setPendingMessageHasFailed}
             />
           </div>
-
-          {/*
-         <button
-            className={` h-screen items-center justify-center bg-base-200 px-2 text-4xl text-white ${
-              isOpen ? "hidden" : ""
-            }`}
-            onClick={handleDrawerToggle}
-          >
-            {"<"}
-          </button> */}
         </div>
         <PrivateSideBar
           chatRoomAvatar={
@@ -275,12 +270,4 @@ export default function PrivateChat() {
       </div>
     </>
   );
-}
-
-export function getServerSideProps({ req, query }: { req: any; query: any }) {
-  return {
-    props: {
-      initQuery: query,
-    },
-  };
 }

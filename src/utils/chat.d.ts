@@ -18,6 +18,8 @@ interface TeamMenuItemProps {
 }
 
 interface Message {
+  hasImage: boolean;
+  image_url?: string;
   hasReplyTo: boolean;
   _id: ObjectId;
   sender: {

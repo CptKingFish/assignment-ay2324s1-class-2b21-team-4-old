@@ -8,11 +8,13 @@ import {
   VideoCameraIcon,
   DocumentTextIcon,
 } from "@heroicons/react/24/solid";
+import { api } from "@/utils/api"
 
 const Circle = () => {
   const [show, setShow] = useState(false);
   const [selectedFiles, setSelectedFiles] = useState<File[]>([]);
   const cardRef = React.useRef<HTMLDivElement>(null);
+  const { mutateAsync: sendMessageMutation } = api.chat.sendMessage.useMutation();
 
   const handleToggle = () => {
     setShow(!show);
@@ -151,7 +153,8 @@ const Circle = () => {
         <PaperClipIcon className="h-6 w-6" />
       </button>
 
-      <div className="absolute w-80 -translate-y-80 translate-x-52 rounded-lg bg-transparent">
+          <div>
+      <div className="absolute w-80 translate-x-[16rem] -translate-y-[27rem] bg-slate-500 rounded-lg bg-transparent">
         <AnimatePresence>
           {selectedFiles.map((file, index) => (
             <motion.div
@@ -200,6 +203,7 @@ const Circle = () => {
           ))}
         </AnimatePresence>
       </div>
+    </div>
     </div>
   );
 };

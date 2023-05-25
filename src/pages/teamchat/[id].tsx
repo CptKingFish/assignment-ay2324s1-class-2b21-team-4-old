@@ -22,6 +22,7 @@ const TeamChat = () => {
   const [pendingMessages, setPendingMessages] = React.useState<
     PendingMessage[]
   >([]);
+  const utils = api.useContext();
 
   const { data: chatroomData, isLoading } =
     api.chat.getMessagesAndChatroomInfo.useQuery({
@@ -100,6 +101,9 @@ const TeamChat = () => {
     };
 
     channel.bind("incoming-message", messageHandler);
+    channel.bind("incoming-image", () => {
+      utils.chat.getMessagesAndChatroomInfo.refetch().catch(console.error);
+    });
 
     return () => {
       pusherClient.unsubscribe(channelCode);
@@ -115,7 +119,6 @@ const TeamChat = () => {
 
   return (
     <>
-
       <div className="drawer-mobile drawer drawer-end">
         <input id="my-drawer-4" type="checkbox" className="drawer-toggle" />
 

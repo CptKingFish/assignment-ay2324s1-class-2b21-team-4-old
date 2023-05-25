@@ -23,6 +23,7 @@ export default function ChatBody({
   const { user } = useGlobalContext();
   return (
     <>
+    
       <div className="relative">
         {messages?.map((message) => {
           if (message.sender._id.toString() === user?._id) {

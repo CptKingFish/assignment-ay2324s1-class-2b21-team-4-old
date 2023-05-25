@@ -8,6 +8,7 @@ import IconButton from "./IconButton";
 import Circle from "@/components/Circle"
 import { Previews } from "@/components/Dropzone";
 import mongoose from "mongoose";
+import { useGlobalContext } from "@/context";
 
 interface ChatInputProps {
   channelCode: string;
@@ -124,14 +125,13 @@ const ChatInput = ({
 
   return (
     <div className="z-10 mx-4 flex flex-col ">
-        <div className="relative w-full items-end ">
           <AnimatePresence>
             {replyTo && (
               <motion.div
                 initial={{ opacity: 0, transform: "translateY(30%)" }}
                 animate={{ opacity: 1, transform: "translateY(0)" }}
                 exit={{ opacity: 0, transform: "translateY(30%)" }}
-                className="relative -top-[100%] left-0 right-0 z-[3] mb-2 rounded-md bg-slate-800 p-2 text-white"
+                className="relative left-0 right-0 z-[3] rounded-md bg-slate-800 p-2 text-white"
               >
                 <div className="flex items-center justify-between rounded-sm border-l-4 border-lime-400 bg-slate-600 px-2 py-1">
                   <div className="flex flex-col">
@@ -164,14 +164,13 @@ const ChatInput = ({
               </motion.div>
             )}
           </AnimatePresence>
-      </div>
-      <div className="flex flex-row justify-center items-center ">
+      <div className="flex flex-row justify-center items-center h-24 ">
           <Circle />
           <input
               type="text"
               id="chat-input"
               placeholder="Type your message"
-              className="relative z-[4] w-5/6 h-20 flex-1 rounded-full border-2 border-gray-200 p-2  focus:outline-none focus:ring-2 focus:ring-blue-500"
+              className="relative z-[4] w-5/6 h-16 flex-1 rounded-full border-2 border-gray-200 p-2  focus:outline-none focus:ring-2 focus:ring-blue-500"
               value={input}
               onChange={(e) => setInput(e.target.value)}
               onKeyDown={handleKeyDown}

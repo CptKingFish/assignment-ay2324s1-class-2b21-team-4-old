@@ -27,7 +27,7 @@ export const imageRouter = createTRPCRouter({
           const result = await cloudConfig.uploader.upload(image, {
             upload_preset: "ml_default",
           });
-          return result.secure_url;
+          return result6.secure_url;
         });
         const results = await Promise.all(promises);
         const file_creation_promises = [];
@@ -55,15 +55,6 @@ export const imageRouter = createTRPCRouter({
           message: "Something Went Wrong",
         });
       }
-    }),
-  getSingleImage: privateProcedure
-    .input(
-      z.object({
-        image_id: z.string(),
-      })
-    )
-    .query(({ input }) => {
-     console.log(input)
     }),
     postToDB: privateProcedure
     .input(
@@ -112,18 +103,31 @@ export const imageRouter = createTRPCRouter({
         });
       }
     }),
-  deleteImage: privateProcedure
+  deleteImageFrom: privateProcedure
     .input(
       z.object({
         image_id: z.string(),
       })
     )
-    .query(({ input }) => {
-      const { image_id } = input;
-      console.log(image_id);
-      return image_id;
-    }),
-});
+    .mutation(async ({ input }) => {
+
+
+      const img_id = input.image_id    
+
+    try {
+      await cloudConfig.uploader.destroy(img_id);
+
+      const result = await File.deleteOne({
+        _id: img_id
+      });
+      
+      console.log( result )
+
+      return result;
+    } catch (error) {
+      console.log(error)
+    }})
+})
 
 export const config = {
   api: {

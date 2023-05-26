@@ -4,7 +4,7 @@ import { scrumRouter } from "./routers/scrum";
 import { chatRouter } from "./routers/chat";
 import { notificationRouter } from "./routers/notification";
 import { imageRouter } from "./routers/image";
-
+import { authRouter } from "./routers/auth";
 /**
  * This is the primary router for your server.
  *
@@ -16,6 +16,7 @@ export const appRouter = createTRPCRouter({
   chat: chatRouter,
   notification: notificationRouter,
   image: imageRouter,
+  auth: authRouter,
 });
 
 // export type definition of API

@@ -339,6 +339,7 @@ export const scrumRouter = createTRPCRouter({
             },
           }
         ),
+          
       ]);
       // console.log(
       //   tasks.map((t) => {

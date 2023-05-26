@@ -1,15 +1,27 @@
 import { z } from "zod";
-import { createTRPCRouter, privateProcedure, publicProcedure } from "@/server/api/trpc";
+import { createTRPCRouter, publicProcedure } from "@/server/api/trpc";
 import { TRPCError } from "@trpc/server";
 import { env } from "@/env.mjs";
-import nodemailer from "nodemailer";
+import { createTransport } from "nodemailer";
 import jwt from "jsonwebtoken";
 import User from "@/models/User";
 import bcrypt from "bcryptjs";
 
+interface TransporterConfig {
+  service: string;
+  name: string;
+  host: string;
+  port: number;
+  secure: boolean;
+  auth: {
+    user: string;
+    pass: string;
+  };
+}
+
 
 const sendEmail = async (email: string, subject: string, html: string) => {
-    const transporter = nodemailer.createTransport({
+    const transporter = createTransport<TransporterConfig>({
       service: "gmail",
       name: "gmail.com",
       host: "smtp.gmail.com",
@@ -21,7 +33,7 @@ const sendEmail = async (email: string, subject: string, html: string) => {
       },
     });
     const mailOptions = {
-      from: "PracticeMe <socpracticeme@gmail.com>",
+      from: "ProjectSwifty <adesprojectswifty>",
       to: email,
       subject: subject,
       html: html,

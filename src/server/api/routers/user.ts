@@ -209,7 +209,7 @@ export const userRouter = createTRPCRouter({
       );
       return updatedUser;
     }),
-    changeProfilePicture: privateProcedure
+  changeProfilePicture: privateProcedure
     .input(z.object({ profilePic: z.string().url() }))
     .mutation(async ({ input, ctx }) => {
       const response = await User.findById(ctx.user._id);
@@ -245,29 +245,86 @@ export const userRouter = createTRPCRouter({
 
         return updatedUser;
       } catch (error) {
-        console.log(error)
+        console.log(error);
         throw new TRPCError({
           code: "BAD_REQUEST",
           message: "Error uploading profile picture",
         });
       }
     }),
-    getAvatarUrl: publicProcedure
+  getAvatarUrl: publicProcedure
     .input(z.object({ user_id: z.string() }))
     .query(async ({ input }) => {
-      try{
+      try {
         return await User.findById(input.user_id).select("avatar");
-      }catch(error){
-        console.log(error)
+      } catch (error) {
+        console.log(error);
         throw new TRPCError({
           code: "BAD_REQUEST",
           message: "Error getting user avatar",
         });
       }
     }),
+    addFriend: privateProcedure
+    .input(z.object({ friend_id: z.string(), chat_id: z.string() }))
+    .mutation(async ({ input, ctx }) => {
+      try{
+        return await User.findByIdAndUpdate(
+          ctx.user._id,
+          {
+            $push: {
+              friends: {
+                friendID: input.friend_id,
+                chatID: input.chat_id,
+              },
+            },
+          },
+          { new: true }
+        );
+      }catch(error){
+        console.log(error)
+        throw new TRPCError({
+          code: "BAD_REQUEST",
+          message: "Error adding friend",
+        });
+      }
+    }),
+    removeFriend: privateProcedure
+    .input(z.object({ friend_id: z.string() }))
+    .mutation(async ({ input, ctx }) => {
+      try{
+        return await User.findByIdAndUpdate(
+          ctx.user._id,
+          {
+            $pull: {
+              friends: {
+                friendID: input.friend_id,
+              },
+            },
+          },
+          { new: true }
+        );
+      }catch(error){
+        console.log(error)
+        throw new TRPCError({
+          code: "BAD_REQUEST",
+          message: "Error removing friend",
+        });
+      }
+    }),
+    logout: privateProcedure.mutation(({ ctx }) => {
+      ctx.res.setHeader(
+        "Set-Cookie",
+        `token=;expires=${new Date(
+          Date.now() - 1000 * 60 * 60 * 24
+        ).toUTCString()};sameSite=Strict;path=/;secure`
+      );
+      return {
+        message: "Logged out successfully!",
+        code: "SUCCESS",
+      };
+    }),
       
-
-
 
   // seedRedis: publicProcedure.mutation(async () => {
   //   // add all user_ids to redis
@@ -279,11 +336,3 @@ export const userRouter = createTRPCRouter({
   //   console.log("yayyy");
   // }),
 });
-
-export const config = {
-  api: {
-    bodyParser: {
-      sizeLimit: '5mb',
-    },
-  },
-};

@@ -51,7 +51,7 @@ const Authenticate = () => {
         <span></span>
         <span></span>
       </div>
-      <div className="hero min-h-screen bg-base-200">  
+      <div className="hero min-h-screen bg-base-200">
         <div className="hero-content w-1/2 flex-col lg:flex-row-reverse">
           <div className="card w-full max-w-sm flex-shrink-0 bg-base-100 shadow-2xl">
             <div className="card-body">

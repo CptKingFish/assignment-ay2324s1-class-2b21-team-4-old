@@ -1,17 +1,23 @@
 import React, { useState } from 'react';
 import GroupParticipants from './GroupParticipants';
-
+import { useGlobalContext } from '@/context';
+interface friend{
+  friendID:string;
+  chatID:string;
+}
 interface GroupParticipantModalProps {
   participants: {
-    key: string | number;
-    username: string;
-    imageUrl: string;
-    admin: boolean;
+    key:string;
+    username:string;
+    imageUrl:string;
+    admin:boolean;
+    friends:friend[];
   }[];
   children?: React.ReactNode;
 }
 
 const GroupParticipantModal: React.FC<GroupParticipantModalProps> = ({ participants }) => {
+  const {user} = useGlobalContext();
   const [searchQuery, setSearchQuery] = useState('');
 
   const handleSearchChange = (event: React.ChangeEvent<HTMLInputElement>) => {
@@ -51,9 +57,14 @@ const GroupParticipantModal: React.FC<GroupParticipantModalProps> = ({ participa
               return (
                 <React.Fragment key={participant.key}>
                   <GroupParticipants
+                    id = {participant.key.toString()}
                     name={participant.username}
                     imageUrl={participant.imageUrl}
                     admin={participant.admin}
+                    friend={participant.friends && participant.friends.some(friend => friend.friendID === user?._id)}
+                    friendUrl = {participant.friends ? participant.friends.find((friend:friend)=>{return friend.friendID === user?._id})?.chatID || "":""}
+                    self = {user?.username === participant.username}
+                    selfAdmin = {participants.some(participant => participant.username === user?.username && participant.admin)}
                   />
                 </React.Fragment>
               );

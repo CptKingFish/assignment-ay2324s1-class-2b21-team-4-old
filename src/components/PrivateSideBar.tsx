@@ -34,6 +34,7 @@ const PrivateSideBar: React.FC<PrivateSideBarProps> = ({
     React.useState(false);
   const { mutate: unfriendUser } = api.chat.unfriendUser.useMutation();
   const router = useRouter();
+
   return (
     <>
       <input type="checkbox" id="my-modal-3" className="modal-toggle" />
@@ -78,7 +79,7 @@ const PrivateSideBar: React.FC<PrivateSideBarProps> = ({
           </div>
           <div className="divider mx-2"></div>
           <div
-            className="btn-error btn-outline btn mx-5 mb-5"
+            className="btn-outline btn-error btn mx-5 mb-5"
             onClick={() => {
               setIsOpenConfirmationDialog(true);
             }}
@@ -111,9 +112,10 @@ const PrivateSideBar: React.FC<PrivateSideBarProps> = ({
               onSuccess: () => {
                 toast.success("Unfriended successfully");
                 setIsOpenConfirmationDialog(false);
-                router.push("/chat").catch((err) => {
-                  console.log(err);
-                });
+                window.location.href = "/chat";
+                // router.push("/chat").catch((err) => {
+                //   console.log(err);
+                // });
               },
               onError: (error) => {
                 toast.error(error.message);

@@ -7,6 +7,7 @@ import toast from "react-hot-toast";
 import { useGlobalContext } from "@/context";
 import GroupChangeChatroomName from "./GroupChangeChatroomName";
 import GroupChangeIcon from "./GroupChangeIcon";
+import ConfirmationDialog from "./ConfirmationDialog";
 
 interface friend {
   friendID: string;
@@ -36,24 +37,26 @@ const GroupSideBar: React.FC<GroupSideBarProps> = ({
   handleDrawerToggle,
   participants,
 }) => {
+  const [isOpenConfirmationDialog, setIsOpenConfirmationDialog] =
+    React.useState(false);
   const { mutate: leaveTeam } = api.chat.leaveTeam.useMutation();
-  const { mutate: editChatroomName } =
-    api.chat.changeChatroomName.useMutation();
+  // const { mutate: editChatroomName } =
+  //   api.chat.changeChatroomName.useMutation();
   const { user } = useGlobalContext();
-  function handleLeave() {
-    leaveTeam(
-      { chatroom_id: chatRoomId },
-      {
-        onSuccess: (data) => {
-          toast.success("Left the team successfully!");
-          window.location.href = "/chat";
-        },
-        onError: (error) => {
-          toast.error("Error when leaving Team!");
-        },
-      }
-    );
-  }
+  // function handleLeave() {
+  //   leaveTeam(
+  //     { chatroom_id: chatRoomId },
+  //     {
+  //       onSuccess: (data) => {
+  //         toast.success("Left the team successfully!");
+  //         window.location.href = "/chat";
+  //       },
+  //       onError: (error) => {
+  //         toast.error("Error when leaving Team!");
+  //       },
+  //     }
+  //   );
+  // }
 
   return (
     <>
@@ -92,7 +95,7 @@ const GroupSideBar: React.FC<GroupSideBarProps> = ({
                 />
               </svg>
             </button>
-            <li className=" texl-xl ms-5 mt-2 font-bold">Group Info</li>
+            <li className="texl-xl ms-5 mt-2 font-bold">Group Info</li>
           </div>
           <div className="self-center text-center">
             <div className="avatar relative mt-5 w-24 self-center overflow-hidden rounded-full">
@@ -180,7 +183,9 @@ const GroupSideBar: React.FC<GroupSideBarProps> = ({
           </div>
           <div className="divider"></div>
           <button
-            onClick={handleLeave}
+            onClick={() => {
+              setIsOpenConfirmationDialog(true);
+            }}
             className="btn-outline btn-error btn mx-5 mb-5"
           >
             <svg
@@ -201,6 +206,26 @@ const GroupSideBar: React.FC<GroupSideBarProps> = ({
           </button>
         </ul>
       </div>
+      <ConfirmationDialog
+        title="Leave Team"
+        description="Are you sure you want to leave the team?"
+        onConfirm={() => {
+          leaveTeam(
+            { chatroom_id: chatRoomId },
+            {
+              onSuccess: (data) => {
+                toast.success("Left the team successfully!");
+                window.location.href = "/chat";
+              },
+              onError: (error) => {
+                toast.error("Error when leaving Team!");
+              },
+            }
+          );
+        }}
+        isOpen={isOpenConfirmationDialog}
+        setIsOpen={setIsOpenConfirmationDialog}
+      />
     </>
   );
 };

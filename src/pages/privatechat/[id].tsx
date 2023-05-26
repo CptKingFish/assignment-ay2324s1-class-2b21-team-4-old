@@ -39,13 +39,9 @@ export default function PrivateChat() {
     chatroom_id: router.query.id as string,
   });
 
-  // add pending message
-
   const addPendingMessage = (message: PendingMessage) => {
     setPendingMessages((prev) => [...prev, message]);
   };
-
-  // remove pending message
 
   const removePendingMessage = (message_id: string) => {
     setPendingMessages((prev) => {
@@ -113,11 +109,7 @@ export default function PrivateChat() {
 
     const channel = pusherClient.subscribe(channelCode);
 
-    console.log("channel from private", channel);
-
     const messageHandler = (message: Message) => {
-      console.log("this da msg", message);
-
       setMessages((prev) => [...prev, message]);
       removePendingMessage(message._id.toString());
     };
@@ -218,7 +210,13 @@ export default function PrivateChat() {
     return () => {
       scrollableElement.removeEventListener("scroll", handleScroll);
     };
-  }, [chatroom_id, getMoreMessages, getMoreMessagesIsLoading, messagesLength]);
+  }, [
+    chatroom_id,
+    getMoreMessages,
+    getMoreMessagesIsLoading,
+    hasLoadedAllMessages,
+    messagesLength,
+  ]);
 
   return (
     <>

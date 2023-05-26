@@ -266,6 +266,7 @@ export default function PrivateChat() {
           isOpen={isOpen}
           handleDrawerToggle={handleDrawerToggle}
           participants={users}
+          otherUserId={otherUserId}
         />
       </div>
     </>

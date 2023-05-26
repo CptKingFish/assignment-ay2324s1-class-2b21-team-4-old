@@ -7,10 +7,10 @@ import { formatTimestampToTime } from "@/utils/helper";
 import { toast } from "react-hot-toast";
 import ChatNotification from "./ChatNotification";
 import { truncateString } from "@/utils/helper";
+import { api } from "@/utils/api";
 
 interface ChatMenuItemProps {
   id: string;
-  avatarUrl: string;
   participants: {
     _id: string;
     username: string;
@@ -21,13 +21,28 @@ interface ChatMenuItemProps {
 
 export default function ChatMenuItem({
   id,
-  avatarUrl,
   participants,
   lastMessage,
   display,
 }: ChatMenuItemProps) {
   const { user, pusherClient, watchlistStatus } = useGlobalContext();
-  // const [name, setName] = React.useState("");
+
+  const otherParticipantId = React.useMemo(() => {
+    return participants.find((participant) => participant._id !== user?._id)
+      ?._id;
+  }, [participants, user?._id]);
+
+  const { data: avatarUrl } = api.user.getAvatarUrl.useQuery(
+    {
+      user_id: otherParticipantId || "",
+    },
+    {
+      enabled: !!otherParticipantId,
+    }
+  );
+
+  console.log("avatarUrl", avatarUrl);
+
   const [otherUser, setOtherUser] = React.useState(participants[0]);
   const [latestMessage, setLatestMessage] = React.useState<Message | undefined>(
     lastMessage
@@ -45,14 +60,9 @@ export default function ChatMenuItem({
 
   React.useEffect(() => {
     if (!pusherClient || !otherUser) return;
-
     const channel = pusherClient.subscribe(channelCode);
 
-    console.log("channel from chatmenu", channel);
-
     const messageHandler = (message: Message) => {
-      console.log("incoming message item", message);
-
       if (message.sender._id.toString() !== user?._id && queryId !== id) {
         toast.custom(
           (t) => (
@@ -63,7 +73,7 @@ export default function ChatMenuItem({
             >
               <ChatNotification
                 type={"private"}
-                avatarUrl={avatarUrl}
+                avatarUrl={avatarUrl?.avatar || ""}
                 text={message?.text || ""}
                 team={null}
                 username={message.sender.username || ""}
@@ -102,8 +112,6 @@ export default function ChatMenuItem({
     );
 
     setOtherUser(otherUser);
-
-    // setName(otherUser?.username || "");
   }, [participants, user]);
 
   const isInChatroom = React.useMemo(() => {
@@ -114,7 +122,6 @@ export default function ChatMenuItem({
     router.push(`/privatechat/${id}`).catch(console.error);
   };
 
-  // if text is too long, truncate it
   const truncatedText = React.useMemo(() => {
     if (!latestMessage) return "";
     return truncateString(latestMessage.text, 18);
@@ -130,7 +137,7 @@ export default function ChatMenuItem({
         <div className={`${otherUserIsOnline ? "online" : "offline"} avatar`}>
           <div className="w-16 rounded-full">
             {/* <Image src={avatarUrl} alt="chat menu item" width={32} height={32} /> */}
-            <img src={avatarUrl} alt="chat menu item" />
+            <img src={avatarUrl?.avatar} alt="chat menu item" />
           </div>
         </div>
         <div className="ml-2">

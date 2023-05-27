@@ -161,7 +161,7 @@ export const chatRouter = createTRPCRouter({
       chatrooms.map(async (chatroom) => {
         const participants = await User.find({
           _id: { $in: chatroom.participants },
-        }).select("username");
+        }).select("username avatar");
         return {
           ...chatroom.toObject(),
           participants: participants,
@@ -372,10 +372,24 @@ export const chatRouter = createTRPCRouter({
         });
       }
 
+      //Delete object containing friendID and chatID from friends array in user
+
+      await User.updateOne(
+        { _id: user._id },
+        { $pull: { friends: { friendID: friend_id } } }
+      );
+
+      await User.updateOne(
+        { _id: friend_id },
+        { $pull: { friends: { friendID: user._id } } }
+      ); 
+
       await Chatroom.deleteOne({
         participants: { $all: [user._id, friend_id] },
         type: "private",
       });
+
+      
 
       return true;
     }),

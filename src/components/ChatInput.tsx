@@ -8,6 +8,7 @@ import IconButton from "./IconButton";
 import Circle from "@/components/Circle"
 import { Previews } from "@/components/Dropzone";
 import mongoose from "mongoose";
+import { useGlobalContext } from "@/context";
 
 interface ChatInputProps {
   channelCode: string;

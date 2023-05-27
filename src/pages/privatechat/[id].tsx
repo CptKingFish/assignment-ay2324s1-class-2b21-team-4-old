@@ -95,7 +95,6 @@ export default function PrivateChat() {
   const channelCode = React.useMemo(() => {
     return "presence-" + (router.query.id as string);
   }, [router.query.id]);
-  console.log("excusem e");
 
   React.useEffect(() => {
     // console.log(pusherClient);

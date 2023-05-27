@@ -60,7 +60,7 @@ NotificationListProps) {
             } pointer-events-auto flex w-full max-w-md rounded-lg bg-white shadow-lg ring-1 ring-black ring-opacity-5`}
           >
             <RequestNotificationToast
-              avatarUrl={"https://source.unsplash.com/random/?city,night"}
+              avatarUrl={data?.sender?.avatar || "/Profile.png"}
               text={
                 data.type === "friend_request"
                   ? `${data.sender?.username || ""} sent you a friend request.`
@@ -105,7 +105,6 @@ NotificationListProps) {
   return (
     <>
       {notifications?.map((notification) => {
-        console.log("notification", notification);
 
         return (
           <RequestNotification
@@ -114,7 +113,7 @@ NotificationListProps) {
             sender_username={notification?.sender?.username.toString() || ""}
             type={notification.type}
             time={formatDate(notification.createdAt)}
-            avatarUrl={"https://source.unsplash.com/random/?city,night"}
+            avatarUrl={notification?.sender?.avatar || "/Profile.png"}
             refetchChatrooms={refetchChatrooms}
             handleRemoveNotification={handleRemoveNotification}
             display={display}

@@ -21,10 +21,12 @@ import { useRouter } from "next/router";
 export interface ChatroomInfoWithParticipantNames {
   _id: ObjectId;
   name: string;
+  avatar:string;
   type: string;
   participants: {
     _id: string;
     username: string;
+    avatar: string;
   }[];
   messages: Message[];
 }
@@ -71,7 +73,6 @@ export default function SideBarNav({
       (chatroom: IChatroom) => chatroom.type === "private"
     );
   }, [chatrooms]);
-
   return (
     <div className="drawer-mobile drawer -z-10">
       <input id="my-drawer-2" type="checkbox" className="drawer-toggle" />

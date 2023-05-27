@@ -13,6 +13,7 @@ interface ChatListProps {
 export default function ChatList({ privateChatrooms, display }: ChatListProps) {
   const { user } = useGlobalContext()
   if (privateChatrooms.length === 0) return null;
+
   return (
     <>
       {privateChatrooms.map(
@@ -22,12 +23,13 @@ export default function ChatList({ privateChatrooms, display }: ChatListProps) {
           
           const otherParticipantIndex = privateChatroom.participants.findIndex(participant => participant?._id === user?._id) === 0 ? 1 : 0;
           const otherParticipantId = privateChatroom.participants[otherParticipantIndex]?._id || "";
-          let avatar = api.user.getAvatarUrl.useQuery({ user_id: otherParticipantId })?.data?.avatar || "/Profile.png"
           return (
             <ChatMenuItem
               key={privateChatroom._id.toString()}
               id={privateChatroom._id.toString()}
-              avatarUrl={avatar}
+              avatarUrl={privateChatroom?.participants?.find(
+                (participant) => user?._id !== participant._id
+              )?.avatar || "/Profile.png"}
               participants={privateChatroom.participants}
               lastMessage={privateChatroom.messages[0]}
               display={display}

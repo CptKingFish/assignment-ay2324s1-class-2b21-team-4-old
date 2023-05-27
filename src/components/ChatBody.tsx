@@ -5,7 +5,6 @@ import type { Message, PendingMessage } from "@/utils/chat";
 import { useGlobalContext } from "@/context";
 import IconButton from "./IconButton";
 import PendingChatBubble from "./PendingChatBubble";
-import { api } from "@/utils/api";
 
 interface ChatBodyProps {
   messages: Message[];

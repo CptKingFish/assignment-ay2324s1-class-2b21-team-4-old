@@ -4,8 +4,8 @@ import { toast } from "react-hot-toast";
 import { api } from "@/utils/api";
 import { AnimatePresence, motion } from "framer-motion";
 import { Message, PendingMessage } from "@/utils/chat";
-import IconButton from "./IconButton";
-import Circle from "@/components/Circle"
+import IconButton from "../IconButton";
+import Circle from "@/components/Circle";
 import { Previews } from "@/components/Dropzone";
 import mongoose from "mongoose";
 import { useGlobalContext } from "@/context";
@@ -29,9 +29,8 @@ const ChatInput = ({
   const [input, setInput] = React.useState("");
   const [isLoading, setIsLoading] = React.useState(false);
   const { mutateAsync: sendMessageMutation } =
-    api.chat.sendMessage.useMutation(); 
-    
-    
+    api.chat.sendMessage.useMutation();
+
   const sendMessage = async () => {
     if (!input || isLoading) return;
     setIsLoading(true);
@@ -107,7 +106,7 @@ const ChatInput = ({
 
   const uploadImage = () => {
     console.log("uploadImage");
-    
+
     // Add your image upload logic here
   };
 
@@ -125,60 +124,59 @@ const ChatInput = ({
 
   return (
     <div className="z-10 mx-4 flex flex-col ">
-        <div className="relative w-full items-end ">
-          <AnimatePresence>
-            {replyTo && (
-              <motion.div
-                initial={{ opacity: 0, transform: "translateY(30%)" }}
-                animate={{ opacity: 1, transform: "translateY(0)" }}
-                exit={{ opacity: 0, transform: "translateY(30%)" }}
-                className="relative -top-[100%] left-0 right-0 z-[3] mb-2 rounded-md bg-slate-800 p-2 text-white"
-              >
-                <div className="flex items-center justify-between rounded-sm border-l-4 border-lime-400 bg-slate-600 px-2 py-1">
-                  <div className="flex flex-col">
-                    <span className="inline-flex text-green-400">
-                      {replyTo.sender.username}
-                    </span>
-                    <span>{replyTo.text}</span>
-                  </div>
-                  <IconButton
-                    onClick={() => {
-                      setReplyTo(null);
-                    }}
-                  >
-                    <svg
-                      xmlns="http://www.w3.org/2000/svg"
-                      fill="none"
-                      viewBox="0 0 24 24"
-                      strokeWidth={1.5}
-                      stroke="currentColor"
-                      className="h-6 w-6"
-                    >
-                      <path
-                        strokeLinecap="round"
-                        strokeLinejoin="round"
-                        d="M6 18L18 6M6 6l12 12"
-                      />
-                    </svg>
-                  </IconButton>
+      <div className="relative w-full items-end ">
+        <AnimatePresence>
+          {replyTo && (
+            <motion.div
+              initial={{ opacity: 0, transform: "translateY(30%)" }}
+              animate={{ opacity: 1, transform: "translateY(0)" }}
+              exit={{ opacity: 0, transform: "translateY(30%)" }}
+              className="relative -top-[100%] left-0 right-0 z-[3] mb-2 rounded-md bg-slate-800 p-2 text-white"
+            >
+              <div className="flex items-center justify-between rounded-sm border-l-4 border-lime-400 bg-slate-600 px-2 py-1">
+                <div className="flex flex-col">
+                  <span className="inline-flex text-green-400">
+                    {replyTo.sender.username}
+                  </span>
+                  <span>{replyTo.text}</span>
                 </div>
-              </motion.div>
-            )}
-          </AnimatePresence>
+                <IconButton
+                  onClick={() => {
+                    setReplyTo(null);
+                  }}
+                >
+                  <svg
+                    xmlns="http://www.w3.org/2000/svg"
+                    fill="none"
+                    viewBox="0 0 24 24"
+                    strokeWidth={1.5}
+                    stroke="currentColor"
+                    className="h-6 w-6"
+                  >
+                    <path
+                      strokeLinecap="round"
+                      strokeLinejoin="round"
+                      d="M6 18L18 6M6 6l12 12"
+                    />
+                  </svg>
+                </IconButton>
+              </div>
+            </motion.div>
+          )}
+        </AnimatePresence>
       </div>
-      <div className="flex flex-row justify-center items-center ">
-          <Circle />
-          <input
-              type="text"
-              id="chat-input"
-              placeholder="Type your message"
-              className="relative z-[4] w-5/6 h-20 flex-1 rounded-full border-2 border-gray-200 p-2  focus:outline-none focus:ring-2 focus:ring-blue-500"
-              value={input}
-              onChange={(e) => setInput(e.target.value)}
-              onKeyDown={handleKeyDown}
-            />
+      <div className="flex flex-row items-center justify-center ">
+        <Circle />
+        <input
+          type="text"
+          id="chat-input"
+          placeholder="Type your message"
+          className="relative z-[4] h-10 w-5/6 flex-1 rounded-full border-2 border-gray-200 p-2  focus:outline-none focus:ring-2 focus:ring-blue-500"
+          value={input}
+          onChange={(e) => setInput(e.target.value)}
+          onKeyDown={handleKeyDown}
+        />
       </div>
-      
     </div>
   );
 };

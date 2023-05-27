@@ -8,12 +8,6 @@ import { useGlobalContext } from "@/context";
 import { Schema } from "mongoose";
 import { toast } from "react-hot-toast";
 import RequestNotificationToast from "./RequestNotificationToast";
-// import { ObjectId } from "mongoose";
-// import { Schema } from "zod";
-
-// interface NotificationWithSenderDetails extends INotification {
-//   sender: IUser;
-// }
 
 interface NotificationListProps {
   refetchChatrooms: () => void;
@@ -34,24 +28,15 @@ interface NotificationItem {
 export default function NotificationList({
   refetchChatrooms,
   display,
-}: // notifications,
-// handleRemoveNotification,
-NotificationListProps) {
+}: NotificationListProps) {
   const { pusherClient } = useGlobalContext();
   const [notifications, setNotifications] = React.useState<NotificationItem[]>(
     []
   );
 
-  //  notification_id: notification._id.toString(),
-  //       sender_username: user.username,
-  //       type: "friend_request",
-  //       time: notification.createdAt,
-  //       avatarUrl: "https://source.unsplash.com/random/?city,night",
-
   React.useEffect(() => {
     if (!pusherClient) return;
     pusherClient.bind("incoming-notification", (data: NotificationItem) => {
-      console.log("incoming-notification", data);
       toast.custom(
         (t) => (
           <div
@@ -60,7 +45,7 @@ NotificationListProps) {
             } pointer-events-auto flex w-full max-w-md rounded-lg bg-white shadow-lg ring-1 ring-black ring-opacity-5`}
           >
             <RequestNotificationToast
-              avatarUrl={data?.sender?.avatar || "/Profile.png"}
+              avatarUrl={data.sender?.avatar || ""}
               text={
                 data.type === "friend_request"
                   ? `${data.sender?.username || ""} sent you a friend request.`
@@ -105,6 +90,7 @@ NotificationListProps) {
   return (
     <>
       {notifications?.map((notification) => {
+        console.log("notification", notification);
 
         return (
           <RequestNotification
@@ -113,7 +99,7 @@ NotificationListProps) {
             sender_username={notification?.sender?.username.toString() || ""}
             type={notification.type}
             time={formatDate(notification.createdAt)}
-            avatarUrl={notification?.sender?.avatar || "/Profile.png"}
+            avatarUrl={notification?.sender?.avatar || ""}
             refetchChatrooms={refetchChatrooms}
             handleRemoveNotification={handleRemoveNotification}
             display={display}

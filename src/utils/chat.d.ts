@@ -18,12 +18,14 @@ interface TeamMenuItemProps {
 }
 
 interface Message {
-  hasReplyTo: boolean;
   _id: ObjectId;
+  data_type: string | undefined;
+  hasReplyTo: boolean;
   sender: {
     _id: ObjectId;
     username: string;
   };
+  deleted?: boolean;
   text: string;
   timestamp: number;
   replyTo?: {
@@ -37,13 +39,23 @@ interface Message {
   };
 }
 
+// interface ChatRoom {
+//   id: string;
+//   name: string;
+//   avatarUrl?: string;
+//   type: "personal" | "team";
+//   messages: Message[];
+//   participants: string[];
+// }
+
 interface ChatRoom {
-  id: string;
-  name: string;
+  _id: ObjectId;
+  name?: string | null;
   avatarUrl?: string;
-  type: "personal" | "team";
+  type: "private" | "team";
   messages: Message[];
   participants: string[];
+  admins: string[];
 }
 
 export interface PusherMemberStatusProps {

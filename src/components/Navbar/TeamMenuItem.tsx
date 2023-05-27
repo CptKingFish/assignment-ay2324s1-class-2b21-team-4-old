@@ -5,7 +5,7 @@ import { useGlobalContext } from "@/context";
 import type { Message } from "@/utils/chat";
 import { formatTimestampToTime } from "@/utils/helper";
 import { toast } from "react-hot-toast";
-import ChatNotification from "./ChatNotification";
+import ChatNotification from "../Chat/ChatNotification";
 import { truncateString } from "@/utils/helper";
 import Link from "next/link";
 
@@ -14,6 +14,7 @@ interface TeamMenuItemProps {
   avatarUrl: string;
   name: string;
   lastMessage: Message | undefined;
+  searchValue: string;
 }
 
 export default function TeamMenuItem({
@@ -21,6 +22,7 @@ export default function TeamMenuItem({
   avatarUrl,
   name,
   lastMessage,
+  searchValue,
 }: TeamMenuItemProps) {
   const { user, pusherClient } = useGlobalContext();
   const router = useRouter();

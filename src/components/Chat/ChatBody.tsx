@@ -1,16 +1,20 @@
+import React from "react";
 import { formatTimeStampToDate, formatTimestampToTime } from "@/utils/helper";
-import ChatBubbleMe from "@/components/ChatBubbleMe";
-import ChatBubbleOther from "@/components/ChatBubbleOther";
+import ChatBubbleMe from "@/components/Chat/ChatBubbleMe";
+import ChatBubbleOther from "@/components/Chat/ChatBubbleOther";
 import type { Message, PendingMessage } from "@/utils/chat";
 import { useGlobalContext } from "@/context";
-import IconButton from "./IconButton";
+import IconButton from "../IconButton";
 import PendingChatBubble from "./PendingChatBubble";
+import { api } from "@/utils/api";
+import StatusMessage from "./StatusMessage";
 
 interface ChatBodyProps {
   messages: Message[];
   pendingMessages: PendingMessage[];
   setReplyTo: React.Dispatch<React.SetStateAction<Message | null>>;
   users: any[];
+  chatroom_id: string;
 }
 
 export default function ChatBody({
@@ -18,18 +22,28 @@ export default function ChatBody({
   pendingMessages,
   setReplyTo,
   users,
+  chatroom_id,
 }: ChatBodyProps) {
   const { user } = useGlobalContext();
+
   return (
     <>
       <div className="relative">
         {messages?.map((message) => {
-          if (message.sender._id.toString() === user?._id) {
+          if (message.data_type === "status") {
+            return (
+              <StatusMessage
+                message={message.text}
+                key={message._id.toString()}
+              />
+            );
+          } else if (message.sender._id.toString() === user?._id) {
             return (
               <ChatBubbleMe
                 hasReplyTo={message.hasReplyTo}
                 replyTo={message.replyTo}
                 message_id={message._id.toString()}
+                chatroom_id={chatroom_id}
                 key={message._id.toString()}
                 senderId={message.sender._id.toString()}
                 senderName={message.sender.username}
@@ -38,6 +52,7 @@ export default function ChatBody({
                 time={formatTimestampToTime(message.timestamp)}
                 date={formatTimeStampToDate(message.timestamp)}
                 avatarUrl={user?.avatar || "/Profile.png"}
+                deleted={message?.deleted || false}
               />
             );
           } else {
@@ -49,9 +64,11 @@ export default function ChatBody({
                 message_id={message._id.toString()}
                 setReplyTo={setReplyTo}
                 senderId={message.sender._id.toString()}
-                senderName={users.find(
-                  (user) => user.key === message.sender._id.toString()
-                )?.username || "Removed User"}
+                senderName={
+                  users.find(
+                    (user) => user.key === message.sender._id.toString()
+                  )?.username || "Removed User"
+                }
                 text={message.text}
                 time={formatTimestampToTime(message.timestamp)}
                 date={formatTimeStampToDate(message.timestamp)}
@@ -60,10 +77,17 @@ export default function ChatBody({
                     (user) => user.key === message.sender._id.toString()
                   )?.imageUrl || "/Profile.png"
                 }
+                deleted={message?.deleted || false}
               />
             );
           }
         })}
+        {/* <StatusMessage
+          message={
+            "This is a status message. It is used to show when a user joins or leaves the chat."
+          }
+        /> */}
+
         {pendingMessages?.map((message) => {
           return (
             <PendingChatBubble
@@ -79,52 +103,6 @@ export default function ChatBody({
           );
         })}
 
-        {/* <div className={`chat chat-end transition-all duration-[400]`}>
-          <div className="chat-image avatar">
-            <div className="w-10 rounded-full">
-              <img
-                src={"https://source.unsplash.com/random/?city,night"}
-                alt="profile img"
-              />
-            </div>
-          </div>
-          <div className="chat-bubble relative flex cursor-pointer flex-col gap-1 opacity-25">
-            <div className="flex justify-between">
-              <span className="mr-2 text-green-500">{"sithulol"}</span>
-              <button className="opacity-100">
-                <svg
-                  xmlns="http://www.w3.org/2000/svg"
-                  fill="none"
-                  viewBox="0 0 24 24"
-                  strokeWidth={1.5}
-                  stroke="currentColor"
-                  className="h-5 w-5"
-                >
-                  <path
-                    strokeLinecap="round"
-                    strokeLinejoin="round"
-                    d="M16.023 9.348h4.992v-.001M2.985 19.644v-4.992m0 0h4.992m-4.993 0l3.181 3.183a8.25 8.25 0 0013.803-3.7M4.031 9.865a8.25 8.25 0 0113.803-3.7l3.181 3.182m0-4.991v4.99"
-                  />
-                </svg>
-              </button>
-            </div>
-
-            <div className="cursor-pointer rounded-sm border-l-4 border-l-blue-500 bg-slate-700 p-2">
-              <div className="text-blue-400">{"nik"}</div>
-              <div className="text-white">{"ha"}</div>
-            </div>
-
-            <div className="flex items-end">
-              <p>{"has"}</p>
-
-              <div className="chat-footer ml-2 text-[0.8rem] opacity-50"> </div>
-            </div>
-          </div>
-
-          <div className="chat-footer text-[0.8rem] opacity-50">{"."}</div>
-        </div> */}
-
-        {/* fff */}
         <div
           className="fixed right-8"
           onClick={() => {

@@ -13,7 +13,7 @@ import { env } from "@/env.mjs";
 import Notification from "@/models/Notification";
 import Chatroom from "@/models/Chatroom";
 import { pusherServer } from "@/utils/pusherConfig";
-import mongoose from "mongoose";
+import mongoose, { ObjectId } from "mongoose";
 
 export const notificationRouter = createTRPCRouter({
   getNotifications: privateProcedure.query(async ({ ctx }) => {
@@ -71,7 +71,81 @@ export const notificationRouter = createTRPCRouter({
 
       const areAlreadyFriends = await Chatroom.findOne({
         type: "private",
-        members: { $all: [user._id, receiver_id] },
+        participants: { $all: [user._id, receiver_id] },
+      });
+
+      if (areAlreadyFriends) {
+        throw new TRPCError({
+          code: "BAD_REQUEST",
+          message: "You are already friends with this user",
+        });
+      }
+
+      const hasAlreadyRequested = await Notification.findOne({
+        sender_id: user._id,
+        receiver_id: receiver_id,
+        type: "friend_request",
+      });
+
+      if (hasAlreadyRequested) {
+        throw new TRPCError({
+          code: "BAD_REQUEST",
+          message: "You have already sent a friend request to this user",
+        });
+      }
+
+      const notification = await Notification.create({
+        type: "friend_request",
+        sender_id: user._id,
+        receiver_id: receiver_id,
+      });
+
+      await pusherServer.sendToUser(receiver_id, "incoming-notification", {
+        _id: notification._id.toString(),
+        type: notification.type,
+        sender: {
+          _id: user._id.toString(),
+          username: user.username,
+        },
+        sender_id: notification.sender_id.toString(),
+        receiver_id: notification.receiver_id.toString(),
+        createdAt: notification.createdAt,
+      });
+      return notification;
+    }),
+  sendFriendRequestById: privateProcedure
+    .input(
+      z.object({
+        receiver_id: z.string(),
+      })
+    )
+    .mutation(async ({ input, ctx }) => {
+      const { receiver_id } = input;
+      const { user } = ctx;
+
+      // check if user is the receiver
+
+      if (user._id.toString() === receiver_id) {
+        throw new TRPCError({
+          code: "BAD_REQUEST",
+          message: "You cannot send a friend request to yourself",
+        });
+      }
+
+      const receiver = await User.findById(receiver_id);
+
+      if (!receiver) {
+        throw new TRPCError({
+          code: "BAD_REQUEST",
+          message: "User does not exist",
+        });
+      }
+
+      const areAlreadyFriends = await Chatroom.findOne({
+        type: "private",
+        participants: {
+          $all: [user._id, receiver_id],
+        },
       });
 
       if (areAlreadyFriends) {
@@ -186,6 +260,12 @@ export const notificationRouter = createTRPCRouter({
         messages: [],
         participants: [user._id, notification.sender_id],
       });
+
+      await pusherServer.sendToUser(
+        notification.sender_id.toString(),
+        "friend-added",
+        null
+      );
 
       //Adds the userid and chatid to sender friends array
       await User.findByIdAndUpdate(notification.sender_id, {
@@ -328,6 +408,27 @@ export const notificationRouter = createTRPCRouter({
 
       chatroom.participants.push(user._id);
       await chatroom.save();
+
+      const messageData = {
+        hasReplyTo: false,
+        _id: new mongoose.Types.ObjectId(),
+        sender: {
+          _id: new mongoose.Types.ObjectId(user._id) as unknown as ObjectId,
+          username: user.username,
+        },
+        text: `${user.username} has joined the team`,
+        data_type: "status",
+        timestamp: Date.now(),
+      };
+
+      chatroom.messages.push(messageData);
+      await chatroom.save();
+
+      await pusherServer.trigger(
+        `presence-${chatroom._id.toString()}`,
+        "user-joined",
+        messageData
+      );
 
       return chatroom;
     }),

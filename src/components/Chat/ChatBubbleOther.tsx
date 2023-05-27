@@ -2,15 +2,6 @@ import { useGlobalContext } from "@/context";
 import { type Message } from "@/utils/chat";
 import { type ObjectId } from "mongoose";
 import React from "react";
-// interface Message {
-//   _id: ObjectId;
-//   sender: {
-//     _id: ObjectId;
-//     username: string;
-//   };
-//   text: string;
-//   timestamp: number;
-// }
 
 interface ChatBubbleOtherProps {
   senderId: string;
@@ -33,6 +24,7 @@ interface ChatBubbleOtherProps {
   senderName: string;
   avatarUrl: string;
   message_id: string;
+  deleted: boolean;
 }
 
 export default function ChatBubbleOther({
@@ -46,6 +38,7 @@ export default function ChatBubbleOther({
   setReplyTo,
   senderName,
   avatarUrl,
+  deleted,
 }: ChatBubbleOtherProps) {
   const { watchlistStatus } = useGlobalContext();
   const isOnline = React.useMemo(() => {
@@ -57,12 +50,14 @@ export default function ChatBubbleOther({
       id={message_id}
       onClick={(e) => {
         console.log(e.detail);
+        if (deleted) return;
         if (e.detail === 2) {
           const chatInputElement = document.querySelector(
             "#chat-input"
           ) as HTMLInputElement;
           chatInputElement.focus();
           setReplyTo({
+            data_type: "message",
             hasReplyTo: true,
             _id: message_id as unknown as ObjectId,
             sender: {
@@ -80,9 +75,17 @@ export default function ChatBubbleOther({
           <img src={avatarUrl} />
         </div>
       </div>
-      <div className="chat-bubble flex flex-col gap-1">
-        <span className="mr-2 text-green-500">{senderName}</span>
-        {hasReplyTo && (
+      <div
+        className={`chat-bubble ${
+          deleted ? "chat-bubble-secondary" : ""
+        } flex flex-col gap-1`}
+      >
+        <span
+          className={`${deleted ? "text-slate-300" : "text-green-500"} mr-2`}
+        >
+          {senderName}
+        </span>
+        {hasReplyTo && !deleted && (
           <div
             onClick={() => {
               if (!replyTo) return;
@@ -105,8 +108,9 @@ export default function ChatBubbleOther({
             <div className="text-white">{replyTo?.text}</div>
           </div>
         )}
+
         <div className="flex items-end">
-          <p className = "break-all">{text}</p>
+          <p className={`${deleted ? "text-slate-300" : ""}`}>{text}</p>
           <div className="chat-footer ml-2 text-[0.8rem] opacity-50">
             {time}
           </div>

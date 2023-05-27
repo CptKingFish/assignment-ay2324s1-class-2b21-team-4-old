@@ -15,6 +15,7 @@ interface Admin {
 }
 
 const TeamChat = () => {
+  const utils = api.useContext();
   const router = useRouter();
   const { user, pusherClient } = useGlobalContext();
   const [replyTo, setReplyTo] = React.useState<Message | null>(null);
@@ -113,10 +114,28 @@ const TeamChat = () => {
     const userJoinedHandler = (message: Message) => {
       // setUsers((prev) => [...prev, user]);
       setMessages((prev) => [...prev, message]);
+      utils.chat.getUsernamesFromChatroom.invalidate({
+        chatroom_id: router.query.id as string,
+      });
+      utils.chat.getAdminFromChatroom.invalidate({
+        chatroom_id: router.query.id as string,
+      });
+      utils.chat.getMessagesAndChatroomInfo.invalidate({
+        chatroom_id: router.query.id as string,
+      });
     };
 
     const userLeftHandler = (message: Message) => {
       setMessages((prev) => [...prev, message]);
+      utils.chat.getUsernamesFromChatroom.invalidate({
+        chatroom_id: router.query.id as string,
+      });
+      utils.chat.getAdminFromChatroom.invalidate({
+        chatroom_id: router.query.id as string,
+      });
+      utils.chat.getMessagesAndChatroomInfo.invalidate({
+        chatroom_id: router.query.id as string,
+      });
     };
 
     const messageDeletedHandler = (data: { message_id: string }) => {

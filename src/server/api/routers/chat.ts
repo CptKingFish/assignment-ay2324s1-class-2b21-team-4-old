@@ -845,7 +845,29 @@ export const chatRouter = createTRPCRouter({
         (participant) => participant.toString() !== participant_id.toString()
       );
 
+      const participant = await User.findById(participant_id);
+
+      const messageData = {
+        hasReplyTo: false,
+        _id: new mongoose.Types.ObjectId() as unknown as ObjectId,
+        sender: {
+          _id: new mongoose.Types.ObjectId(user._id) as unknown as ObjectId,
+          username: user.username,
+        },
+        text: `${participant?.username} has been kicked from the team`,
+        data_type: "status",
+        timestamp: Date.now(),
+      };
+
+      chatroom.messages.push(messageData);
+
       await chatroom.save();
+
+      await pusherServer.trigger(
+        `presence-${chatroom._id.toString()}`,
+        "user-left",
+        messageData
+      );
 
       return true;
     }),

@@ -144,7 +144,7 @@ export default function ChatMenuItem({
         <div className={`${otherUserIsOnline ? "online" : "offline"} avatar`}>
           <div className="w-16 rounded-full">
             {/* <Image src={avatarUrl} alt="chat menu item" width={32} height={32} /> */}
-            <img src={avatarUrl?.avatar} alt="chat menu item" />
+            <img src={avatarUrl?.avatar || "/Profile.png"} alt="chat menu item" />
           </div>
         </div>
         <div className="ml-2">

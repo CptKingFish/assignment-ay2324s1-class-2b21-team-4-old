@@ -42,7 +42,7 @@ export default function ChatNotification({
               className={`h-10 w-10 ${
                 type === "private" ? "rounded-full" : "rounded-xl"
               }`}
-              src={avatarUrl}
+              src={avatarUrl || "/Profile.png"}
               alt=""
             />
           </div>

@@ -15,6 +15,7 @@ import { m } from "framer-motion";
 import mongoose, { ObjectId } from "mongoose";
 import { pusherServer } from "@/utils/pusherConfig";
 import Notification from "@/models/Notification";
+import { ChatRoom } from "@/utils/chat";
 import Scrum from "@/models/Scrum";
 import { redis } from "@/utils/redis";
 import { cloudConfig } from "@/utils/cloudconfig";
@@ -29,23 +30,179 @@ export const chatRouter = createTRPCRouter({
     .query(async ({ input, ctx }) => {
       const { chatroom_id } = input;
       const { user } = ctx;
-      const chatroom = await Chatroom.findById(chatroom_id);
+
+      const skipCount = 0; // Number of messages to skip
+      const limitValue = 50; // Maximum number of messages to retrieve
+
+      const chatroom_id_obj = new mongoose.Types.ObjectId(chatroom_id);
+
+      const chatroom: ChatRoom = (
+        await Chatroom.aggregate([
+          { $match: { _id: chatroom_id_obj } },
+          { $unwind: { path: "$messages", preserveNullAndEmptyArrays: true } },
+          { $sort: { "messages.timestamp": -1 } },
+          {
+            $group: {
+              _id: "$_id",
+              name: { $first: "$name" },
+              type: { $first: "$type" },
+              participants: { $first: "$participants" },
+              admins: { $first: "$admins" },
+              messages: { $push: "$messages" },
+            },
+          },
+          {
+            $project: {
+              name: 1,
+              type: 1,
+              participants: 1,
+              admins: 1,
+              messages: {
+                $slice: [
+                  { $cond: [{ $isArray: "$messages" }, "$messages", []] },
+                  skipCount,
+                  limitValue,
+                ],
+              },
+            },
+          },
+        ]).exec()
+      )[0] as unknown as ChatRoom;
+
+      console.log("name", chatroom.name);
+      console.log("messages", chatroom.messages[0]);
+
       if (!chatroom) {
         throw new TRPCError({
           code: "BAD_REQUEST",
           message: "Chatroom not found",
         });
       }
-      if (!chatroom.participants.includes(user._id)) {
+
+      const participantIds = chatroom.participants.map((participant) =>
+        participant.toString()
+      );
+
+      if (!participantIds.includes(user._id.toString())) {
         throw new TRPCError({
           code: "BAD_REQUEST",
           message: "Unauthorized",
         });
       }
 
-      // chatroom.messages.reverse();
+      chatroom.messages.reverse();
+
+      // chatroom.messages.sort((a, b) => a.timestamp - b.timestamp);
 
       return chatroom;
+    }),
+  getMoreMessages: privateProcedure
+    .input(
+      z.object({
+        chatroom_id: z.string(),
+        skipCount: z.number(),
+        limitValue: z.number(),
+      })
+    )
+    .mutation(async ({ input, ctx }) => {
+      const { chatroom_id, skipCount, limitValue } = input;
+      const { user } = ctx;
+
+      console.log(chatroom_id, skipCount, limitValue);
+
+      const chatroom_id_obj = new mongoose.Types.ObjectId(chatroom_id);
+
+      // check if skip count has exceeded the number of messages in the chatroom
+      const numberOfMessages = await Chatroom.aggregate([
+        { $match: { _id: chatroom_id_obj } },
+        {
+          $project: {
+            numberOfMessages: {
+              $cond: {
+                if: { $isArray: "$messages" },
+                then: { $size: "$messages" },
+                else: "NA",
+              },
+            },
+          },
+        },
+      ]).exec();
+
+      console.log("numberOfMessages", numberOfMessages);
+
+      // check if numberOfMessages[0].numberOfMessages is not undefined
+
+      if (!numberOfMessages[0]) {
+        throw new TRPCError({
+          code: "BAD_REQUEST",
+          message: "Chatroom not found",
+        });
+      }
+
+      if (
+        numberOfMessages[0].numberOfMessages === undefined ||
+        numberOfMessages[0].numberOfMessages === null
+      ) {
+        throw new TRPCError({
+          code: "BAD_REQUEST",
+          message: "Chatroom not found",
+        });
+      }
+
+      // check if skipCount is greater than or equal to numberOfMessages[0].numberOfMessages
+
+      if (skipCount >= numberOfMessages[0].numberOfMessages) {
+        return [];
+      }
+
+      const chatroom: ChatRoom = (
+        await Chatroom.aggregate([
+          { $match: { _id: chatroom_id_obj } },
+          { $unwind: { path: "$messages", preserveNullAndEmptyArrays: true } },
+          { $sort: { "messages.timestamp": -1 } },
+          {
+            $group: {
+              _id: "$_id",
+              messages: { $push: "$messages" },
+            },
+          },
+          {
+            $project: {
+              messages: {
+                $slice: [
+                  { $cond: [{ $isArray: "$messages" }, "$messages", []] },
+                  skipCount,
+                  limitValue,
+                ],
+              },
+            },
+          },
+        ]).exec()
+      )[0] as unknown as ChatRoom;
+
+      if (!chatroom) {
+        throw new TRPCError({
+          code: "BAD_REQUEST",
+          message: "Chatroom not found",
+        });
+      }
+
+      // const participantIds = chatroom.participants.map((participant) =>
+      //   participant.toString()
+      // );
+
+      // if (!participantIds.includes(user._id.toString())) {
+      //   throw new TRPCError({
+      //     code: "BAD_REQUEST",
+      //     message: "Unauthorized",
+      //   });
+      // }
+
+      chatroom.messages.reverse();
+
+      // console.log("the new messages", chatroom.messages);
+
+      return chatroom.messages;
     }),
   createChatroom: privateProcedure
     .input(
@@ -271,6 +428,77 @@ export const chatRouter = createTRPCRouter({
       });
       return result;
     }),
+  deleteMessage: privateProcedure
+    .input(
+      z.object({
+        message_id: z.string(),
+        chatroom_id: z.string(),
+      })
+    )
+    .mutation(async ({ input, ctx }) => {
+      const { message_id, chatroom_id } = input;
+      const { user } = ctx;
+
+      const chatroom = await Chatroom.findById(chatroom_id);
+
+      if (!chatroom) {
+        throw new TRPCError({
+          code: "NOT_FOUND",
+          message: "Chatroom not found",
+        });
+      }
+
+      if (!chatroom.participants.includes(user._id)) {
+        throw new TRPCError({
+          code: "UNAUTHORIZED",
+          message: "Unauthorized",
+        });
+      }
+
+      const messageIndex = chatroom.messages.findIndex(
+        (message) => message._id.toString() === message_id
+      );
+
+      if (messageIndex === -1) {
+        throw new TRPCError({
+          code: "NOT_FOUND",
+          message: "Message not found",
+        });
+      }
+
+      if (!chatroom.messages[messageIndex]) {
+        throw new TRPCError({
+          code: "BAD_REQUEST",
+          message: "Message already deleted",
+        });
+      }
+
+      const message = chatroom.messages[messageIndex];
+
+      if (message === undefined) return;
+
+      if (message.sender._id.toString() !== user._id.toString()) {
+        throw new TRPCError({
+          code: "UNAUTHORIZED",
+          message: "Unauthorized",
+        });
+      }
+
+      if (message.deleted) {
+        throw new TRPCError({
+          code: "BAD_REQUEST",
+          message: "Message already deleted",
+        });
+      }
+
+      message.deleted = true;
+      message.text = "This message has been deleted.";
+
+      await chatroom.save();
+      await pusherServer.trigger(`presence-${chatroom_id}`, "message-deleted", {
+        message_id: message_id,
+      });
+    }),
   getFriends: privateProcedure.query(async ({ ctx }) => {
     const { user } = ctx;
 
@@ -377,6 +605,13 @@ export const chatRouter = createTRPCRouter({
         type: "private",
       });
 
+      await pusherServer.trigger(
+        `presence-${chatroom._id.toString()}`,
+        "chatroom-deleted",
+        null
+      );
+      await pusherServer.sendToUser(friend_id, "friend-removed", null);
+
       return true;
     }),
   leaveTeam: privateProcedure
@@ -416,7 +651,31 @@ export const chatRouter = createTRPCRouter({
         (participant_id) => participant_id.toString() !== user._id.toString()
       );
 
+      const messageData = {
+        hasReplyTo: false,
+        _id: new mongoose.Types.ObjectId() as unknown as ObjectId,
+        sender: {
+          _id: new mongoose.Types.ObjectId(user._id) as unknown as ObjectId,
+          username: user.username,
+        },
+        text: `${user.username} has left the team`,
+        data_type: "status",
+        timestamp: Date.now(),
+      };
+
+      chatroom.messages.push(messageData);
+
       await chatroom.save();
+
+      await pusherServer.trigger(
+        `presence-${chatroom._id.toString()}`,
+        "user-left",
+        messageData
+      );
+
+      if (chatroom.participants.length === 0) {
+        await Chatroom.deleteOne({ _id: chatroom._id });
+      }
 
       return true;
     }),
@@ -529,7 +788,7 @@ export const chatRouter = createTRPCRouter({
 
       return true;
     }),
-    removeParticipantFromChatroom: privateProcedure
+  removeParticipantFromChatroom: privateProcedure
     .input(
       z.object({
         chatroom_id: z.string(),
@@ -578,7 +837,7 @@ export const chatRouter = createTRPCRouter({
 
       return true;
     }),
-    changeChatroomName: privateProcedure
+  changeChatroomName: privateProcedure
     .input(
       z.object({
         chatroom_id: z.string(),
@@ -618,8 +877,8 @@ export const chatRouter = createTRPCRouter({
 
       return true;
     }),
-    changeGroupIcon: privateProcedure
-    .input(z.object({ chatRoomID:z.string(),groupIcon: z.string().url() }))
+  changeGroupIcon: privateProcedure
+    .input(z.object({ chatRoomID: z.string(), groupIcon: z.string().url() }))
     .mutation(async ({ input }) => {
       const response = await Chatroom.findById(input.chatRoomID);
       if (!response) {
@@ -653,7 +912,7 @@ export const chatRouter = createTRPCRouter({
         );
         return updatedChatroom;
       } catch (error) {
-        console.log(error)
+        console.log(error);
         throw new TRPCError({
           code: "BAD_REQUEST",
           message: "Error uploading Group Icon",

@@ -11,13 +11,6 @@ export interface IChatroom {
   admins: string[];
 }
 
-// export interface IMessage {
-//   _id: ObjectId;
-//   senderId: string;
-//   text: string;
-//   timestamp: number;
-// }
-
 const chatroomSchema = new mongoose.Schema<IChatroom>(
   {
     name: { type: String },
@@ -33,6 +26,11 @@ const chatroomSchema = new mongoose.Schema<IChatroom>(
           _id: { type: mongoose.Schema.Types.ObjectId, ref: "User" },
           username: String,
         },
+        data_type: {
+          type: String,
+          required: true,
+          default: "message",
+        },
         text: String,
         timestamp: Number,
         default: [],
@@ -45,6 +43,11 @@ const chatroomSchema = new mongoose.Schema<IChatroom>(
           },
           text: String,
           timestamp: Number,
+        },
+        deleted: {
+          type: Boolean,
+          required: true,
+          default: false,
         },
       },
     ],

@@ -2,14 +2,14 @@ import React, { useEffect } from "react";
 import { useGlobalContext } from "@/context";
 import { pusherClientConstructor } from "@/utils/pusherConfig";
 import TopNav from "@/components/TopNav";
-import ChatInput from "@/components/ChatInput";
+import ChatInput from "@/components/Chat/ChatInput";
 import { useRouter } from "next/router";
-import ChatBody from "@/components/ChatBody";
+import ChatBody from "@/components/Chat/ChatBody";
 import { Message, PendingMessage } from "@/utils/chat";
 import { api } from "@/utils/api";
 import PrivateSideBar from "@/components/PrivateSideBar";
 import type { PusherMemberStatusProps } from "@/utils/chat";
-import { participant } from "@/utils/participant";
+import { toast } from "react-hot-toast";
 
 export default function PrivateChat() {
   const router = useRouter();
@@ -20,6 +20,8 @@ export default function PrivateChat() {
   const [name, setName] = React.useState("");
   const [otherUserId, setOtherUserId] = React.useState("");
   const [otherUserIsOnline, setOtherUserIsOnline] = React.useState(false);
+  const [hasLoadedAllMessages, setHasLoadedAllMessages] = React.useState(false);
+  // const [msgCounter, setMsgCounter] = React.useState(0);
 
   const [pendingMessages, setPendingMessages] = React.useState<
     PendingMessage[]
@@ -37,13 +39,9 @@ export default function PrivateChat() {
     chatroom_id: router.query.id as string,
   });
 
-  // add pending message
-
   const addPendingMessage = (message: PendingMessage) => {
     setPendingMessages((prev) => [...prev, message]);
   };
-
-  // remove pending message
 
   const removePendingMessage = (message_id: string) => {
     setPendingMessages((prev) => {
@@ -95,20 +93,30 @@ export default function PrivateChat() {
   const channelCode = React.useMemo(() => {
     return "presence-" + (router.query.id as string);
   }, [router.query.id]);
-  console.log("excusem e");
 
   React.useEffect(() => {
-    // console.log(pusherClient);
-    if (!pusherClient) return;
+    // if router is null route to /
+    if (!router.query.id) {
+      router
+        .push("/chat")
+        .catch((err) => console.log("error from private chat", err));
+      return;
+    }
+  }, [router, router.query.id]);
 
-    // const pusherClient = pusherClientConstructor(user?._id);
+  React.useEffect(() => {
+    if (!pusherClient || !router.isReady || !router.query.id) return;
 
     const channel = pusherClient.subscribe(channelCode);
 
     const messageHandler = (message: Message) => {
-      console.log("this da msg", message);
       setMessages((prev) => [...prev, message]);
       removePendingMessage(message._id.toString());
+    };
+
+    const chatroomDeletedHandler = () => {
+      void router.push("/chat");
+      toast.error("Chatroom has been deleted");
     };
 
     const memberAddedHandler = (data: PusherMemberStatusProps) => {
@@ -121,7 +129,24 @@ export default function PrivateChat() {
       setOtherUserIsOnline(false);
     };
 
+    const messageDeletedHandler = (data: { message_id: string }) => {
+      setMessages((prev) => {
+        return prev.map((message) => {
+          if (message._id.toString() === data.message_id) {
+            return {
+              ...message,
+              deleted: true,
+              text: "This message has been deleted",
+            };
+          }
+          return message;
+        });
+      });
+    };
+
     channel.bind("incoming-message", messageHandler);
+    channel.bind("message-deleted", messageDeletedHandler);
+    channel.bind("chatroom-deleted", chatroomDeletedHandler);
     channel.bind("pusher:member_added", memberAddedHandler);
     channel.bind("pusher:member_removed", memberRemovedHandler);
 
@@ -131,32 +156,102 @@ export default function PrivateChat() {
       channel.unbind("pusher:member_removed", memberRemovedHandler);
       pusherClient.unsubscribe(channelCode);
     };
-  }, [user, channelCode, pusherClient]);
+  }, [
+    user,
+    pusherClient,
+    router.query.id,
+    router.isReady,
+    channelCode,
+    router,
+    messages,
+  ]);
 
-  // const scrollDownRef = React.useRef<HTMLDivElement | null>(null);
+  // /// // / /
 
-  // const scrollToBottom = () => {
-  //   scrollDownRef.current?.scrollIntoView({ behavior: "smooth" });
-  // };
+  const scrollDownRef = React.useRef<HTMLDivElement | null>(null);
+
+  const scrollToBottom = () => {
+    scrollDownRef.current?.scrollIntoView({ behavior: "smooth" });
+  };
+
+  const chatroom_id = React.useMemo(() => {
+    return router.query.id as string;
+  }, [router.query.id]);
+
+  const { mutate: getMoreMessages } = api.chat.getMoreMessages.useMutation();
+
+  const scrollableRef = React.useRef<HTMLDivElement>(null);
+
+  const [getMoreMessagesIsLoading, setGetMoreMessagesIsLoading] =
+    React.useState(false);
+
+  const messagesLength = React.useMemo(() => {
+    return messages.length;
+  }, [messages]);
+
+  React.useEffect(() => {
+    const scrollableElement = scrollableRef.current;
+
+    const handleScroll = () => {
+      if (!scrollableElement) return;
+      if (hasLoadedAllMessages) return;
+      const scrollTop = scrollableElement.scrollTop;
+      const clientHeight = scrollableElement.clientHeight;
+      const scrollHeight = scrollableElement.scrollHeight;
+
+      if (-scrollTop + clientHeight >= scrollHeight - 200) {
+        console.log("Scrolled to the top!");
+        console.log(chatroom_id);
+
+        if (!chatroom_id || getMoreMessagesIsLoading) return;
+
+        setGetMoreMessagesIsLoading(true);
+
+        getMoreMessages(
+          {
+            chatroom_id: chatroom_id,
+            skipCount: messagesLength,
+            limitValue: 50,
+          },
+          {
+            onSuccess: (data) => {
+              console.log(data);
+              if (data.length === 0) setHasLoadedAllMessages(true);
+              setMessages((prev) => [...data, ...prev]);
+            },
+
+            onError: (error) => {
+              toast.error(error.message);
+            },
+            onSettled: () => {
+              setGetMoreMessagesIsLoading(false);
+            },
+          }
+        );
+      }
+    };
+
+    if (!scrollableElement) return;
+
+    scrollableElement.addEventListener("scroll", handleScroll);
+
+    return () => {
+      scrollableElement.removeEventListener("scroll", handleScroll);
+    };
+  }, [
+    chatroom_id,
+    getMoreMessages,
+    getMoreMessagesIsLoading,
+    hasLoadedAllMessages,
+    messagesLength,
+  ]);
 
   return (
     <>
-
       <div className="drawer-mobile drawer drawer-end">
         <input id="my-drawer-4" type="checkbox" className="drawer-toggle" />
 
         <div className="flex-no-wrap drawer-content flex">
-          {/* {showDownButton && (
-            <div className="fixed bottom-10 right-4 z-50">
-              <button
-                onClick={handleDownButtonClick}
-                className="rounded-full bg-blue-500 px-4 py-2 font-bold text-white shadow hover:bg-blue-700"
-              >
-                Scroll down
-              </button>
-            </div>
-          )} */}
-
           <div className="relative flex h-full max-h-[calc(100vh-1rem)] flex-1 flex-col">
             <TopNav
               avatar={
@@ -164,15 +259,18 @@ export default function PrivateChat() {
                   ?.avatar || "/Profile.png"
               }
               chatroom_name={name || ""}
+              chatroom_type="private"
               openSidebarDetails={handleDrawerToggle}
             />
             <div
               id="chat-body"
+              ref={scrollableRef}
               className="scrollbar-thumb-blue scrollbar-thumb-rounded scrollbar-track-blue-lighter scrollbar-w-2 scrolling-touch flex h-full flex-1 flex-col-reverse gap-4 overflow-y-auto scroll-smooth p-3 pb-16"
             >
               <ChatBody
                 setReplyTo={setReplyTo}
                 messages={messages}
+                chatroom_id={chatroom_id}
                 pendingMessages={pendingMessages}
                 users={users}
               />
@@ -185,23 +283,17 @@ export default function PrivateChat() {
               setPendingMessageHasFailed={setPendingMessageHasFailed}
             />
           </div>
-
-          {/*
-         <button
-            className={` h-screen items-center justify-center bg-base-200 px-2 text-4xl text-white ${
-              isOpen ? "hidden" : ""
-            }`}
-            onClick={handleDrawerToggle}
-          >
-            {"<"}
-          </button> */}
         </div>
         <PrivateSideBar
-          chatRoomAvatar={api.user.getAvatarUrl.useQuery({ user_id: otherUserId })?.data?.avatar || "/Profile.png"}
+          chatRoomAvatar={
+            api.user.getAvatarUrl.useQuery({ user_id: otherUserId })?.data
+              ?.avatar || "/Profile.png"
+          }
           chatRoomName={name}
           isOpen={isOpen}
           handleDrawerToggle={handleDrawerToggle}
           participants={users}
+          otherUserId={otherUserId}
         />
       </div>
     </>

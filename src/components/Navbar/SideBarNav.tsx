@@ -2,7 +2,7 @@ import ChatList from "./ChatList";
 import ChatMenuItem from "./ChatMenuItem";
 import React from "react";
 import TeamList from "./TeamList";
-import Profile from "./Profile/Account";
+import Profile from "../Profile/Account";
 import Link from "next/link";
 import { api } from "@/utils/api";
 import { useGlobalContext } from "@/context";
@@ -10,7 +10,7 @@ import { useGlobalContext } from "@/context";
 import { toast } from "react-hot-toast";
 import { ChatRoom } from "@/utils/chat";
 import { IChatroom } from "@/models/Chatroom";
-import CustomModal from "./Modal";
+import CustomModal from "../Modal";
 import CreateTeamForm from "./CreateTeamForm";
 import SendFriendRequestForm from "./SendFriendRequestForm";
 import NotificationList from "./NotificationList";
@@ -34,13 +34,12 @@ export default function SideBarNav({
 }: {
   children: React.ReactNode;
 }) {
-  const { user } = useGlobalContext();
+  const { user, pusherClient } = useGlobalContext();
   const [chatrooms, setChatrooms] = React.useState<IChatroom[]>([]);
+  const [searchValue, setSearchValue] = React.useState("");
   const router = useRouter();
   const { mutate: logout } = api.user.logout.useMutation();
-  // const [notifications, setNotifications] = React.useState<
-  //   typeof notificationsData
-  // >([]);
+
   const [activeTab, setActiveTab] = React.useState(0);
   const handleTabChange = (index: number) => {
     setActiveTab(index);
@@ -50,8 +49,7 @@ export default function SideBarNav({
     isLoading,
     refetch: refetchChatrooms,
   } = api.chat.getChatrooms.useQuery();
-  // const { data: notificationsData, isLoading: isLoadingNotifications } =
-  //   api.notification.getNotifications.useQuery();
+
   const [openAddChatroomModal, setOpenAddChatroomModal] = React.useState(false);
 
   React.useEffect(() => {
@@ -72,6 +70,22 @@ export default function SideBarNav({
     );
   }, [chatrooms]);
 
+  React.useEffect(() => {
+    if (!pusherClient) return;
+    pusherClient.bind("friend-added", () => {
+      void refetchChatrooms();
+    });
+
+    pusherClient.bind("friend-removed", () => {
+      void refetchChatrooms();
+    });
+
+    return () => {
+      pusherClient.unbind("friend-added");
+      pusherClient.unbind("friend-removed");
+    };
+  }, [pusherClient, refetchChatrooms]);
+
   return (
     <div className="drawer-mobile drawer -z-10">
       <input id="my-drawer-2" type="checkbox" className="drawer-toggle" />
@@ -90,18 +104,6 @@ export default function SideBarNav({
             refetchChatrooms={refetchChatrooms}
             hidden={activeTab !== 1}
           />
-
-          {/* {activeTab === 0 && (
-            <SendFriendRequestForm
-              setOpenAddChatroomModal={setOpenAddChatroomModal}
-            />
-          )}
-          {activeTab === 1 && (
-            <CreateTeamForm
-              setOpenAddChatroomModal={setOpenAddChatroomModal}
-              refetchChatrooms={refetchChatrooms}
-            />
-          )} */}
         </CustomModal>
         {/* <label
           htmlFor="my-drawer-2"
@@ -248,6 +250,8 @@ export default function SideBarNav({
               type="text"
               placeholder="Search chat"
               className="input w-full max-w-xs"
+              value={searchValue}
+              onChange={(e) => setSearchValue(e.target.value)}
             />
           )}
 
@@ -255,22 +259,19 @@ export default function SideBarNav({
             <ChatList
               privateChatrooms={privateChatrooms}
               display={activeTab === 0}
+              searchValue={searchValue}
             />
 
-            <TeamList teamChatrooms={teamChatrooms} display={activeTab === 1} />
+            <TeamList
+              teamChatrooms={teamChatrooms}
+              display={activeTab === 1}
+              searchValue={searchValue}
+            />
 
             <NotificationList
               refetchChatrooms={refetchChatrooms}
               display={activeTab === 2}
             />
-
-            {/* {activeTab === 0 && (
-              <ChatList privateChatrooms={privateChatrooms} />
-            )}
-            {activeTab === 1 && <TeamList teamChatrooms={teamChatrooms} />}
-            {activeTab === 2 && (
-              <NotificationList refetchChatrooms={refetchChatrooms} />
-            )} */}
           </div>
           {activeTab !== 2 && (
             <button

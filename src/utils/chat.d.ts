@@ -18,12 +18,14 @@ interface TeamMenuItemProps {
 }
 
 interface Message {
-  hasReplyTo: boolean;
   _id: ObjectId;
+  data_type: string | undefined;
+  hasReplyTo: boolean;
   sender: {
     _id: ObjectId;
     username: string;
   };
+  deleted?: boolean;
   text: string;
   timestamp: number;
   replyTo?: {

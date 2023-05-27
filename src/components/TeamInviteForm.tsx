@@ -31,26 +31,6 @@ export default function TeamInviteForm({
   const { mutate: inviteToTeam } =
     api.notification.sendTeamInvite.useMutation();
 
-  //   const handleInvite = async () => {
-  //     if (!chatroom_id) return;
-
-  //     inviteToTeam(
-  //       {
-  //         chatroom_id,
-  //         receiver_ids: selectedUsers,
-  //       },
-  //       {
-  //         onSuccess: () => {
-  //           toast.success("Invited successfully");
-  //           setOpenTeamInvite(false);
-  //         },
-  //         onError: (error) => {
-  //           toast.error(error.message);
-  //         },
-  //       }
-  //     );
-  //   };
-
   React.useEffect(() => {
     if (!friends) return;
     setFriendsList(friends as FriendItem[]);
@@ -64,6 +44,7 @@ export default function TeamInviteForm({
       onSubmit={(e) => {
         e.preventDefault();
         if (!chatroom_id) return;
+        if (selectedUsers.length === 0) return;
 
         inviteToTeam(
           {

@@ -5,7 +5,7 @@ import { useGlobalContext } from "@/context";
 import { Message, WatchListEventProps } from "@/utils/chat";
 import { formatTimestampToTime } from "@/utils/helper";
 import { toast } from "react-hot-toast";
-import ChatNotification from "./ChatNotification";
+import ChatNotification from "../Chat/ChatNotification";
 import { truncateString } from "@/utils/helper";
 import { api } from "@/utils/api";
 
@@ -17,6 +17,7 @@ interface ChatMenuItemProps {
   }[];
   lastMessage: Message | undefined;
   display: boolean;
+  searchValue: string;
 }
 
 export default function ChatMenuItem({
@@ -24,6 +25,7 @@ export default function ChatMenuItem({
   participants,
   lastMessage,
   display,
+  searchValue,
 }: ChatMenuItemProps) {
   const { user, pusherClient, watchlistStatus } = useGlobalContext();
 
@@ -41,8 +43,6 @@ export default function ChatMenuItem({
     }
   );
 
-  console.log("avatarUrl", avatarUrl);
-
   const [otherUser, setOtherUser] = React.useState(participants[0]);
   const [latestMessage, setLatestMessage] = React.useState<Message | undefined>(
     lastMessage
@@ -57,6 +57,13 @@ export default function ChatMenuItem({
   const channelCode = React.useMemo(() => {
     return `presence-${id}`;
   }, [id]);
+
+  const matchesSearch = React.useMemo(() => {
+    if (!searchValue) return true;
+    return otherUser?.username
+      .toLowerCase()
+      .includes(searchValue.toLowerCase());
+  }, [searchValue, otherUser?.username]);
 
   React.useEffect(() => {
     if (!pusherClient || !otherUser) return;
@@ -131,7 +138,7 @@ export default function ChatMenuItem({
     <li
       className={`${isInChatroom ? "bordered" : ""}`}
       onClick={handleChatBtnClick}
-      hidden={!display}
+      hidden={!display || !matchesSearch}
     >
       <div className="mt-4 flex items-center">
         <div className={`${otherUserIsOnline ? "online" : "offline"} avatar`}>

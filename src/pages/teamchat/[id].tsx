@@ -106,16 +106,44 @@ const TeamChat = () => {
     const channel = pusherClient.subscribe(channelCode);
 
     const messageHandler = (message: Message) => {
-      console.log("this da msg", message);
       setMessages((prev) => [...prev, message]);
       removePendingMessage(message._id.toString());
     };
 
+    const userJoinedHandler = (message: Message) => {
+      // setUsers((prev) => [...prev, user]);
+      setMessages((prev) => [...prev, message]);
+    };
+
+    const userLeftHandler = (message: Message) => {
+      setMessages((prev) => [...prev, message]);
+    };
+
+    const messageDeletedHandler = (data: { message_id: string }) => {
+      setMessages((prev) => {
+        return prev.map((message) => {
+          if (message._id.toString() === data.message_id) {
+            return {
+              ...message,
+              deleted: true,
+              text: "This message has been deleted",
+            };
+          }
+          return message;
+        });
+      });
+    };
+
     channel.bind("incoming-message", messageHandler);
+    channel.bind("message-deleted", messageDeletedHandler);
+    channel.bind("user-joined", userJoinedHandler);
+    channel.bind("user-left", userLeftHandler);
 
     return () => {
       pusherClient.unsubscribe(channelCode);
       channel.unbind("incoming-message", messageHandler);
+      channel.unbind("user-joined", userJoinedHandler);
+      channel.unbind("user-left", userLeftHandler);
     };
   }, [user, channelCode, pusherClient]);
 
@@ -219,6 +247,7 @@ const TeamChat = () => {
                 messages={messages}
                 users={users}
                 pendingMessages={pendingMessages}
+                chatroom_id={chatroom_id}
               />
             </div>
             <ChatInput

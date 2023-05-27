@@ -8,6 +8,8 @@ import { useGlobalContext } from "@/context";
 import GroupChangeChatroomName from "./GroupChangeChatroomName";
 import GroupChangeIcon from "./GroupChangeIcon";
 import ConfirmationDialog from "./ConfirmationDialog";
+import CustomModal from "./Modal";
+import TeamInviteForm from "./TeamInviteForm";
 
 interface friend {
   friendID: string;
@@ -39,24 +41,9 @@ const GroupSideBar: React.FC<GroupSideBarProps> = ({
 }) => {
   const [isOpenConfirmationDialog, setIsOpenConfirmationDialog] =
     React.useState(false);
+  const [isOpenInviteModal, setIsOpenInviteModal] = React.useState(false);
   const { mutate: leaveTeam } = api.chat.leaveTeam.useMutation();
-  // const { mutate: editChatroomName } =
-  //   api.chat.changeChatroomName.useMutation();
   const { user } = useGlobalContext();
-  // function handleLeave() {
-  //   leaveTeam(
-  //     { chatroom_id: chatRoomId },
-  //     {
-  //       onSuccess: (data) => {
-  //         toast.success("Left the team successfully!");
-  //         window.location.href = "/chat";
-  //       },
-  //       onError: (error) => {
-  //         toast.error("Error when leaving Team!");
-  //       },
-  //     }
-  //   );
-  // }
 
   return (
     <>
@@ -135,24 +122,46 @@ const GroupSideBar: React.FC<GroupSideBarProps> = ({
             </div>
           </div>
           <div className="divider mx-2"></div>
-          <div className="flex flex-wrap">
-            <li className="mx-2">{participants.length} Participants</li>
-            <label htmlFor="my-modal-3" className="cursor-pointer">
+          <div className="mx-3 mb-2 flex flex-wrap justify-between">
+            <div className="flex flex-wrap">
+              <li className="mx-2">{participants.length} Participants</li>
+              <label htmlFor="my-modal-3" className="cursor-pointer">
+                <svg
+                  xmlns="http://www.w3.org/2000/svg"
+                  fill="none"
+                  viewBox="0 0 24 24"
+                  strokeWidth={1.5}
+                  stroke="currentColor"
+                  className="h-3 w-3"
+                >
+                  <path
+                    strokeLinecap="round"
+                    strokeLinejoin="round"
+                    d="M21 21l-5.197-5.197m0 0A7.5 7.5 0 105.196 5.196a7.5 7.5 0 0010.607 10.607z"
+                  />
+                </svg>
+              </label>
+            </div>
+            <button
+              onClick={() => {
+                setIsOpenInviteModal(true);
+              }}
+            >
               <svg
                 xmlns="http://www.w3.org/2000/svg"
                 fill="none"
                 viewBox="0 0 24 24"
                 strokeWidth={1.5}
                 stroke="currentColor"
-                className="h-3 w-3"
+                className="h-6 w-6"
               >
                 <path
                   strokeLinecap="round"
                   strokeLinejoin="round"
-                  d="M21 21l-5.197-5.197m0 0A7.5 7.5 0 105.196 5.196a7.5 7.5 0 0010.607 10.607z"
+                  d="M19 7.5v3m0 0v3m0-3h3m-3 0h-3m-2.25-4.125a3.375 3.375 0 11-6.75 0 3.375 3.375 0 016.75 0zM4 19.235v-.11a6.375 6.375 0 0112.75 0v.109A12.318 12.318 0 0110.374 21c-2.331 0-4.512-.645-6.374-1.766z"
                 />
               </svg>
-            </label>
+            </button>
           </div>
           <div>
             {participants.map((participant, index) => (
@@ -226,6 +235,12 @@ const GroupSideBar: React.FC<GroupSideBarProps> = ({
         isOpen={isOpenConfirmationDialog}
         setIsOpen={setIsOpenConfirmationDialog}
       />
+      <CustomModal
+        modalOpen={isOpenInviteModal}
+        setModalOpen={setIsOpenInviteModal}
+      >
+        <TeamInviteForm setOpenTeamInvite={setIsOpenInviteModal} />
+      </CustomModal>
     </>
   );
 };

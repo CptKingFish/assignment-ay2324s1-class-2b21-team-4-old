@@ -9,22 +9,33 @@ import { formatTimestampToTime } from "@/utils/helper";
 interface TeamListProps {
   teamChatrooms: IChatroom[];
   display: boolean;
+  searchValue: string;
 }
 
-export default function TeamList({ teamChatrooms, display }: TeamListProps) {
+export default function TeamList({
+  teamChatrooms,
+  display,
+  searchValue,
+}: TeamListProps) {
   if (teamChatrooms.length === 0) return null;
   return (
     <>
-      {teamChatrooms.map((team) => (
-        <li key={team._id.toString()} hidden={!display}>
-          <TeamMenuItem
-            id={team._id.toString()}
-            avatarUrl={team.avatarUrl || "/GroupProfile.png"}
-            name={team.name || ""}
-            lastMessage={team.messages[0]}
-          />
-        </li>
-      ))}
+      {teamChatrooms.map((team) => {
+        const matchesSearch = team.name
+          ? team.name.toLowerCase().includes(searchValue.toLowerCase())
+          : false;
+        return (
+          <li key={team._id.toString()} hidden={!display || !matchesSearch}>
+            <TeamMenuItem
+              id={team._id.toString()}
+              avatarUrl={team.avatarUrl || "/GroupProfile.png"}
+              name={team.name || ""}
+              lastMessage={team.messages[0]}
+              searchValue={searchValue}
+            />
+          </li>
+        );
+      })}
     </>
   );
 }

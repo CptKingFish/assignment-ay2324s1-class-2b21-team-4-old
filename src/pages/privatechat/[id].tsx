@@ -114,6 +114,11 @@ export default function PrivateChat() {
       removePendingMessage(message._id.toString());
     };
 
+    const chatroomDeletedHandler = () => {
+      void router.push("/chat");
+      toast.error("Chatroom has been deleted");
+    };
+
     const memberAddedHandler = (data: PusherMemberStatusProps) => {
       if (data.id === user?._id) return;
       setOtherUserIsOnline(true);
@@ -124,9 +129,24 @@ export default function PrivateChat() {
       setOtherUserIsOnline(false);
     };
 
-    // presence-646b6c35c61cbeca5a4c0460
+    const messageDeletedHandler = (data: { message_id: string }) => {
+      setMessages((prev) => {
+        return prev.map((message) => {
+          if (message._id.toString() === data.message_id) {
+            return {
+              ...message,
+              deleted: true,
+              text: "This message has been deleted",
+            };
+          }
+          return message;
+        });
+      });
+    };
 
     channel.bind("incoming-message", messageHandler);
+    channel.bind("message-deleted", messageDeletedHandler);
+    channel.bind("chatroom-deleted", chatroomDeletedHandler);
     channel.bind("pusher:member_added", memberAddedHandler);
     channel.bind("pusher:member_removed", memberRemovedHandler);
 
@@ -136,7 +156,15 @@ export default function PrivateChat() {
       channel.unbind("pusher:member_removed", memberRemovedHandler);
       pusherClient.unsubscribe(channelCode);
     };
-  }, [user, pusherClient, router.query.id, router.isReady, channelCode]);
+  }, [
+    user,
+    pusherClient,
+    router.query.id,
+    router.isReady,
+    channelCode,
+    router,
+    messages,
+  ]);
 
   // /// // / /
 
@@ -242,6 +270,7 @@ export default function PrivateChat() {
               <ChatBody
                 setReplyTo={setReplyTo}
                 messages={messages}
+                chatroom_id={chatroom_id}
                 pendingMessages={pendingMessages}
                 users={users}
               />

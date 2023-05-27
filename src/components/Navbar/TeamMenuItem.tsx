@@ -14,6 +14,7 @@ interface TeamMenuItemProps {
   avatarUrl: string;
   name: string;
   lastMessage: Message | undefined;
+  searchValue: string;
 }
 
 export default function TeamMenuItem({
@@ -21,6 +22,7 @@ export default function TeamMenuItem({
   avatarUrl,
   name,
   lastMessage,
+  searchValue,
 }: TeamMenuItemProps) {
   const { user, pusherClient } = useGlobalContext();
   const router = useRouter();

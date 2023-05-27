@@ -7,12 +7,14 @@ import { useGlobalContext } from "@/context";
 import IconButton from "../IconButton";
 import PendingChatBubble from "./PendingChatBubble";
 import { api } from "@/utils/api";
+import StatusMessage from "./StatusMessage";
 
 interface ChatBodyProps {
   messages: Message[];
   pendingMessages: PendingMessage[];
   setReplyTo: React.Dispatch<React.SetStateAction<Message | null>>;
   users: any[];
+  chatroom_id: string;
 }
 
 export default function ChatBody({
@@ -20,39 +22,28 @@ export default function ChatBody({
   pendingMessages,
   setReplyTo,
   users,
+  chatroom_id,
 }: ChatBodyProps) {
   const { user } = useGlobalContext();
-  // const scrollableRef = React.useRef<HTMLDivElement>(null);
-  // React.useEffect(() => {
-  //   const scrollableElement = scrollableRef.current;
 
-  //   const handleScroll = () => {
-  //     if (!scrollableElement) return;
-  //     console.log(scrollableElement.scrollTop);
-  //     if (scrollableElement.scrollTop === 0) {
-  //       // Scrolled to the top of the element
-  //       console.log("Scrolled to the top!");
-  //     }
-  //   };
-
-  //   if (!scrollableElement) return;
-
-  //   scrollableElement.addEventListener("scroll", handleScroll);
-
-  //   return () => {
-  //     scrollableElement.removeEventListener("scroll", handleScroll);
-  //   };
-  // }, []);
   return (
     <>
       <div className="relative">
         {messages?.map((message) => {
-          if (message.sender._id.toString() === user?._id) {
+          if (message.data_type === "status") {
+            return (
+              <StatusMessage
+                message={message.text}
+                key={message._id.toString()}
+              />
+            );
+          } else if (message.sender._id.toString() === user?._id) {
             return (
               <ChatBubbleMe
                 hasReplyTo={message.hasReplyTo}
                 replyTo={message.replyTo}
                 message_id={message._id.toString()}
+                chatroom_id={chatroom_id}
                 key={message._id.toString()}
                 senderId={message.sender._id.toString()}
                 senderName={message.sender.username}
@@ -61,6 +52,7 @@ export default function ChatBody({
                 time={formatTimestampToTime(message.timestamp)}
                 date={formatTimeStampToDate(message.timestamp)}
                 avatarUrl={user?.avatar || "/Profile.png"}
+                deleted={message?.deleted || false}
               />
             );
           } else {
@@ -85,10 +77,17 @@ export default function ChatBody({
                     (user) => user.key === message.sender._id.toString()
                   )?.imageUrl || "/Profile.png"
                 }
+                deleted={message?.deleted || false}
               />
             );
           }
         })}
+        {/* <StatusMessage
+          message={
+            "This is a status message. It is used to show when a user joins or leaves the chat."
+          }
+        /> */}
+
         {pendingMessages?.map((message) => {
           return (
             <PendingChatBubble

@@ -27,18 +27,33 @@ const GroupParticipants: React.FC<GroupParticipantsProps> = ({
 }) => {
   const utils = api.useContext();
 
-  const handleAddFriend = () => {};
-
-  const handleSendMessage = () => {
-    console.log("friendUrl", friendUrl);
-    window.location.href = "/privatechat/" + friendUrl;
-  };
-
   const { mutate: makeAdmin } = api.chat.addAdminToChatroom.useMutation();
   const { mutate: removeAdmin } =
     api.chat.removeAdminFromChatroom.useMutation();
   const { mutate: kickUser } =
     api.chat.removeParticipantFromChatroom.useMutation();
+
+  const { mutate: sendFriendRequest, isLoading: isLoadingSendFriendRequest } =
+    api.notification.sendFriendRequestById.useMutation();
+
+  const handleAddFriend = () => {
+    sendFriendRequest(
+      { receiver_id: id },
+      {
+        onSuccess: (data) => {
+          toast.success("Friend request sent successfully!");
+        },
+        onError: (error) => {
+          toast.error("Error when sending friend request!");
+        },
+      }
+    );
+  };
+
+  const handleSendMessage = () => {
+    console.log("friendUrl", friendUrl);
+    window.location.href = "/privatechat/" + friendUrl;
+  };
 
   const handleMakeAdmin = () => {
     makeAdmin(

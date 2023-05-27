@@ -428,6 +428,77 @@ export const chatRouter = createTRPCRouter({
       });
       return result;
     }),
+  deleteMessage: privateProcedure
+    .input(
+      z.object({
+        message_id: z.string(),
+        chatroom_id: z.string(),
+      })
+    )
+    .mutation(async ({ input, ctx }) => {
+      const { message_id, chatroom_id } = input;
+      const { user } = ctx;
+
+      const chatroom = await Chatroom.findById(chatroom_id);
+
+      if (!chatroom) {
+        throw new TRPCError({
+          code: "NOT_FOUND",
+          message: "Chatroom not found",
+        });
+      }
+
+      if (!chatroom.participants.includes(user._id)) {
+        throw new TRPCError({
+          code: "UNAUTHORIZED",
+          message: "Unauthorized",
+        });
+      }
+
+      const messageIndex = chatroom.messages.findIndex(
+        (message) => message._id.toString() === message_id
+      );
+
+      if (messageIndex === -1) {
+        throw new TRPCError({
+          code: "NOT_FOUND",
+          message: "Message not found",
+        });
+      }
+
+      if (!chatroom.messages[messageIndex]) {
+        throw new TRPCError({
+          code: "BAD_REQUEST",
+          message: "Message already deleted",
+        });
+      }
+
+      const message = chatroom.messages[messageIndex];
+
+      if (message === undefined) return;
+
+      if (message.sender._id.toString() !== user._id.toString()) {
+        throw new TRPCError({
+          code: "UNAUTHORIZED",
+          message: "Unauthorized",
+        });
+      }
+
+      if (message.deleted) {
+        throw new TRPCError({
+          code: "BAD_REQUEST",
+          message: "Message already deleted",
+        });
+      }
+
+      message.deleted = true;
+      message.text = "This message has been deleted.";
+
+      await chatroom.save();
+      await pusherServer.trigger(`presence-${chatroom_id}`, "message-deleted", {
+        message_id: message_id,
+      });
+    }),
   getFriends: privateProcedure.query(async ({ ctx }) => {
     const { user } = ctx;
 
@@ -534,6 +605,13 @@ export const chatRouter = createTRPCRouter({
         type: "private",
       });
 
+      await pusherServer.trigger(
+        `presence-${chatroom._id.toString()}`,
+        "chatroom-deleted",
+        null
+      );
+      await pusherServer.sendToUser(friend_id, "friend-removed", null);
+
       return true;
     }),
   leaveTeam: privateProcedure
@@ -573,7 +651,31 @@ export const chatRouter = createTRPCRouter({
         (participant_id) => participant_id.toString() !== user._id.toString()
       );
 
+      const messageData = {
+        hasReplyTo: false,
+        _id: new mongoose.Types.ObjectId() as unknown as ObjectId,
+        sender: {
+          _id: new mongoose.Types.ObjectId(user._id) as unknown as ObjectId,
+          username: user.username,
+        },
+        text: `${user.username} has left the team`,
+        data_type: "status",
+        timestamp: Date.now(),
+      };
+
+      chatroom.messages.push(messageData);
+
       await chatroom.save();
+
+      await pusherServer.trigger(
+        `presence-${chatroom._id.toString()}`,
+        "user-left",
+        messageData
+      );
+
+      if (chatroom.participants.length === 0) {
+        await Chatroom.deleteOne({ _id: chatroom._id });
+      }
 
       return true;
     }),

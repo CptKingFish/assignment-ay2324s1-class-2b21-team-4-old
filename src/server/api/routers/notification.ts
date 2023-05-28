@@ -267,6 +267,17 @@ export const notificationRouter = createTRPCRouter({
         null
       );
 
+      //Adds the userid and chatid to sender friends array
+      await User.findByIdAndUpdate(notification.sender_id, {
+        $push: { friends: { friendID: user._id, chatID: chatroom._id } },
+      });
+
+      //Adds the sender id and chatid to user friends array
+      await User.findByIdAndUpdate(user._id, {
+        $push: { friends: { friendID: notification.sender_id, chatID: chatroom._id } },
+      });
+
+
       return chatroom;
     }),
   sendTeamInvite: privateProcedure

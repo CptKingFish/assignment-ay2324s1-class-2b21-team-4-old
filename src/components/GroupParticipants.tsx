@@ -107,6 +107,9 @@ const GroupParticipants: React.FC<GroupParticipantsProps> = ({
           utils.chat.getAdminFromChatroom.invalidate({
             chatroom_id: router.query.id as string,
           });
+          utils.chat.getMessagesAndChatroomInfo.invalidate({
+            chatroom_id: router.query.id as string,
+          });
         },
         onError: (error) => {
           toast.error("Error when kicking User!");

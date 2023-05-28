@@ -318,7 +318,7 @@ export const chatRouter = createTRPCRouter({
       chatrooms.map(async (chatroom) => {
         const participants = await User.find({
           _id: { $in: chatroom.participants },
-        }).select("username");
+        }).select("username avatar");
         return {
           ...chatroom.toObject(),
           participants: participants,
@@ -600,6 +600,18 @@ export const chatRouter = createTRPCRouter({
         });
       }
 
+      //Delete object containing friendID and chatID from friends array in user
+
+      await User.updateOne(
+        { _id: user._id },
+        { $pull: { friends: { friendID: friend_id } } }
+      );
+
+      await User.updateOne(
+        { _id: friend_id },
+        { $pull: { friends: { friendID: user._id } } }
+      ); 
+
       await Chatroom.deleteOne({
         participants: { $all: [user._id, friend_id] },
         type: "private",
@@ -833,7 +845,29 @@ export const chatRouter = createTRPCRouter({
         (participant) => participant.toString() !== participant_id.toString()
       );
 
+      const participant = await User.findById(participant_id);
+
+      const messageData = {
+        hasReplyTo: false,
+        _id: new mongoose.Types.ObjectId() as unknown as ObjectId,
+        sender: {
+          _id: new mongoose.Types.ObjectId(user._id) as unknown as ObjectId,
+          username: user.username,
+        },
+        text: `${participant?.username} has been kicked from the team`,
+        data_type: "status",
+        timestamp: Date.now(),
+      };
+
+      chatroom.messages.push(messageData);
+
       await chatroom.save();
+
+      await pusherServer.trigger(
+        `presence-${chatroom._id.toString()}`,
+        "user-left",
+        messageData
+      );
 
       return true;
     }),

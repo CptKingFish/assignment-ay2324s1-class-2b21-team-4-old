@@ -106,7 +106,7 @@ export default function RequestNotification({
         <div className="online avatar mr-3">
           <div className="w-16 rounded-full">
             {/* <Image src={avatarUrl} alt="chat menu item" width={32} height={32} /> */}
-            <img src={avatarUrl} alt="chat menu item" />
+            <img src={avatarUrl || "/Profile.png"} alt="chat menu item" />
           </div>
         </div>
         <div className="ml-2">

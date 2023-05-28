@@ -255,6 +255,9 @@ export const userRouter = createTRPCRouter({
   getAvatarUrl: publicProcedure
     .input(z.object({ user_id: z.string() }))
     .query(async ({ input }) => {
+      if (!input.user_id) {
+        return null
+      }
       try {
         return await User.findById(input.user_id).select("avatar");
       } catch (error) {

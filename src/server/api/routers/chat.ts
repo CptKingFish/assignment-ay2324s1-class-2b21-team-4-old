@@ -44,15 +44,17 @@ export const chatRouter = createTRPCRouter({
           {
             $group: {
               _id: "$_id",
+              avatarUrl: { $first: "$avatarUrl" },
               name: { $first: "$name" },
               type: { $first: "$type" },
               participants: { $first: "$participants" },
               admins: { $first: "$admins" },
               messages: { $push: "$messages" },
             },
-          },
+          },          
           {
             $project: {
+              avatarUrl: 1,
               name: 1,
               type: 1,
               participants: 1,
@@ -69,8 +71,7 @@ export const chatRouter = createTRPCRouter({
         ]).exec()
       )[0] as unknown as ChatRoom;
 
-      console.log("name", chatroom.name);
-      console.log("messages", chatroom.messages[0]);
+
 
       if (!chatroom) {
         throw new TRPCError({
@@ -93,7 +94,6 @@ export const chatRouter = createTRPCRouter({
       chatroom.messages.reverse();
 
       // chatroom.messages.sort((a, b) => a.timestamp - b.timestamp);
-
       return chatroom;
     }),
   getMoreMessages: privateProcedure
@@ -663,6 +663,10 @@ export const chatRouter = createTRPCRouter({
         (participant_id) => participant_id.toString() !== user._id.toString()
       );
 
+      chatroom.admins = chatroom.admins.filter(
+        (participant_id) => participant_id.toString() !== user._id.toString()
+      );
+
       const messageData = {
         hasReplyTo: false,
         _id: new mongoose.Types.ObjectId() as unknown as ObjectId,
@@ -842,6 +846,10 @@ export const chatRouter = createTRPCRouter({
       }
 
       chatroom.participants = chatroom.participants.filter(
+        (participant) => participant.toString() !== participant_id.toString()
+      );
+
+      chatroom.admins = chatroom.admins.filter(
         (participant) => participant.toString() !== participant_id.toString()
       );
 

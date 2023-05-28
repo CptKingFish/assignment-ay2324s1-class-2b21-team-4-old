@@ -5,6 +5,7 @@ interface TopNavProps {
   avatar: string;
   chatroom_name: string;
   chatroom_type: "private" | "team";
+  username?:string;
   openSidebarDetails: () => void;
 }
 
@@ -12,6 +13,7 @@ export default function TopNav({
   avatar,
   chatroom_name,
   chatroom_type,
+  username,
   openSidebarDetails,
 }: TopNavProps) {
   const { user } = useGlobalContext();
@@ -28,8 +30,9 @@ export default function TopNav({
             <img src={avatar} />
           </div>
         </div>
-        <div className="">
+        <div className="grid">
           <span className="ms-5 text-xl normal-case">{chatroom_name}</span>
+          {chatroom_type && "private" &&<span className="ms-5 text-xs normal-case">{username}</span>}
         </div>
       </div>
       <div className="flex-1">

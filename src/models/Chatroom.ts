@@ -14,7 +14,10 @@ export interface IChatroom {
 const chatroomSchema = new mongoose.Schema<IChatroom>(
   {
     name: { type: String },
-    avatarUrl: String,
+    avatarUrl: {
+      type:String,
+      required:false,
+    },
     type: {
       type: String,
       enum: ["private", "team"],

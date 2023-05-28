@@ -110,7 +110,7 @@ export default function ChatBubbleOther({
         )}
 
         <div className="flex items-end">
-          <p className={`${deleted ? "text-slate-300" : ""}`}>{text}</p>
+          <p className={`${deleted ? "text-slate-300" : ""} break-all`}>{text}</p>
           <div className="chat-footer ml-2 text-[0.8rem] opacity-50">
             {time}
           </div>

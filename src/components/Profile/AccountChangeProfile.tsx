@@ -1,4 +1,5 @@
 import { api } from "@/utils/api";
+import { set } from "mongoose";
 import React from "react";
 import toast from "react-hot-toast";
 
@@ -6,9 +7,11 @@ import toast from "react-hot-toast";
 interface AccountChangeProfileProps {}
 
 const AccountChangeProfile: React.FC<AccountChangeProfileProps> = ({}) => {
+
   const utils = api.useContext();
   const [profilePic, setProfilePic] = React.useState<string | null>(null);
   const [previewUrl, setPreviewUrl] = React.useState<string | null>(null);
+  const [isLoading, setIsLoading] = React.useState(false);
 
   const { mutate: changeProfilePicture } = api.user.changeProfilePicture.useMutation();
 
@@ -49,13 +52,16 @@ const AccountChangeProfile: React.FC<AccountChangeProfileProps> = ({}) => {
 
   const handleProfilePicUpload = () => {
     if (profilePic) {
+      setIsLoading(true);
       changeProfilePicture({ profilePic }, { // Pass the profile picture as an object with profilePic field
         onSuccess: (data) => {
+          setIsLoading(false);
           toast.success("Profile picture changed successfully!");
           utils.user.getMe.invalidate();
           resetForm();
         },
         onError: (error) => {
+          setIsLoading(false);
           toast.error("Failed to change profile picture!");
         },
       });
@@ -75,6 +81,13 @@ const AccountChangeProfile: React.FC<AccountChangeProfileProps> = ({}) => {
 
   return (
     <>
+    {isLoading ? (
+        <div className="fixed top-0 left-0 w-full h-full bg-gray-800 bg-opacity-75 flex items-center justify-center z-50">
+          <div className = "text-base-200 absolute top-50 left-50 text-xl">Image Uploading</div>
+          <progress className="progress w-56 mt-20"></progress>
+        </div>
+      ) : (
+        <>
       <input type="checkbox" id="profilePic" className="modal-toggle" />
       <div className="modal">
         <div className="modal-box">
@@ -99,6 +112,8 @@ const AccountChangeProfile: React.FC<AccountChangeProfileProps> = ({}) => {
           </div>
         </div>
       </div>
+      </>
+      )}
     </>
   );
 };

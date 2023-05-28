@@ -25,6 +25,7 @@ export interface ChatroomInfoWithParticipantNames {
   participants: {
     _id: string;
     username: string;
+    displayName: string;
   }[];
   messages: Message[];
 }

@@ -18,6 +18,7 @@ export default function PrivateChat() {
   const [messages, setMessages] = React.useState<Message[]>([]);
   const [users, setUsers] = React.useState<any[]>([]);
   const [name, setName] = React.useState("");
+  const [displayName, setDisplayName] = React.useState("");
   const [otherUserId, setOtherUserId] = React.useState("");
   const [otherUserIsOnline, setOtherUserIsOnline] = React.useState(false);
   const [hasLoadedAllMessages, setHasLoadedAllMessages] = React.useState(false);

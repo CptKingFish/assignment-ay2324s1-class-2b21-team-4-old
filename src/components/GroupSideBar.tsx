@@ -86,6 +86,7 @@ const GroupSideBar: React.FC<GroupSideBarProps> = ({
           </div>
           <div className="self-center text-center">
             <div className="avatar relative mt-5 w-24 self-center overflow-hidden rounded-full">
+              <div className = "rounded-full">
               <img
                 src={chatRoomAvatar || "/GroupProfile.png"}
                 alt=""
@@ -97,6 +98,8 @@ const GroupSideBar: React.FC<GroupSideBarProps> = ({
               >
                 <p className="mt-3 text-white">Change Group Icon</p>
               </label>
+              </div>
+              
             </div>
             <div className="mt-2 flex flex-wrap justify-center font-bold ">
               {chatRoomName}

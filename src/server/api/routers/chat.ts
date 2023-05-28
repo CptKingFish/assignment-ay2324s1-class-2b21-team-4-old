@@ -663,6 +663,10 @@ export const chatRouter = createTRPCRouter({
         (participant_id) => participant_id.toString() !== user._id.toString()
       );
 
+      chatroom.admins = chatroom.admins.filter(
+        (participant_id) => participant_id.toString() !== user._id.toString()
+      );
+
       const messageData = {
         hasReplyTo: false,
         _id: new mongoose.Types.ObjectId() as unknown as ObjectId,
@@ -842,6 +846,10 @@ export const chatRouter = createTRPCRouter({
       }
 
       chatroom.participants = chatroom.participants.filter(
+        (participant) => participant.toString() !== participant_id.toString()
+      );
+
+      chatroom.admins = chatroom.admins.filter(
         (participant) => participant.toString() !== participant_id.toString()
       );
 

@@ -74,9 +74,8 @@ export default function ChatMenuItem({
         toast.custom(
           (t) => (
             <div
-              className={`${
-                t.visible ? "animate-enter" : "animate-leave"
-              } pointer-events-auto flex w-full max-w-md rounded-lg bg-white shadow-lg ring-1 ring-black ring-opacity-5`}
+              className={`${t.visible ? "animate-enter" : "animate-leave"
+                } pointer-events-auto flex w-full max-w-md rounded-lg bg-white shadow-lg ring-1 ring-black ring-opacity-5`}
             >
               <ChatNotification
                 type={"private"}

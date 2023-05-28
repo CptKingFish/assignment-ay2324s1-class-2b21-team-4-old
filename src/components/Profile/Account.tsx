@@ -5,12 +5,14 @@ import AccountChangePassword from "./AccountChangePassword";
 import AccountChangeProfile from "./AccountChangeProfile";
 import AccountChangeUsername from "./AccountChangeUsername";
 
+
 export default function Account() {
   const { user } = useGlobalContext();
 
   return (
     <>
       <AccountChangeProfile />
+
       <AccountChangeUsername />
       <AccountChangeEmail />
       <AccountChangePassword />
@@ -18,10 +20,7 @@ export default function Account() {
       <div className="flex w-full flex-wrap justify-between">
         <div className="mb-5 text-xl font-bold">My Account</div>
         <div className="grid">
-          <Link
-            className="btn-outline btn-circle btn"
-            href="javascript:history.back()"
-          >
+          <Link href="#" onClick={() => window.history.back()} className="btn-outline btn-circle btn">
             <svg
               xmlns="http://www.w3.org/2000/svg"
               className="h-6 w-6"
@@ -44,7 +43,7 @@ export default function Account() {
       <div className="my-5 flex w-full flex-wrap justify-between">
         <div className="online avatar me-5">
           <div className="w-24 rounded-full">
-            <img src={user?.avatar || "/images/Profile.png"} />
+            <img src={user?.avatar || "/Profile.png"} />
           </div>
         </div>
         <div className="grid grid-flow-col text-xl font-bold">

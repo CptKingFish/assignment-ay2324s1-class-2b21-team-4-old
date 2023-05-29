@@ -2,18 +2,20 @@ import React, { useEffect } from "react";
 import { useGlobalContext } from "@/context";
 // import { pusherClientConstructor } from "@/utils/pusherConfig";
 import TopNav from "@/components/TopNav";
-import ChatInput from "@/components/ChatInput";
+import ChatInput from "@/components/Chat/ChatInput";
 import { useRouter } from "next/router";
-import ChatBody from "@/components/ChatBody";
+import ChatBody from "@/components/Chat/ChatBody";
 import type { Message, PendingMessage } from "@/utils/chat";
 import { api } from "@/utils/api";
 import GroupSideBar from "@/components/GroupSideBar";
+import { toast } from "react-hot-toast";
 
 interface Admin {
   admins: string[];
 }
 
 const TeamChat = () => {
+  const utils = api.useContext();
   const router = useRouter();
   const { user, pusherClient } = useGlobalContext();
   const [replyTo, setReplyTo] = React.useState<Message | null>(null);
@@ -23,6 +25,7 @@ const TeamChat = () => {
     PendingMessage[]
   >([]);
   const utils = api.useContext();
+  const [hasLoadedAllMessages, setHasLoadedAllMessages] = React.useState(false);
 
   const { data: chatroomData, isLoading } =
     api.chat.getMessagesAndChatroomInfo.useQuery({
@@ -90,32 +93,148 @@ const TeamChat = () => {
   }, [router.query.id]);
 
   React.useEffect(() => {
+    // if router is null route to /
+    if (!router.query.id) {
+      router
+        .push("/chat")
+        .catch((err) => console.log("error from private chat", err));
+      return;
+    }
+  }, [router, router.query.id]);
+
+  React.useEffect(() => {
     if (!pusherClient) return;
 
     const channel = pusherClient.subscribe(channelCode);
 
     const messageHandler = (message: Message) => {
-      console.log("this da msg", message);
       setMessages((prev) => [...prev, message]);
       removePendingMessage(message._id.toString());
+    };
+
+    const userJoinedHandler = (message: Message) => {
+      // setUsers((prev) => [...prev, user]);
+      setMessages((prev) => [...prev, message]);
+      utils.chat.getUsernamesFromChatroom.invalidate({
+        chatroom_id: router.query.id as string,
+      });
+      utils.chat.getAdminFromChatroom.invalidate({
+        chatroom_id: router.query.id as string,
+      });
+      utils.chat.getMessagesAndChatroomInfo.invalidate({
+        chatroom_id: router.query.id as string,
+      });
+    };
+
+    const userLeftHandler = (message: Message) => {
+      setMessages((prev) => [...prev, message]);
+      utils.chat.getUsernamesFromChatroom.invalidate({
+        chatroom_id: router.query.id as string,
+      });
+      utils.chat.getAdminFromChatroom.invalidate({
+        chatroom_id: router.query.id as string,
+      });
+      utils.chat.getMessagesAndChatroomInfo.invalidate({
+        chatroom_id: router.query.id as string,
+      });
+    };
+
+    const messageDeletedHandler = (data: { message_id: string }) => {
+      setMessages((prev) => {
+        return prev.map((message) => {
+          if (message._id.toString() === data.message_id) {
+            return {
+              ...message,
+              deleted: true,
+              text: "This message has been deleted",
+            };
+          }
+          return message;
+        });
+      });
     };
 
     channel.bind("incoming-message", messageHandler);
     channel.bind("incoming-image", () => {
       utils.chat.getMessagesAndChatroomInfo.refetch().catch(console.error);
     });
+    channel.bind("message-deleted", messageDeletedHandler);
+    channel.bind("user-joined", userJoinedHandler);
+    channel.bind("user-left", userLeftHandler);
 
     return () => {
       pusherClient.unsubscribe(channelCode);
       channel.unbind("incoming-message", messageHandler);
+      channel.unbind("user-joined", userJoinedHandler);
+      channel.unbind("user-left", userLeftHandler);
     };
   }, [user, channelCode, pusherClient]);
 
-  // const scrollDownRef = React.useRef<HTMLDivElement | null>(null);
+  const chatroom_id = React.useMemo(() => {
+    return router.query.id as string;
+  }, [router.query.id]);
 
-  // const scrollToBottom = () => {
-  //   scrollDownRef.current?.scrollIntoView({ behavior: "smooth" });
-  // };
+  const { mutate: getMoreMessages } = api.chat.getMoreMessages.useMutation();
+
+  const scrollableRef = React.useRef<HTMLDivElement>(null);
+
+  const [getMoreMessagesIsLoading, setGetMoreMessagesIsLoading] =
+    React.useState(false);
+
+  const messagesLength = React.useMemo(() => {
+    return messages.length;
+  }, [messages]);
+
+  React.useEffect(() => {
+    const scrollableElement = scrollableRef.current;
+
+    const handleScroll = () => {
+      if (!scrollableElement) return;
+      if (hasLoadedAllMessages) return;
+      const scrollTop = scrollableElement.scrollTop;
+      const clientHeight = scrollableElement.clientHeight;
+      const scrollHeight = scrollableElement.scrollHeight;
+
+      if (-scrollTop + clientHeight >= scrollHeight - 200) {
+        console.log("Scrolled to the top!");
+        console.log(chatroom_id);
+
+        if (!chatroom_id || getMoreMessagesIsLoading) return;
+
+        setGetMoreMessagesIsLoading(true);
+
+        getMoreMessages(
+          {
+            chatroom_id: chatroom_id,
+            skipCount: messagesLength,
+            limitValue: 50,
+          },
+          {
+            onSuccess: (data) => {
+              if (data.length === 0) setHasLoadedAllMessages(true);
+              console.log(data);
+              setMessages((prev) => [...data, ...prev]);
+            },
+
+            onError: (error) => {
+              toast.error(error.message);
+            },
+            onSettled: () => {
+              setGetMoreMessagesIsLoading(false);
+            },
+          }
+        );
+      }
+    };
+
+    if (!scrollableElement) return;
+
+    scrollableElement.addEventListener("scroll", handleScroll);
+
+    return () => {
+      scrollableElement.removeEventListener("scroll", handleScroll);
+    };
+  }, [chatroom_id, getMoreMessages, getMoreMessagesIsLoading, messagesLength]);
 
   return (
     <>
@@ -138,10 +257,12 @@ const TeamChat = () => {
             <TopNav
               avatar={chatroomData?.avatarUrl || "/GroupProfile.png"}
               chatroom_name={chatroomData?.name || ""}
+              chatroom_type="team"
               openSidebarDetails={handleDrawerToggle}
             />
             <div
               id="chat-body"
+              ref={scrollableRef}
               className="scrollbar-thumb-blue scrollbar-thumb-rounded scrollbar-track-blue-lighter scrollbar-w-2 scrolling-touch flex h-full flex-1 flex-col-reverse gap-4 overflow-y-auto scroll-smooth p-3 pb-16"
             >
               <ChatBody
@@ -149,6 +270,7 @@ const TeamChat = () => {
                 messages={messages}
                 users={users}
                 pendingMessages={pendingMessages}
+                chatroom_id={chatroom_id}
               />
             </div>
             <ChatInput

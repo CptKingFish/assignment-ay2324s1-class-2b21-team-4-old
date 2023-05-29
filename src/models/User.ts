@@ -3,6 +3,7 @@ export interface IUser {
   _id: string;
   email: string;
   username: string;
+  displayName: string;
   avatar?: string;
   password: string;
   isEmailVerified: boolean;
@@ -25,6 +26,10 @@ const userSchema = new mongoose.Schema<IUser>(
       type: String,
       required: true,
       unique: true,
+    },
+    displayName: {
+      type: String,
+      required: true,
     },
     friends: [
       {

@@ -8,7 +8,7 @@ import { api } from "@/utils/api";
 
 import "@/styles/globals.css";
 import { setCookie, deleteCookie } from "cookies-next";
-import SideBarNav from "@/components/SideBarNav";
+import SideBarNav from "@/components/Navbar/SideBarNav";
 import { ThemeProvider } from "@/components/ThemeProvider";
 
 const WrappedApp = ({ children }: { children: React.ReactNode }) => {

@@ -24,7 +24,7 @@ const AccountChangeUsername: React.FC<AccountChangeUsernameProps> = ({ }) => {
                 utils.user.getMe.invalidate()
             },
             onError: (error) => {
-                toast.error("Invalid Username!");
+                toast.error(error.message);
                 setUsername(user?.username || "");
             },
         });

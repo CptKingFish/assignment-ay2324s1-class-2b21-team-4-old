@@ -41,6 +41,21 @@ export const userRouter = createTRPCRouter({
       })
     )
     .mutation(async ({ input, ctx }) => {
+      //Throws TRPC error if username is empty
+      if (!input.username) {
+        throw new TRPCError({
+          code: "BAD_REQUEST",
+          message: "Username is required",
+        });
+      }
+      //Throws TRPC error if username is already taken
+      if (await User.findOne({ username: input.username })) {
+        throw new TRPCError({
+          code: "BAD_REQUEST",
+          message: "Username is already taken",
+        });
+      }
+
       const response = await User.findByIdAndUpdate(
         ctx.user._id,
         {
@@ -167,6 +182,9 @@ export const userRouter = createTRPCRouter({
   getAvatarUrl: publicProcedure
     .input(z.object({ user_id: z.string() }))
     .query(async ({ input }) => {
+      if (!input.user_id) {
+        return null
+      }
       try {
         return await User.findById(input.user_id).select("avatar");
       } catch (error) {
@@ -177,10 +195,10 @@ export const userRouter = createTRPCRouter({
         });
       }
     }),
-    addFriend: privateProcedure
+  addFriend: privateProcedure
     .input(z.object({ friend_id: z.string(), chat_id: z.string() }))
     .mutation(async ({ input, ctx }) => {
-      try{
+      try {
         return await User.findByIdAndUpdate(
           ctx.user._id,
           {
@@ -193,7 +211,7 @@ export const userRouter = createTRPCRouter({
           },
           { new: true }
         );
-      }catch(error){
+      } catch (error) {
         console.log(error)
         throw new TRPCError({
           code: "BAD_REQUEST",
@@ -201,10 +219,10 @@ export const userRouter = createTRPCRouter({
         });
       }
     }),
-    removeFriend: privateProcedure
+  removeFriend: privateProcedure
     .input(z.object({ friend_id: z.string() }))
     .mutation(async ({ input, ctx }) => {
-      try{
+      try {
         return await User.findByIdAndUpdate(
           ctx.user._id,
           {
@@ -216,7 +234,7 @@ export const userRouter = createTRPCRouter({
           },
           { new: true }
         );
-      }catch(error){
+      } catch (error) {
         console.log(error)
         throw new TRPCError({
           code: "BAD_REQUEST",
@@ -224,19 +242,22 @@ export const userRouter = createTRPCRouter({
         });
       }
     }),
-    logout: privateProcedure.mutation(({ ctx }) => {
-      ctx.res.setHeader(
-        "Set-Cookie",
-        `token=;expires=${new Date(
-          Date.now() - 1000 * 60 * 60 * 24
-        ).toUTCString()};sameSite=Strict;path=/;secure`
-      );
-      return {
-        message: "Logged out successfully!",
-        code: "SUCCESS",
-      };
-    }),
-      
+  logout: privateProcedure.mutation(({ ctx }) => {
+    ctx.res.setHeader(
+      "Set-Cookie",
+      `token=;expires=${new Date(
+        Date.now() - 1000 * 60 * 60 * 24
+      ).toUTCString()};sameSite=Strict;path=/;secure`
+    );
+    return {
+      message: "Logged out successfully!",
+      code: "SUCCESS",
+    };
+  }),
+
+
+
+
 
   // seedRedis: publicProcedure.mutation(async () => {
   //   // add all user_ids to redis

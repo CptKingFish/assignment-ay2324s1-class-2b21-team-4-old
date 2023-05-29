@@ -124,58 +124,6 @@ const ChatInput = ({
 
   return (
     <div className="z-10 mx-4 flex flex-col ">
-<<<<<<< HEAD:src/components/ChatInput.tsx
-          <AnimatePresence>
-            {replyTo && (
-              <motion.div
-                initial={{ opacity: 0, transform: "translateY(30%)" }}
-                animate={{ opacity: 1, transform: "translateY(0)" }}
-                exit={{ opacity: 0, transform: "translateY(30%)" }}
-                className="relative left-0 right-0 z-[3] rounded-md bg-slate-800 p-2 text-white"
-              >
-                <div className="flex items-center justify-between rounded-sm border-l-4 border-lime-400 bg-slate-600 px-2 py-1">
-                  <div className="flex flex-col">
-                    <span className="inline-flex text-green-400">
-                      {replyTo.sender.username}
-                    </span>
-                    <span>{replyTo.text}</span>
-                  </div>
-                  <IconButton
-                    onClick={() => {
-                      setReplyTo(null);
-                    }}
-                  >
-                    <svg
-                      xmlns="http://www.w3.org/2000/svg"
-                      fill="none"
-                      viewBox="0 0 24 24"
-                      strokeWidth={1.5}
-                      stroke="currentColor"
-                      className="h-6 w-6"
-                    >
-                      <path
-                        strokeLinecap="round"
-                        strokeLinejoin="round"
-                        d="M6 18L18 6M6 6l12 12"
-                      />
-                    </svg>
-                  </IconButton>
-                </div>
-              </motion.div>
-            )}
-          </AnimatePresence>
-      <div className="flex flex-row justify-center items-center h-24 ">
-          <Circle channel={channelCode} addPendingMessage = { addPendingMessage } setPendingMessageHasFailed= { setPendingMessageHasFailed }/>
-          <input
-              type="text"
-              id="chat-input"
-              placeholder="Type your message"
-              className="relative z-[4] w-5/6 h-16 flex-1 rounded-full border-2 border-gray-200 p-2  focus:outline-none focus:ring-2 focus:ring-blue-500"
-              value={input}
-              onChange={(e) => setInput(e.target.value)}
-              onKeyDown={handleKeyDown}
-            />
-=======
       <div className="relative w-full items-end ">
         <AnimatePresence>
           {replyTo && (
@@ -228,7 +176,6 @@ const ChatInput = ({
           onChange={(e) => setInput(e.target.value)}
           onKeyDown={handleKeyDown}
         />
->>>>>>> 5e5f9246cb858fb563ec4f48f6521c082806c09b:src/components/Chat/ChatInput.tsx
       </div>
     </div>
   );

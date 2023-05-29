@@ -83,6 +83,7 @@ export const authRouter = createTRPCRouter({
         username: input.username,
         password: hashedPassword,
         isEmailVerified: true,
+        displayName: input.username,
       });
       const token = jwt.sign({ user_id: user._id }, env.JWT_SECRET, {
         expiresIn: "1d",

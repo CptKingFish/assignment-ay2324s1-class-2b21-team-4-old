@@ -6,7 +6,6 @@ import { AnimatePresence, motion } from "framer-motion";
 import { Message, PendingMessage } from "@/utils/chat";
 import IconButton from "./IconButton";
 import Circle from "@/components/Circle"
-import { Previews } from "@/components/Dropzone";
 import mongoose from "mongoose";
 import { useGlobalContext } from "@/context";
 
@@ -30,6 +29,7 @@ const ChatInput = ({
   const [isLoading, setIsLoading] = React.useState(false);
   const { mutateAsync: sendMessageMutation } =
     api.chat.sendMessage.useMutation(); 
+
     
     
   const sendMessage = async () => {
@@ -105,11 +105,6 @@ const ChatInput = ({
     }
   };
 
-  const uploadImage = () => {
-    console.log("uploadImage");
-    
-    // Add your image upload logic here
-  };
 
   const handleKeyDown = (e: React.KeyboardEvent<HTMLInputElement>) => {
     // console.log(e.key);
@@ -165,7 +160,7 @@ const ChatInput = ({
             )}
           </AnimatePresence>
       <div className="flex flex-row justify-center items-center h-24 ">
-          <Circle />
+          <Circle channel={channelCode} addPendingMessage = { addPendingMessage } setPendingMessageHasFailed= { setPendingMessageHasFailed }/>
           <input
               type="text"
               id="chat-input"

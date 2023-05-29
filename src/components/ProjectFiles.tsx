@@ -1,6 +1,5 @@
 import React, { useState } from "react";
 import Dropzone from "react-dropzone";
-import { type IUser } from "@/models/User";
 import { api } from "@/utils/api";
 import { toast } from "react-hot-toast";
 import { type IFile } from "@/models/File";
@@ -27,20 +26,15 @@ const convertFileSize = (bytes: number) => {
   return `${Math.round(bytes / Math.pow(1024, i))} ${sizes[i] ?? ""}`;
 };
 
-const ProjectFiles = ({
-  scrum_id,
-  scrum_files,
-  file_id
+function ProjectFiles({
+  scrum_id, scrum_files,
 }: {
-  users: IUser[];
   scrum_id: string;
   scrum_files: IFile[];
-  file_id: string;
-}): JSX.Element => {
+}): JSX.Element {
   const utils = api.useContext();
   const [uploadedFiles, setUploadedFiles] = useState<File[]>([]);
-  const { mutate: upload, isLoading: isUploading } =
-    api.image.uploadImages.useMutation();
+  const { mutate: upload, isLoading: isUploading } = api.image.uploadImages.useMutation();
   const { mutate: deleteing } = api.image.deleteImageFrom.useMutation();
 
   const onHandleSubmit = async (files: File[]): Promise<void> => {
@@ -73,9 +67,9 @@ const ProjectFiles = ({
     }
   };
 
-  const handleDelete = (file_id: string): Promise<voide> => {
+  function handleDelete(file_id: string) {
     try {
-    deleteing({image_id: file_id}, {
+      deleteing({ image_id: file_id }, {
         onSuccess: () => {
           toast.success("Deleted successfully!");
           utils.scrum.getScrumByChatId.invalidate().catch(console.error);
@@ -88,7 +82,7 @@ const ProjectFiles = ({
     } catch (error) {
       console.log("handle delete error:", error);
     }
-  };
+  }
 
   return (
     <div className="mt-4">
@@ -96,7 +90,7 @@ const ProjectFiles = ({
         <Dropzone
           onDrop={(acceptedFiles) => {
             setUploadedFiles([...uploadedFiles, ...acceptedFiles]);
-          }}
+          } }
           maxSize={10 * 1024 * 1024}
         >
           {({ getRootProps, getInputProps }) => (
@@ -115,8 +109,7 @@ const ProjectFiles = ({
                     <path
                       strokeLinecap="round"
                       strokeLinejoin="round"
-                      d="M12 4.5v15m7.5-7.5h-15"
-                    />
+                      d="M12 4.5v15m7.5-7.5h-15" />
                   </svg>
                   Upload
                 </button>
@@ -127,12 +120,10 @@ const ProjectFiles = ({
         {uploadedFiles.length > 0 && (
           <>
             <button
-              className={`btn-success btn-sm btn ${
-                isUploading ? "loading" : ""
-              }`}
+              className={`btn-success btn-sm btn ${isUploading ? "loading" : ""}`}
               onClick={() => {
                 onHandleSubmit(uploadedFiles).catch(console.error);
-              }}
+              } }
             >
               Submit!
             </button>
@@ -167,8 +158,7 @@ const ProjectFiles = ({
         <tbody>
           {scrum_files
             .sort(
-              (a, b) =>
-                new Date(b.createdAt).getTime() -
+              (a, b) => new Date(b.createdAt).getTime() -
                 new Date(a.createdAt).getTime()
             )
             .map((file) => {
@@ -187,8 +177,7 @@ const ProjectFiles = ({
                         <path
                           strokeLinecap="round"
                           strokeLinejoin="round"
-                          d="M9 13.5l3 3m0 0l3-3m-3 3v-6m1.06-4.19l-2.12-2.12a1.5 1.5 0 00-1.061-.44H4.5A2.25 2.25 0 002.25 6v12a2.25 2.25 0 002.25 2.25h15A2.25 2.25 0 0021.75 18V9a2.25 2.25 0 00-2.25-2.25h-5.379a1.5 1.5 0 01-1.06-.44z"
-                        />
+                          d="M9 13.5l3 3m0 0l3-3m-3 3v-6m1.06-4.19l-2.12-2.12a1.5 1.5 0 00-1.061-.44H4.5A2.25 2.25 0 002.25 6v12a2.25 2.25 0 002.25 2.25h15A2.25 2.25 0 0021.75 18V9a2.25 2.25 0 00-2.25-2.25h-5.379a1.5 1.5 0 01-1.06-.44z" />
                       </svg>
 
                       <a
@@ -221,8 +210,7 @@ const ProjectFiles = ({
                           <div className="h-12 w-12 rounded-md">
                             <img
                               src={file.user?.avatar}
-                              alt="Avatar Tailwind CSS Component"
-                            />
+                              alt="Avatar Tailwind CSS Component" />
                           </div>
                         )}
                       </div>
@@ -249,6 +237,6 @@ const ProjectFiles = ({
       </table>
     </div>
   );
-};
+}
 
 export default ProjectFiles;

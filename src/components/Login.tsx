@@ -7,7 +7,7 @@ import { useRouter } from "next/router";
 function Login() {
   const router = useRouter();
   const { mutate: login, isLoading: isLoggingIn } =
-    api.user.login.useMutation();
+ api.auth.login.useMutation();
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
 
@@ -62,11 +62,12 @@ function Login() {
             setPassword(event.target.value)
           }
         />
-        <label className="label">
-          <a href="#" className="link-hover label-text-alt link">
-            Forgot password?
-          </a>
-        </label>
+
+<label className="label">
+  <a href="#" className="link-hover label-text-alt link">
+    Forgot password?
+  </a>
+</label>
       </div>
       <div className="form-control mt-6">
         <button className={`btn-primary btn ${isLoggingIn ? "loading" : ""}`}>

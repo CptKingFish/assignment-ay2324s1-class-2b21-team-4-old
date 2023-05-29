@@ -1,6 +1,7 @@
 import React, { useState } from "react";
 import { motion, AnimatePresence } from "framer-motion";
 import Image from "next/image";
+import { PendingMessage } from "@/utils/chat";
 import {
   PaperClipIcon,
   DocumentIcon,
@@ -8,16 +9,43 @@ import {
   VideoCameraIcon,
   DocumentTextIcon,
 } from "@heroicons/react/24/solid";
-import { api } from "@/utils/api"
+import toast from "react-hot-toast";
+import { api } from "@/utils/api";
 
-const Circle = () => {
+type CircleProps = {
+  channel: string | null;
+  addPendingMessage: (message: PendingMessage) => void;
+  setPendingMessageHasFailed: (message_id: string) => void;
+  handleUpload: () => void;
+};
+
+const Circle = ({
+  channel,
+  addPendingMessage,
+  setPendingMessageHasFailed,
+}: CircleProps) => {
   const [show, setShow] = useState(false);
   const [selectedFiles, setSelectedFiles] = useState<File[]>([]);
   const cardRef = React.useRef<HTMLDivElement>(null);
-  const { mutateAsync: sendMessageMutation } = api.chat.sendMessage.useMutation();
+  const { mutate: uploadImages } = api.image.uploadToChatroom.useMutation();
 
   const handleToggle = () => {
     setShow(!show);
+  };
+
+  const convertBase64 = (file: File): Promise<string> => {
+    return new Promise((resolve, reject) => {
+      const fileReader = new FileReader();
+      fileReader.readAsDataURL(file);
+
+      fileReader.onload = () => {
+        resolve(fileReader.result as string);
+      };
+
+      fileReader.onerror = (error) => {
+        reject(error);
+      };
+    });
   };
 
   const handleFileChange = (event: React.ChangeEvent<HTMLInputElement>) => {
@@ -31,18 +59,53 @@ const Circle = () => {
     }
   };
 
-  const handleUpload = () => {
-    if (selectedFiles.length > 0) {
-      // Perform upload logic here for each selected file
-      selectedFiles.forEach((file) => {
-        console.log("Uploading file:", file);
+  const handleUpload = async () => {
+    try {
+      const array: Promise<string>[] = [];
+      for (const file of selectedFiles) {
+        array.push(convertBase64(file));
+      }
+      const allFilesB64 = await Promise.all(array);
+
+      const input = {
+        images: allFilesB64,
+        names: selectedFiles.map((file) => file.name),
+        chatroom_id: channel,
+      };
+
+      const image = uploadImages(input, {
+        onSuccess: () => {
+          toast.success("Upload successfully!");
+          console.log("image:", image);
+
+        },
+        onError: (error) => {
+          toast.error("Upload failed!");
+          console.log(error);
+        },
       });
 
-      // Reset selected files after upload
+v
+      // const pendingMessage: PendingMessage = {
+      //   id: image.data?.id,
+      //   type: "image",
+      //   content: image. ,
+      //   chatroom_id: channel,
+      //   created_at: new Date().toISOString(),
+      // };
+
+      // addPendingMessage(pendingMessage);
+        
+
+
+
+
+
       setSelectedFiles([]);
+    } catch (error) {
+      console.log("handle upload error:", error);
     }
   };
-
 
   React.useEffect(() => {
     window.addEventListener("click", handleClickOutside);
@@ -153,57 +216,60 @@ const Circle = () => {
         <PaperClipIcon className="h-6 w-6" />
       </button>
 
-          <div>
-      <div className="absolute w-80 translate-x-[16rem] -translate-y-[27rem] bg-slate-500 rounded-lg bg-transparent">
-        <AnimatePresence>
-          {selectedFiles.map((file, index) => (
-            <motion.div
-              key={index}
-              className="card"
-              variants={cardVariants}
-              initial="hidden"
-              animate="visible"
-              exit="exit"
-              whileHover="hover"
-              custom={index}
-              ref={cardRef}
-            >
-              {file.type.includes("image") ? (
-                <figure className="px-10 pt-10 flex flex-col">
-                  <Image
-                    src={URL.createObjectURL(file)}
-                    alt="Selected File"
-                    width={300} // Set your desired width for the image
-                    height={200} // Set your desired height for the image
-                    className="rounded-xl"
-                  />
-                  <span className="font-bold">{file.name}</span>
-                </figure>
-              ) : file.type.includes("video") ? (
-                <figure className="px-10 pt-10 flex flex-col">
-                  <video
-                    src={URL.createObjectURL(file)}
-                    controls
-                    className="rounded-xl"
-                    width={300} // Set your desired width for the video
-                    height={200} // Set your desired height for the video
-                  />
-                  <span className="font-bold">{file.name}</span>
-                </figure>
-              ) : (
-                <div className="card-body items-center text-center">
-                  <DocumentTextIcon className="h-10 w-10" />
-                  <span className="font-bold">{file.name}</span>
-                </div>
-              )}
-              <button className="btn-primary btn my-4 mx-2" onClick={handleUpload}>
-                Upload
-              </button>
-            </motion.div>
-          ))}
-        </AnimatePresence>
+      <div>
+        <div className="absolute w-80 -translate-y-[27rem] translate-x-[16rem] rounded-lg bg-slate-500 bg-transparent">
+          <AnimatePresence>
+            {selectedFiles.map((file, index) => (
+              <motion.div
+                key={index}
+                className="card"
+                variants={cardVariants}
+                initial="hidden"
+                animate="visible"
+                exit="exit"
+                whileHover="hover"
+                custom={index}
+                ref={cardRef}
+              >
+                {file.type.includes("image") ? (
+                  <figure className="flex flex-col px-10 pt-10">
+                    <Image
+                      src={URL.createObjectURL(file)}
+                      alt="Selected File"
+                      width={300} // Set your desired width for the image
+                      height={200} // Set your desired height for the image
+                      className="rounded-xl"
+                    />
+                    <span className="font-bold">{file.name}</span>
+                  </figure>
+                ) : file.type.includes("video") ? (
+                  <figure className="flex flex-col px-10 pt-10">
+                    <video
+                      src={URL.createObjectURL(file)}
+                      controls
+                      className="rounded-xl"
+                      width={300} // Set your desired width for the video
+                      height={200} // Set your desired height for the video
+                    />
+                    <span className="font-bold">{file.name}</span>
+                  </figure>
+                ) : (
+                  <div className="card-body items-center text-center">
+                    <DocumentTextIcon className="h-10 w-10" />
+                    <span className="font-bold">{file.name}</span>
+                  </div>
+                )}
+                <button
+                  className="btn-primary btn mx-2 my-4"
+                  onClick={() => handleUpload()}
+                >
+                  Upload
+                </button>
+              </motion.div>
+            ))}
+          </AnimatePresence>
+        </div>
       </div>
-    </div>
     </div>
   );
 };

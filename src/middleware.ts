@@ -4,11 +4,14 @@ import type { NextRequest } from "next/server";
 import { env } from "./env.mjs";
 
 export async function middleware(request: NextRequest) {
-  const authRoutes = ["/authenticate"];
+    // check jwt validity
+  let token = request.cookies.get("token")?.value;
+  const authRoutes = ["/authenticate", ];
+
   let verified = false;
   let user_id;
-  // check jwt validity
-  let token = request.cookies.get("token")?.value;
+
+
   if (!token && !authRoutes.includes(request.nextUrl.pathname)) {
     return NextResponse.redirect(new URL("/authenticate", request.url));
   }
@@ -25,10 +28,13 @@ export async function middleware(request: NextRequest) {
       verified: boolean;
       user_id: string;
     };
+
     if (data.user_id) user_id = data.user_id;
-    if (!data.verified && authRoutes.includes(request.nextUrl.pathname)) {
+    if (!data.verified  && authRoutes.includes(request.nextUrl.pathname)) {
       return NextResponse.next();
-    }
+    } 
+
+
     // if (!data.verified) {
     //   return NextResponse.redirect(new URL("/authenticate", request.url));
     // }

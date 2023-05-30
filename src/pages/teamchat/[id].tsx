@@ -15,7 +15,6 @@ interface Admin {
 }
 
 const TeamChat = () => {
-  const utils = api.useContext();
   const router = useRouter();
   const { user, pusherClient } = useGlobalContext();
   const [replyTo, setReplyTo] = React.useState<Message | null>(null);

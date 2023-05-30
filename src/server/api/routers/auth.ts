@@ -2,54 +2,48 @@ import { z } from "zod";
 import { createTRPCRouter, publicProcedure } from "@/server/api/trpc";
 import { TRPCError } from "@trpc/server";
 import { env } from "@/env.mjs";
-import { createTransport } from "nodemailer";
+import nodemailer from "nodemailer";
 import jwt from "jsonwebtoken";
 import User from "@/models/User";
 import bcrypt from "bcryptjs";
-
-interface TransporterConfig {
-  service: string;
-  name: string;
-  host: string;
-  port: number;
-  secure: boolean;
-  auth: {
-    user: string;
-    pass: string;
-  };
-}
+import { redis } from "@/utils/redis";
+import { registerHtml } from "@/html/register";
+import { passwordHtml } from "@/html/password";
 
 
-const sendEmail = async (email: string, subject: string, html: string) => {
-    const transporter = createTransport<TransporterConfig>({
+const sendEmail = async (email:string, subject: string, html: string) => {
+  try {
+    const transporter = nodemailer.createTransport({
       service: "gmail",
-      name: "gmail.com",
       host: "smtp.gmail.com",
       port: 465,
       secure: true,
+      debug: true,
+      logger: true,
       auth: {
-        user: process.env.NODEMAIL_EMAIL,
-        pass: process.env.NODEMAIL_PW,
+        user: env.NODEMAIL_EMAIL,
+        pass: env.NODEMAIL_PW,
       },
+      tls: {
+        rejectUnauthorized: false,
+      }
     });
+
     const mailOptions = {
-      from: "ProjectSwifty <adesprojectswifty>",
+      from: "SwiftMe <projectswift36@gmail.com>",
       to: email,
       subject: subject,
       html: html,
     };
-    await new Promise((resolve, reject) => {
-      transporter.sendMail(mailOptions, (err, info) => {
-        if (err) {
-          console.error(err);
-          reject(err);
-        } else {
-          console.log(info);
-          resolve(info);
-        }
-      });
-    });
-  };
+
+    const info = await transporter.sendMail(mailOptions);
+    console.log(info);
+    return info;
+  } catch (err) {
+    console.log("nodemailer", err);
+    throw err;
+  }
+}
   
 
 export const authRouter = createTRPCRouter({
@@ -81,18 +75,19 @@ export const authRouter = createTRPCRouter({
       user = await User.create({
         email: input.email.toLowerCase(),
         username: input.username,
-        password: hashedPassword,
-        isEmailVerified: true,
         displayName: input.username,
+        password: hashedPassword,
+        isEmailVerified: false,
       });
+      await redis.sadd("users", user._id);
       const token = jwt.sign({ user_id: user._id }, env.JWT_SECRET, {
         expiresIn: "1d",
       });
-      // await sendEmail(
-      //   input.email.toLowerCase(),
-      //   "Verify your email",
-      //   registerHtml(token)
-      // );
+      await sendEmail(
+        input.email.toLowerCase(),
+        "Verify your email",
+        registerHtml(token)
+      );
       return {
         token,
         message:
@@ -117,6 +112,14 @@ export const authRouter = createTRPCRouter({
           message: "Invalid credentials",
         });
       }
+
+      if(!user.isEmailVerified) {
+        throw new TRPCError({
+          code: "BAD_REQUEST",
+          message: "Please verify your email!",
+        });
+      }
+
       const isPasswordValid = await bcrypt.compare(
         input.password,
         user.password
@@ -127,6 +130,8 @@ export const authRouter = createTRPCRouter({
           message: "Invalid credentials",
         });
       }
+
+      
       const token = jwt.sign({ user_id: user._id }, env.JWT_SECRET, {
         expiresIn: "1d",
       });
@@ -141,47 +146,6 @@ export const authRouter = createTRPCRouter({
         message: "Logged in successfully!",
         code: "SUCCESS",
       };
-    }),
-    verifyEmail: publicProcedure
-    .input(
-      z.object({
-        token: z.string(),
-      })
-    )
-    .mutation(async ({ input }) => {
-      try {
-        const decodedToken = jwt.verify(input.token, env.JWT_SECRET) as {
-          user_id: string;
-        };
-        const user = await User.findById(decodedToken.user_id).select(
-          "-password"
-        );
-        console.log(decodedToken);
-        if (!user) {
-          throw new TRPCError({
-            code: "BAD_REQUEST",
-            message: "User not found",
-          });
-        }
-        if (user.isEmailVerified) {
-          throw new TRPCError({
-            code: "BAD_REQUEST",
-            message: "Email already verified",
-          });
-        }
-        console.log("elliott why is the email confirming?", new Date());
-        user.isEmailVerified = true;
-        await user.save();
-        return {
-          message: "Email verified successfully! You may now log in.",
-          code: "SUCCESS",
-        };
-      } catch (err) {
-        throw new TRPCError({
-          code: "BAD_REQUEST",
-          message: err as string,
-        });
-      }
     }),
     sendRequestPasswordEmail: publicProcedure
     .input(
@@ -242,13 +206,14 @@ export const authRouter = createTRPCRouter({
         input.email.toLowerCase(),
         "Verify your email",
         registerHtml(token)
-      );
+    );
       return {
         message:
           "Email sent successfully! If you do not see the email in a few minutes, check your “junk mail” folder or “spam” folder.",
         code: "SUCCESS",
       };
-    }), resetPassword: publicProcedure
+    }), 
+  resetPassword: publicProcedure
     .input(
       z.object({
         token: z.string(),

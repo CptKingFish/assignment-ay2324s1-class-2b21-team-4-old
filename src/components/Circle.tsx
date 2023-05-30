@@ -11,6 +11,7 @@ import {
 } from "@heroicons/react/24/solid";
 import toast from "react-hot-toast";
 import { api } from "@/utils/api";
+import { resolve } from "path";
 
 type CircleProps = {
   channel: string | null;
@@ -73,11 +74,11 @@ const Circle = ({
         chatroom_id: channel,
       };
 
-      const image = uploadImages(input, {
+      uploadImages(input, {
         onSuccess: () => {
           toast.success("Upload successfully!");
-          console.log("image:", image);
-
+          resolve()
+          
         },
         onError: (error) => {
           toast.error("Upload failed!");
@@ -85,7 +86,6 @@ const Circle = ({
         },
       });
 
-v
       // const pendingMessage: PendingMessage = {
       //   id: image.data?.id,
       //   type: "image",

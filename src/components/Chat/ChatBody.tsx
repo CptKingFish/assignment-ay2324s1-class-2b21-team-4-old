@@ -28,6 +28,7 @@ export default function ChatBody({
 
   return (
     <>
+    
       <div className="relative">
         {messages?.map((message) => {
           if (message.data_type === "status") {

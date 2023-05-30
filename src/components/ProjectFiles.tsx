@@ -1,7 +1,5 @@
 import React, { useState } from "react";
-import IconButton from "./IconButton";
 import Dropzone from "react-dropzone";
-import { type IUser } from "@/models/User";
 import { api } from "@/utils/api";
 import { toast } from "react-hot-toast";
 import { type IFile } from "@/models/File";
@@ -28,18 +26,16 @@ const convertFileSize = (bytes: number) => {
   return `${Math.round(bytes / Math.pow(1024, i))} ${sizes[i] ?? ""}`;
 };
 
-const ProjectFiles = ({
-  scrum_id,
-  scrum_files,
+function ProjectFiles({
+  scrum_id, scrum_files,
 }: {
-  users: IUser[];
   scrum_id: string;
   scrum_files: IFile[];
-}): JSX.Element => {
+}): JSX.Element {
   const utils = api.useContext();
   const [uploadedFiles, setUploadedFiles] = useState<File[]>([]);
-  const { mutate, isLoading: isUploading } =
-    api.image.uploadImages.useMutation();
+  const { mutate: upload, isLoading: isUploading } = api.image.uploadImages.useMutation();
+  const { mutate: deleteing } = api.image.deleteImageFrom.useMutation();
 
   const onHandleSubmit = async (files: File[]): Promise<void> => {
     try {
@@ -55,7 +51,7 @@ const ProjectFiles = ({
         scrum_id,
       };
 
-      mutate(input, {
+      upload(input, {
         onSuccess: () => {
           toast.success("Upload successfully!");
           utils.scrum.getScrumByChatId.invalidate().catch(console.error);
@@ -71,13 +67,30 @@ const ProjectFiles = ({
     }
   };
 
+  function handleDelete(file_id: string) {
+    try {
+      deleteing({ image_id: file_id }, {
+        onSuccess: () => {
+          toast.success("Deleted successfully!");
+          utils.scrum.getScrumByChatId.invalidate().catch(console.error);
+        },
+        onError: (error) => {
+          toast.error("Delete failed!");
+          console.log(error);
+        },
+      });
+    } catch (error) {
+      console.log("handle delete error:", error);
+    }
+  }
+
   return (
     <div className="mt-4">
       <div className="flex gap-4">
         <Dropzone
           onDrop={(acceptedFiles) => {
             setUploadedFiles([...uploadedFiles, ...acceptedFiles]);
-          }}
+          } }
           maxSize={10 * 1024 * 1024}
         >
           {({ getRootProps, getInputProps }) => (
@@ -96,8 +109,7 @@ const ProjectFiles = ({
                     <path
                       strokeLinecap="round"
                       strokeLinejoin="round"
-                      d="M12 4.5v15m7.5-7.5h-15"
-                    />
+                      d="M12 4.5v15m7.5-7.5h-15" />
                   </svg>
                   Upload
                 </button>
@@ -108,12 +120,10 @@ const ProjectFiles = ({
         {uploadedFiles.length > 0 && (
           <>
             <button
-              className={`btn-success btn-sm btn ${
-                isUploading ? "loading" : ""
-              }`}
+              className={`btn-success btn-sm btn ${isUploading ? "loading" : ""}`}
               onClick={() => {
                 onHandleSubmit(uploadedFiles).catch(console.error);
-              }}
+              } }
             >
               Submit!
             </button>
@@ -142,13 +152,13 @@ const ProjectFiles = ({
             <th>Name</th>
             <th>Author</th>
             <th>Modified</th>
+            <th>Actions</th>
           </tr>
         </thead>
         <tbody>
           {scrum_files
             .sort(
-              (a, b) =>
-                new Date(b.createdAt).getTime() -
+              (a, b) => new Date(b.createdAt).getTime() -
                 new Date(a.createdAt).getTime()
             )
             .map((file) => {
@@ -167,8 +177,7 @@ const ProjectFiles = ({
                         <path
                           strokeLinecap="round"
                           strokeLinejoin="round"
-                          d="M9 13.5l3 3m0 0l3-3m-3 3v-6m1.06-4.19l-2.12-2.12a1.5 1.5 0 00-1.061-.44H4.5A2.25 2.25 0 002.25 6v12a2.25 2.25 0 002.25 2.25h15A2.25 2.25 0 0021.75 18V9a2.25 2.25 0 00-2.25-2.25h-5.379a1.5 1.5 0 01-1.06-.44z"
-                        />
+                          d="M9 13.5l3 3m0 0l3-3m-3 3v-6m1.06-4.19l-2.12-2.12a1.5 1.5 0 00-1.061-.44H4.5A2.25 2.25 0 002.25 6v12a2.25 2.25 0 002.25 2.25h15A2.25 2.25 0 0021.75 18V9a2.25 2.25 0 00-2.25-2.25h-5.379a1.5 1.5 0 01-1.06-.44z" />
                       </svg>
 
                       <a
@@ -201,8 +210,7 @@ const ProjectFiles = ({
                           <div className="h-12 w-12 rounded-md">
                             <img
                               src={file.user?.avatar}
-                              alt="Avatar Tailwind CSS Component"
-                            />
+                              alt="Avatar Tailwind CSS Component" />
                           </div>
                         )}
                       </div>
@@ -215,25 +223,12 @@ const ProjectFiles = ({
                     {new Date(file.createdAt).toLocaleDateString()}
                   </td>
                   <td>
-                    <div className="flex items-center  gap-2">
-                      <IconButton>
-                        <svg
-                          xmlns="http://www.w3.org/2000/svg"
-                          fill="none"
-                          viewBox="0 0 24 24"
-                          strokeWidth={1.5}
-                          stroke="currentColor"
-                          className="h-6 w-6 text-red-600"
-                        >
-                          <path
-                            strokeLinecap="round"
-                            strokeLinejoin="round"
-                            d="M14
-                      .74 9l-.346 9m-4.788 0L9.26 9m9.968-3.21c.342.052.682.107 1.022.166m-1.022-.165L18.16 19.673a2.25 2.25 0 01-2.244 2.077H8.084a2.25 2.25 0 01-2.244-2.077L4.772 5.79m14.456 0a48.108 48.108 0 00-3.478-.397m-12 .562c.34-.059.68-.114 1.022-.165m0 0a48.11 48.11 0 013.478-.397m7.5 0v-.916c0-1.18-.91-2.164-2.09-2.201a51.964 51.964 0 00-3.32 0c-1.18.037-2.09 1.022-2.09 2.201v.916m7.5 0a48.667 48.667 0 00-7.5 0"
-                          />
-                        </svg>
-                      </IconButton>
-                    </div>
+                    <button
+                      className="btn-danger btn rounded-lg"
+                      onClick={() => handleDelete(file._id)}
+                    >
+                      <a>Delete</a>
+                    </button>
                   </td>
                 </tr>
               );
@@ -242,6 +237,6 @@ const ProjectFiles = ({
       </table>
     </div>
   );
-};
+}
 
 export default ProjectFiles;

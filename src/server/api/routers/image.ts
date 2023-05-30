@@ -56,74 +56,62 @@ export const imageRouter = createTRPCRouter({
         });
       }
     }),
-  getSingleImage: privateProcedure
+  deleteImageFrom: privateProcedure
     .input(
       z.object({
         image_id: z.string(),
       })
     )
-    .query(({ input }) => {
-     console.log(input)
-    }),
-    postToDB: privateProcedure
+    .mutation(async ({ input }) => {
+
+
+      const img_id = input.image_id    
+
+    try {
+      await cloudConfig.uploader.destroy(img_id);
+
+      const result = await File.deleteOne({
+        _id: img_id
+      });
+      
+      console.log( result )
+
+      return result;
+    } catch (error) {
+      console.log(error)
+    }}),
+    uploadToChatroom: privateProcedure
     .input(
       z.object({
         images: z.array(z.string()),
         names: z.array(z.string()),
-        img_id: z.string(),
+        chatroom_id: z.string(),
       })
     )
     .mutation(async ({ input, ctx }) => {
-      try {
         const { images } = input;
+        try{
         if (!images || images.length === 0)
-          throw new Error("Images are required");
+          throw new TRPCError ({ code: "BAD_REQUEST" , message: "Images are required"});
 
-        const promises = images.map(async (image) => {
-          const result = await cloudConfig.uploader.upload(image, {
-            upload_preset: "ml_default",
+          const promises = images.map(async (image) => {
+            const result = await cloudConfig.uploader.upload(image, {
+              upload_preset: "ml_default",
+            });
+            return result.secure_url;
           });
-          return result.secure_url;
-        });
-        const results = await Promise.all(promises);
-        const file_creation_promises = [];
-        for (let i = 0; i < results.length; i++) {
-          const result = results[i];
-          const { names } = input;
-          const name = names[i];
-          file_creation_promises.push(
-            File.create({
-              name,
-              url: result,
-              user: ctx.user._id as unknown as IUser,
-            })
-          );
-        }
-        const all_files = await Promise.all(file_creation_promises);
-        const img = await Chatroom.findById(input.img_id);
-        if (!img) throw new TRPCError({ code: "BAD_REQUEST" });
-        img.files = [...img.files, ...all_files];
-        await img.save();
-        return results;
-      } catch (error) {
-        throw new TRPCError({
-          code: "BAD_REQUEST",
-          message: "Something Went Wrong",
-        });
-      }
-    }),
-  deleteImage: privateProcedure
-    .input(
-      z.object({
-        image_id: z.string(),
-      })
-    )
-    .query(({ input }) => {
-      const { image_id } = input;
-      console.log(image_id);
-      return image_id;
-    }),
-});
+          const results = await Promise.all(promises);
+          
+          return results ;
+          
+        } catch (error) {
+          throw new TRPCError({
+            code: "BAD_REQUEST",
+            message: "Something Went Wrong",
+          });
+}}),
+
+})
 
 export const config = {
   api: {

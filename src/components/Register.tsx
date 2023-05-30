@@ -5,7 +5,7 @@ import { api } from "@/utils/api";
 
 function Register() {
   const { mutate: register, isLoading: isRegistering } =
-    api.user.register.useMutation();
+    api.auth.register.useMutation();
   const [username, setUserName] = useState("");
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");

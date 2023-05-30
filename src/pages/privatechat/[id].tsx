@@ -1,6 +1,5 @@
 import React, { useEffect } from "react";
 import { useGlobalContext } from "@/context";
-import { pusherClientConstructor } from "@/utils/pusherConfig";
 import TopNav from "@/components/TopNav";
 import ChatInput from "@/components/Chat/ChatInput";
 import { useRouter } from "next/router";
@@ -276,6 +275,7 @@ export default function PrivateChat() {
                 users={users}
               />
             </div>
+            <div className="flex flex-row justify-center items-center h-24 ">
             <ChatInput
               channelCode={channelCode}
               replyTo={replyTo}
@@ -283,6 +283,8 @@ export default function PrivateChat() {
               addPendingMessage={addPendingMessage}
               setPendingMessageHasFailed={setPendingMessageHasFailed}
             />
+            <Circle/>
+            </div>
           </div>
         </div>
         <PrivateSideBar

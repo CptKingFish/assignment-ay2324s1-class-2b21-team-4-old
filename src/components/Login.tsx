@@ -6,12 +6,14 @@ import { useRouter } from "next/router";
 
 function Login() {
   const router = useRouter();
-  const { mutate: login, isLoading: isLoggingIn } =api.auth.login.useMutation();
+  const { mutate: login, isLoading: isLoggingIn } =
+    api.auth.login.useMutation();
   const { mutate: resetPassword } = api.auth.resetPassword.useMutation();
   const [email, setEmail] = useState("");
   const [resetEmail, setResetEmail] = useState("");
   const [password, setPassword] = useState("");
-  const { mutate: sendRequestPasswordEmail } = api.auth.sendRequestPasswordEmail.useMutation();
+  const { mutate: sendRequestPasswordEmail } =
+    api.auth.sendRequestPasswordEmail.useMutation();
 
   const handleSubmit: FormEventHandler<HTMLFormElement> = (event) => {
     event.preventDefault();
@@ -38,9 +40,12 @@ function Login() {
   };
 
   const handleForgotPassword = (email: string) => {
-    sendRequestPasswordEmail({ email },{
+    toast.success("Reset email sent!");
+    sendRequestPasswordEmail(
+      { email },
+      {
         onSuccess: (data) => {
-          toast.success(data.message);
+          console.log(data);
         },
         onError: (error) => {
           toast.error("Please enter a valid email");
@@ -101,7 +106,7 @@ function Login() {
             }
             type="text"
             placeholder="Type here"
-            className="input w-full max-w-xs"
+            className="input-bordered input w-full max-w-xs"
           />
           <label
             htmlFor="my-modal-4"

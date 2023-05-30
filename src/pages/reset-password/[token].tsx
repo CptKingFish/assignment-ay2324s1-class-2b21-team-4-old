@@ -1,12 +1,14 @@
 import React from "react";
-import { toast } from "react-hot-toast"
+import { toast } from "react-hot-toast";
 import { api } from "@/utils/api";
+import { useRouter } from "next/router";
 
-
-const Token = (token: string) => {
+const Token = () => {
   const { mutate, isLoading } = api.auth.resetPassword.useMutation();
   const [password, setPassword] = React.useState<string>("");
   const [confirmPassword, setConfirmPassword] = React.useState<string>("");
+  const router = useRouter();
+  const { token } = router.query;
 
   const handleSubmit: React.FormEventHandler = (e) => {
     e.preventDefault();
@@ -20,13 +22,13 @@ const Token = (token: string) => {
     }
     mutate(
       {
-        token ,
+        token: token as string,
         password,
       },
       {
         onSuccess: (data) => {
-          window.location.href =
-            "/authenticate?message=" + data.message + "&type=SUCCESS";
+          toast.success(data.message);
+          router.push("/authenticate").catch(console.error);
         },
         onError: (e) => {
           toast.error(e.message);
@@ -37,13 +39,24 @@ const Token = (token: string) => {
 
   return (
     <>
-    <input type="text" onChange={(e) => setPassword(e.target.value)} placeholder="Type here" className="input input-bordered w-full max-w-xs" />
-    <input type="text" onChange={(e) => setConfirmPassword(e.target.value)} placeholder="Type here" className="input input-bordered w-full max-w-xs" />
-  
-     
-      <button disabled={isLoading} className="btn" onClick={() => handleSubmit(password)}>
-        Change Password
-      </button>
+      <div className="flex h-screen flex-col items-center justify-center gap-3">
+        <input
+          type="password"
+          onChange={(e) => setPassword(e.target.value)}
+          placeholder="New password"
+          className="input-bordered input w-full max-w-xs"
+        />
+        <input
+          type="password"
+          onChange={(e) => setConfirmPassword(e.target.value)}
+          placeholder="Confirm password"
+          className="input-bordered input w-full max-w-xs"
+        />
+
+        <button disabled={isLoading} className="btn" onClick={handleSubmit}>
+          Change Password
+        </button>
+      </div>
     </>
   );
 };

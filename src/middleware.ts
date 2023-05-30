@@ -4,13 +4,20 @@ import type { NextRequest } from "next/server";
 import { env } from "./env.mjs";
 
 export async function middleware(request: NextRequest) {
-    // check jwt validity
+  // check jwt validity
   let token = request.cookies.get("token")?.value;
-  const authRoutes = ["/authenticate", ];
+  const authRoutes = ["/authenticate", "/verify-email"];
 
   let verified = false;
   let user_id;
+  // strip off any query parameters from the URL
+  // console.log(request.nextUrl);
+  // let's say we want to parse /reset-password/12345 into /reset-password
+  console.log("meow", request.nextUrl.pathname);
 
+  if (!token && request.nextUrl.pathname.startsWith("/reset-password")) {
+    return NextResponse.next();
+  }
 
   if (!token && !authRoutes.includes(request.nextUrl.pathname)) {
     return NextResponse.redirect(new URL("/authenticate", request.url));
@@ -30,10 +37,9 @@ export async function middleware(request: NextRequest) {
     };
 
     if (data.user_id) user_id = data.user_id;
-    if (!data.verified  && authRoutes.includes(request.nextUrl.pathname)) {
+    if (!data.verified && authRoutes.includes(request.nextUrl.pathname)) {
       return NextResponse.next();
-    } 
-
+    }
 
     // if (!data.verified) {
     //   return NextResponse.redirect(new URL("/authenticate", request.url));

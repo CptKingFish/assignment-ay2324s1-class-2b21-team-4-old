@@ -4,13 +4,15 @@ import toast from "react-hot-toast";
 import { api } from "@/utils/api";
 
 function Register() {
-  const { mutate: register } = api.auth.register.useMutation();
+  const { mutate: register, isLoading: isRegistering } =
+    api.auth.register.useMutation();
   const [username, setUserName] = useState("");
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
   const [resetEmail, setResetEmail] = useState("");
   const [confirmPassword, setConfirmPassword] = useState("");
-  const { mutate: resendEmail } = api.auth.resendVerificationEmail.useMutation();
+  const { mutate: resendEmail } =
+    api.auth.resendVerificationEmail.useMutation();
 
   const handleSubmit: FormEventHandler<HTMLFormElement> = (event) => {
     event.preventDefault();
@@ -41,7 +43,8 @@ function Register() {
   };
 
   const handleResendEmail = (email: string) => {
-    resendEmail({ email },
+    resendEmail(
+      { email },
       {
         onSuccess: (data) => {
           console.log(data);
@@ -117,7 +120,9 @@ function Register() {
       </label>
 
       <div className="form-control mt-6">
-        <button className="btn-primary btn">Register</button>
+        <button className="btn-primary btn" disabled={isRegistering}>
+          Register
+        </button>
       </div>
 
       <input type="checkbox" id="my-modal" className="modal-toggle" />
@@ -128,8 +133,7 @@ function Register() {
             Help fill in your email so that we can resend the verification email
           </p>
           <input
-            onChange={(value) => setResetEmail(value.target.value)
-            }
+            onChange={(value) => setResetEmail(value.target.value)}
             type="text"
             placeholder="Type here"
             className="input w-full max-w-xs"

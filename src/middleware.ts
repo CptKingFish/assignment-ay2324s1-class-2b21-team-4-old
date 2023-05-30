@@ -6,7 +6,7 @@ import { env } from "./env.mjs";
 export async function middleware(request: NextRequest) {
   // check jwt validity
   let token = request.cookies.get("token")?.value;
-  const authRoutes = ["/authenticate", "/verify-email"];
+  const authRoutes = ["/authenticate"];
 
   let verified = false;
   let user_id;
@@ -16,6 +16,10 @@ export async function middleware(request: NextRequest) {
   console.log("meow", request.nextUrl.pathname);
 
   if (!token && request.nextUrl.pathname.startsWith("/reset-password")) {
+    return NextResponse.next();
+  }
+
+  if (!token && request.nextUrl.pathname.startsWith("/verify-email")) {
     return NextResponse.next();
   }
 

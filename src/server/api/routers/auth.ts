@@ -18,8 +18,6 @@ const sendEmail = async (email:string, subject: string, html: string) => {
       host: "smtp.gmail.com",
       port: 465,
       secure: true,
-      debug: true,
-      logger: true,
       auth: {
         user: env.NODEMAIL_EMAIL,
         pass: env.NODEMAIL_PW,
@@ -243,4 +241,39 @@ export const authRouter = createTRPCRouter({
         });
       }
     }),
+    verifyEmail: publicProcedure
+    .input(
+      z.object({
+        token : z.string(),
+      })
+    )
+    .mutation(async ({ input }) => {
+
+
+        const decodedToken = jwt.verify(input.token, env.JWT_SECRET) as {
+          user_id: string;
+        };
+
+      const user = await User.findOne({_id: decodedToken.user_id}).select("-password");
+      
+      if (!user) {
+        throw new TRPCError({
+          code: "BAD_REQUEST",
+          message: "Email not found!",
+        });
+      }
+      if (user.isEmailVerified) {
+        throw new TRPCError({
+          code: "BAD_REQUEST",
+          message: "Email already verified",
+        });
+      }
+      user.isEmailVerified = true;
+      await user.save();
+      return {
+        message: "Email verified successfully!",
+        code: "SUCCESS",
+      };
+})
+
 })

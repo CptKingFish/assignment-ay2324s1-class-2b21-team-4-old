@@ -95,7 +95,7 @@ export default function PrivateChat() {
   }, [router.query.id]);
 
   React.useEffect(() => {
-    // if router is null route to /
+    setPendingMessages([])
     if (!router.query.id) {
       router
         .push("/chat")

@@ -92,7 +92,7 @@ const TeamChat = () => {
   }, [router.query.id]);
 
   React.useEffect(() => {
-    // if router is null route to /
+    setPendingMessages([]);
     if (!router.query.id) {
       router
         .push("/chat")
@@ -114,26 +114,26 @@ const TeamChat = () => {
     const userJoinedHandler = (message: Message) => {
       // setUsers((prev) => [...prev, user]);
       setMessages((prev) => [...prev, message]);
-      utils.chat.getUsernamesFromChatroom.invalidate({
+      void utils.chat.getUsernamesFromChatroom.invalidate({
         chatroom_id: router.query.id as string,
       });
-      utils.chat.getAdminFromChatroom.invalidate({
+      void utils.chat.getAdminFromChatroom.invalidate({
         chatroom_id: router.query.id as string,
       });
-      utils.chat.getMessagesAndChatroomInfo.invalidate({
+      void utils.chat.getMessagesAndChatroomInfo.invalidate({
         chatroom_id: router.query.id as string,
       });
     };
 
     const userLeftHandler = (message: Message) => {
       setMessages((prev) => [...prev, message]);
-      utils.chat.getUsernamesFromChatroom.invalidate({
+      void utils.chat.getUsernamesFromChatroom.invalidate({
         chatroom_id: router.query.id as string,
       });
-      utils.chat.getAdminFromChatroom.invalidate({
+      void utils.chat.getAdminFromChatroom.invalidate({
         chatroom_id: router.query.id as string,
       });
-      utils.chat.getMessagesAndChatroomInfo.invalidate({
+      void utils.chat.getMessagesAndChatroomInfo.invalidate({
         chatroom_id: router.query.id as string,
       });
     };
@@ -167,7 +167,15 @@ const TeamChat = () => {
       channel.unbind("user-joined", userJoinedHandler);
       channel.unbind("user-left", userLeftHandler);
     };
-  }, [user, channelCode, pusherClient]);
+  }, [
+    user,
+    channelCode,
+    pusherClient,
+    utils.chat.getUsernamesFromChatroom,
+    utils.chat.getAdminFromChatroom,
+    utils.chat.getMessagesAndChatroomInfo,
+    router.query.id,
+  ]);
 
   const chatroom_id = React.useMemo(() => {
     return router.query.id as string;

@@ -6,12 +6,13 @@ import {
   privateProcedure,
   publicProcedure,
 } from "@/server/api/trpc";
-import User from "@/models/User";
+import User, { IUser } from "@/models/User";
 import jwt from "jsonwebtoken";
 import { TRPCError } from "@trpc/server";
 import { env } from "@/env.mjs";
 import { redis } from "@/utils/redis";
 import { cloudConfig } from "@/utils/cloudconfig";
+import Chatroom from "@/models/Chatroom";
 
 export const userRouter = createTRPCRouter({
   getMe: privateProcedure.query(({ ctx }) => {
@@ -31,8 +32,13 @@ export const userRouter = createTRPCRouter({
         });
       }
       // todo: check if user is in chat
-      const users = await User.find({});
-      return users;
+      const chatroom = await Chatroom.findOne({
+        _id: input.chat_id,
+      }).populate({
+        path: "participants",
+        model: User,
+      });
+      return chatroom?.participants as unknown as IUser[];
     }),
   changeOwnUsername: privateProcedure
     .input(
@@ -183,7 +189,7 @@ export const userRouter = createTRPCRouter({
     .input(z.object({ user_id: z.string() }))
     .query(async ({ input }) => {
       if (!input.user_id) {
-        return null
+        return null;
       }
       try {
         return await User.findById(input.user_id).select("avatar");
@@ -212,7 +218,7 @@ export const userRouter = createTRPCRouter({
           { new: true }
         );
       } catch (error) {
-        console.log(error)
+        console.log(error);
         throw new TRPCError({
           code: "BAD_REQUEST",
           message: "Error adding friend",
@@ -235,7 +241,7 @@ export const userRouter = createTRPCRouter({
           { new: true }
         );
       } catch (error) {
-        console.log(error)
+        console.log(error);
         throw new TRPCError({
           code: "BAD_REQUEST",
           message: "Error removing friend",
@@ -254,10 +260,6 @@ export const userRouter = createTRPCRouter({
       code: "SUCCESS",
     };
   }),
-
-
-
-
 
   // seedRedis: publicProcedure.mutation(async () => {
   //   // add all user_ids to redis

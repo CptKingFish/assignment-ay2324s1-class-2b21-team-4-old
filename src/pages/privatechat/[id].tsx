@@ -275,7 +275,6 @@ export default function PrivateChat() {
                 users={users}
               />
             </div>
-            <div className="flex flex-row justify-center items-center h-24 ">
             <ChatInput
               channelCode={channelCode}
               replyTo={replyTo}
@@ -283,8 +282,7 @@ export default function PrivateChat() {
               addPendingMessage={addPendingMessage}
               setPendingMessageHasFailed={setPendingMessageHasFailed}
             />
-            <Circle/>
-            </div>
+            {/* <Circle/> */}
           </div>
         </div>
         <PrivateSideBar

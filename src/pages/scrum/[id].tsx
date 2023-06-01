@@ -64,7 +64,6 @@ const Scrum = () => {
         {activeTab === 1 && <Backlog scrum={scrum} users={users || []} />}
         {activeTab === 2 && (
           <ProjectFiles
-            users={users || []}
             scrum_id={scrum ? scrum._id : ""}
             scrum_files={scrum ? scrum.files : []}
           />

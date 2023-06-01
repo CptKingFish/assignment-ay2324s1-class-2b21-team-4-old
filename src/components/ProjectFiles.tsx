@@ -27,14 +27,16 @@ const convertFileSize = (bytes: number) => {
 };
 
 function ProjectFiles({
-  scrum_id, scrum_files,
+  scrum_id,
+  scrum_files,
 }: {
   scrum_id: string;
   scrum_files: IFile[];
 }): JSX.Element {
   const utils = api.useContext();
   const [uploadedFiles, setUploadedFiles] = useState<File[]>([]);
-  const { mutate: upload, isLoading: isUploading } = api.image.uploadImages.useMutation();
+  const { mutate: upload, isLoading: isUploading } =
+    api.image.uploadImages.useMutation();
   const { mutate: deleteing } = api.image.deleteImageFrom.useMutation();
 
   const onHandleSubmit = async (files: File[]): Promise<void> => {
@@ -69,16 +71,19 @@ function ProjectFiles({
 
   function handleDelete(file_id: string) {
     try {
-      deleteing({ image_id: file_id }, {
-        onSuccess: () => {
-          toast.success("Deleted successfully!");
-          utils.scrum.getScrumByChatId.invalidate().catch(console.error);
-        },
-        onError: (error) => {
-          toast.error("Delete failed!");
-          console.log(error);
-        },
-      });
+      deleteing(
+        { image_id: file_id },
+        {
+          onSuccess: () => {
+            toast.success("Deleted successfully!");
+            utils.scrum.getScrumByChatId.invalidate().catch(console.error);
+          },
+          onError: (error) => {
+            toast.error("Delete failed!");
+            console.log(error);
+          },
+        }
+      );
     } catch (error) {
       console.log("handle delete error:", error);
     }
@@ -90,7 +95,7 @@ function ProjectFiles({
         <Dropzone
           onDrop={(acceptedFiles) => {
             setUploadedFiles([...uploadedFiles, ...acceptedFiles]);
-          } }
+          }}
           maxSize={10 * 1024 * 1024}
         >
           {({ getRootProps, getInputProps }) => (
@@ -109,7 +114,8 @@ function ProjectFiles({
                     <path
                       strokeLinecap="round"
                       strokeLinejoin="round"
-                      d="M12 4.5v15m7.5-7.5h-15" />
+                      d="M12 4.5v15m7.5-7.5h-15"
+                    />
                   </svg>
                   Upload
                 </button>
@@ -120,10 +126,12 @@ function ProjectFiles({
         {uploadedFiles.length > 0 && (
           <>
             <button
-              className={`btn-success btn-sm btn ${isUploading ? "loading" : ""}`}
+              className={`btn-success btn-sm btn ${
+                isUploading ? "loading" : ""
+              }`}
               onClick={() => {
                 onHandleSubmit(uploadedFiles).catch(console.error);
-              } }
+              }}
             >
               Submit!
             </button>
@@ -158,7 +166,8 @@ function ProjectFiles({
         <tbody>
           {scrum_files
             .sort(
-              (a, b) => new Date(b.createdAt).getTime() -
+              (a, b) =>
+                new Date(b.createdAt).getTime() -
                 new Date(a.createdAt).getTime()
             )
             .map((file) => {
@@ -177,7 +186,8 @@ function ProjectFiles({
                         <path
                           strokeLinecap="round"
                           strokeLinejoin="round"
-                          d="M9 13.5l3 3m0 0l3-3m-3 3v-6m1.06-4.19l-2.12-2.12a1.5 1.5 0 00-1.061-.44H4.5A2.25 2.25 0 002.25 6v12a2.25 2.25 0 002.25 2.25h15A2.25 2.25 0 0021.75 18V9a2.25 2.25 0 00-2.25-2.25h-5.379a1.5 1.5 0 01-1.06-.44z" />
+                          d="M9 13.5l3 3m0 0l3-3m-3 3v-6m1.06-4.19l-2.12-2.12a1.5 1.5 0 00-1.061-.44H4.5A2.25 2.25 0 002.25 6v12a2.25 2.25 0 002.25 2.25h15A2.25 2.25 0 0021.75 18V9a2.25 2.25 0 00-2.25-2.25h-5.379a1.5 1.5 0 01-1.06-.44z"
+                        />
                       </svg>
 
                       <a
@@ -210,7 +220,8 @@ function ProjectFiles({
                           <div className="h-12 w-12 rounded-md">
                             <img
                               src={file.user?.avatar}
-                              alt="Avatar Tailwind CSS Component" />
+                              alt="Avatar Tailwind CSS Component"
+                            />
                           </div>
                         )}
                       </div>

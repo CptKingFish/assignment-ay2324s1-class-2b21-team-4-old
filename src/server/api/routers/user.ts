@@ -261,6 +261,97 @@ export const userRouter = createTRPCRouter({
     };
   }),
 
+  removeAvatar: privateProcedure.mutation(async ({ ctx }) => {
+    const response = await User.findById(ctx.user._id);
+    if (!response) {
+      throw new TRPCError({
+        code: "BAD_REQUEST",
+        message: "User not found",
+      });
+    }
+    if(!response.avatar) {
+      throw new TRPCError({
+        code: "BAD_REQUEST",
+        message: "User has no avatar",
+      });
+    }
+    try {
+      await cloudConfig.uploader.destroy(response.avatar);
+      const updatedUser = await User.findByIdAndUpdate(
+        ctx.user._id,
+        {
+          avatar: null,
+        },
+        { new: true }
+      );
+      return updatedUser;
+    } catch (error) {
+      console.log(error);
+      throw new TRPCError({
+        code: "BAD_REQUEST",
+        message: "Error removing avatar",
+      });
+    }
+  }),
+
+  deleteUser: privateProcedure
+  .input(z.object({ password: z.string() }))
+  .mutation(async ({ input,ctx }) => {
+    //If user password input is incorrect throw error
+    const response = await User.findById(ctx.user._id);
+    if (!response) {
+      throw new TRPCError({
+        code: "BAD_REQUEST",
+        message: "User not found",
+      });
+    }
+    const isPasswordValid = await bcrypt.compare(
+      input.password,
+      response.password
+    );
+    if (!isPasswordValid) {
+      throw new TRPCError({
+        code: "BAD_REQUEST",
+        message: "Invalid credentials",
+      });
+    }
+
+
+    const promises = [];
+
+    // Remove userid from redis
+    promises.push(redis.srem("users", ctx.user._id));
+    
+    // Remove userid from chatroom array
+    promises.push(
+      Chatroom.updateMany({}, { $pull: { users: { user_id: ctx.user._id } } })
+    );
+    
+    // If the chatroom has no users left, delete it
+    promises.push(Chatroom.deleteMany({ users: { $size: 0 } }));
+    
+    // Delete user
+    promises.push(User.findByIdAndDelete(ctx.user._id));
+    
+    await Promise.all(promises);
+    
+    
+    //Invalidate the user's jwt token
+    ctx.res.setHeader(
+      "Set-Cookie",
+      `token=;expires=${new Date(
+        Date.now() - 1000 * 60 * 60 * 24
+      ).toUTCString()};sameSite=Strict;path=/;secure`
+    );
+
+    return {
+      message: "Deleted account successfully!",
+      code: "SUCCESS",
+    };
+  }),
+
+
+
   // seedRedis: publicProcedure.mutation(async () => {
   //   // add all user_ids to redis
   //   console.log("herre");

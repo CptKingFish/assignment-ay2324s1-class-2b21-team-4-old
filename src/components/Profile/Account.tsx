@@ -4,7 +4,7 @@ import AccountChangeEmail from "./AccountChangeEmail";
 import AccountChangePassword from "./AccountChangePassword";
 import AccountChangeProfile from "./AccountChangeProfile";
 import AccountChangeUsername from "./AccountChangeUsername";
-
+import AccountDelete from "./AccountDelete";
 
 export default function Account() {
   const { user } = useGlobalContext();
@@ -12,7 +12,7 @@ export default function Account() {
   return (
     <>
       <AccountChangeProfile />
-
+      <AccountDelete/>
       <AccountChangeUsername />
       <AccountChangeEmail />
       <AccountChangePassword />
@@ -76,6 +76,11 @@ export default function Account() {
       <div className="mb-5 text-xl font-bold">Password and Authentication</div>
       <label htmlFor="password" className="btn-primary btn">
         Change Password
+      </label>
+      <div className="mt-20 divider"> </div>
+      <div className="text-xl font-bold">Account Removal</div>
+      <label htmlFor="deletion" className="mt-5 btn btn-error btn-outline">
+        Delete Account
       </label>
     </>
   );

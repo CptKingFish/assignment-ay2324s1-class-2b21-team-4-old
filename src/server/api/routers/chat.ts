@@ -961,4 +961,26 @@ export const chatRouter = createTRPCRouter({
         });
       }
     }),
+    removeChatroomIcon: privateProcedure
+    .input(z.object({ chatRoomID: z.string() }))
+    .mutation(async ({ input }) => {
+      const response = await Chatroom.findById(input.chatRoomID);
+      if (!response) {
+        throw new TRPCError({
+          code: "BAD_REQUEST",
+          message: "User not found",
+        });
+      }
+      if (response.avatarUrl) {
+        await cloudConfig.uploader.destroy(response.avatarUrl);
+      }
+      const updatedChatroom = await Chatroom.findByIdAndUpdate(
+        input.chatRoomID,
+        {
+          avatarUrl: null,
+        },
+        { new: true }
+      );
+      return updatedChatroom;
+    }),
 });

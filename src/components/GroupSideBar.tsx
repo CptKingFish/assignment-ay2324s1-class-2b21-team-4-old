@@ -57,7 +57,7 @@ const GroupSideBar: React.FC<GroupSideBarProps> = ({
         chatRoomId={chatRoomId}
         chatRoomName={chatRoomName}
       />
-      <GroupChangeIcon chatRoomID={chatRoomId} />
+      <GroupChangeIcon chatRoomID={chatRoomId} chatRoomAvatar = {chatRoomAvatar || "/GroupProfile.png"} />
       <div className="drawer-side">
         <label htmlFor="my-drawer-2" className="drawer-overlay"></label>
         <ul

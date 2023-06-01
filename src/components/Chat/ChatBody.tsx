@@ -76,7 +76,7 @@ export default function ChatBody({
                 avatarUrl={
                   users.find(
                     (user) => user.key === message.sender._id.toString()
-                  )?.imageUrl || "/Profile.png"
+                  ).imageUrl || "/Profile.png"
                 }
                 deleted={message?.deleted || false}
               />

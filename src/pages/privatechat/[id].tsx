@@ -84,7 +84,7 @@ export default function PrivateChat() {
         return {
           key: user._id,
           username: user.username,
-          imageUrl: user.avatar || "/profile.png",
+          imageUrl: user.avatar || "/Profile.png",
         };
       })
     );

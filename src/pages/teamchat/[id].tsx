@@ -9,6 +9,7 @@ import type { Message, PendingMessage } from "@/utils/chat";
 import { api } from "@/utils/api";
 import GroupSideBar from "@/components/GroupSideBar";
 import { toast } from "react-hot-toast";
+import { PresenceChannel } from "pusher-js";
 
 interface Admin {
   admins: string[];
@@ -104,7 +105,15 @@ const TeamChat = () => {
   React.useEffect(() => {
     if (!pusherClient) return;
 
-    const channel = pusherClient.subscribe(channelCode);
+    const subscribedChannels = pusherClient.channels.channels;
+    let channel: PresenceChannel | undefined;
+
+    if (!subscribedChannels[channelCode]) {
+      channel = pusherClient.subscribe(channelCode) as PresenceChannel;
+    } else {
+      console.log("triggered");
+      channel = subscribedChannels[channelCode] as PresenceChannel;
+    }
 
     const messageHandler = (message: Message) => {
       setMessages((prev) => [...prev, message]);
@@ -162,10 +171,10 @@ const TeamChat = () => {
     channel.bind("user-left", userLeftHandler);
 
     return () => {
-      pusherClient.unsubscribe(channelCode);
-      channel.unbind("incoming-message", messageHandler);
-      channel.unbind("user-joined", userJoinedHandler);
-      channel.unbind("user-left", userLeftHandler);
+      // pusherClient.unsubscribe(channelCode);
+      channel?.unbind("incoming-message", messageHandler);
+      channel?.unbind("user-joined", userJoinedHandler);
+      channel?.unbind("user-left", userLeftHandler);
     };
   }, [
     user,

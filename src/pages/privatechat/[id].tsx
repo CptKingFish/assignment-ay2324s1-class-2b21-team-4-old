@@ -9,6 +9,7 @@ import { api } from "@/utils/api";
 import PrivateSideBar from "@/components/PrivateSideBar";
 import type { PusherMemberStatusProps } from "@/utils/chat";
 import { toast } from "react-hot-toast";
+import { PresenceChannel } from "pusher-js";
 
 export default function PrivateChat() {
   const router = useRouter();
@@ -107,7 +108,20 @@ export default function PrivateChat() {
   React.useEffect(() => {
     if (!pusherClient || !router.isReady || !router.query.id) return;
 
-    const channel = pusherClient.subscribe(channelCode);
+    // check if user is already subscribed to channel
+    const subscribedChannels = pusherClient.channels.channels;
+
+    // const channel = pusherClient.subscribe(channelCode);
+
+    // console.log("channel", channel);
+    let channel: PresenceChannel | undefined;
+
+    // check if user is already subscribed to channel and if not, subscribe
+    if (!subscribedChannels[channelCode]) {
+      channel = pusherClient.subscribe(channelCode) as PresenceChannel;
+    } else {
+      channel = subscribedChannels[channelCode] as PresenceChannel;
+    }
 
     const messageHandler = (message: Message) => {
       setMessages((prev) => [...prev, message]);
@@ -151,10 +165,10 @@ export default function PrivateChat() {
     channel.bind("pusher:member_removed", memberRemovedHandler);
 
     return () => {
-      channel.unbind("incoming-message", messageHandler);
-      channel.unbind("pusher:member_added", memberAddedHandler);
-      channel.unbind("pusher:member_removed", memberRemovedHandler);
-      pusherClient.unsubscribe(channelCode);
+      channel?.unbind("incoming-message", messageHandler);
+      channel?.unbind("pusher:member_added", memberAddedHandler);
+      channel?.unbind("pusher:member_removed", memberRemovedHandler);
+      // pusherClient.unsubscribe(channelCode);
     };
   }, [
     user,
@@ -165,8 +179,6 @@ export default function PrivateChat() {
     router,
     messages,
   ]);
-
-  // /// // / /
 
   const scrollDownRef = React.useRef<HTMLDivElement | null>(null);
 

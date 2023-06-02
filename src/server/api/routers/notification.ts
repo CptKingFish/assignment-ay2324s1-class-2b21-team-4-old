@@ -274,9 +274,10 @@ export const notificationRouter = createTRPCRouter({
 
       //Adds the sender id and chatid to user friends array
       await User.findByIdAndUpdate(user._id, {
-        $push: { friends: { friendID: notification.sender_id, chatID: chatroom._id } },
+        $push: {
+          friends: { friendID: notification.sender_id, chatID: chatroom._id },
+        },
       });
-
 
       return chatroom;
     }),

@@ -51,7 +51,7 @@ export const chatRouter = createTRPCRouter({
               admins: { $first: "$admins" },
               messages: { $push: "$messages" },
             },
-          },          
+          },
           {
             $project: {
               avatarUrl: 1,
@@ -70,8 +70,6 @@ export const chatRouter = createTRPCRouter({
           },
         ]).exec()
       )[0] as unknown as ChatRoom;
-
-
 
       if (!chatroom) {
         throw new TRPCError({
@@ -610,7 +608,7 @@ export const chatRouter = createTRPCRouter({
       await User.updateOne(
         { _id: friend_id },
         { $pull: { friends: { friendID: user._id } } }
-      ); 
+      );
 
       await Chatroom.deleteOne({
         participants: { $all: [user._id, friend_id] },

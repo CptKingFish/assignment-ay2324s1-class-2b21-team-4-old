@@ -14,6 +14,7 @@ import Notification from "@/models/Notification";
 import Chatroom from "@/models/Chatroom";
 import { pusherServer } from "@/utils/pusherConfig";
 import mongoose, { ObjectId } from "mongoose";
+import { redis } from "@/utils/redis";
 
 export const notificationRouter = createTRPCRouter({
   getNotifications: privateProcedure.query(async ({ ctx }) => {
@@ -408,7 +409,10 @@ export const notificationRouter = createTRPCRouter({
       }
 
       chatroom.participants.push(user._id);
-      await chatroom.save();
+      await Promise.all([
+        chatroom.save(),
+        redis.sadd("team:" + user._id, chatroom._id.toString()),
+      ]);
 
       const messageData = {
         hasReplyTo: false,

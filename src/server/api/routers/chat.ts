@@ -959,7 +959,7 @@ export const chatRouter = createTRPCRouter({
         });
       }
     }),
-    removeChatroomIcon: privateProcedure
+  removeChatroomIcon: privateProcedure
     .input(z.object({ chatRoomID: z.string() }))
     .mutation(async ({ input }) => {
       const response = await Chatroom.findById(input.chatRoomID);

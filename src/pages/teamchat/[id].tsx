@@ -79,7 +79,7 @@ const TeamChat = () => {
         return {
           key: user._id,
           username: user.username,
-          imageUrl: user.avatar || "/profile.png",
+          imageUrl: user.avatar || "/Profile.png",
           admin: admin.admins.includes(user._id),
           friends: user.friends,
         };

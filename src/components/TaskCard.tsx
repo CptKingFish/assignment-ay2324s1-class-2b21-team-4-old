@@ -67,7 +67,7 @@ const TaskCard = ({
                 setModalOpen(true);
               }}
               className={clsx(
-                "relative flex cursor-pointer flex-col justify-center gap-2 rounded-xl bg-white px-3 py-2 shadow-sm outline outline-1 outline-[#dcdfe4] hover:bg-[#f7f8fa]"
+                "relative flex cursor-pointer flex-col justify-center gap-2 rounded-xl bg-base px-3 py-2 shadow-sm outline outline-1 outline-base-300 hover:bg-base-200"
               )}
             >
               <div className="flex flex-row items-center gap-2">

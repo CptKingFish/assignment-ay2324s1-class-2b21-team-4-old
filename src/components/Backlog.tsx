@@ -50,7 +50,7 @@ const Backlog = ({ scrum, users }: Props) => {
         console.log("yay");
       }}
     >
-      <Droppable droppableId="backlog">
+      <Droppable droppableId="backlog" >
         {(provided) => (
           <div
             className="mt-4 grid gap-4 md:grid-cols-3"

@@ -189,7 +189,7 @@ const Tasks = ({
   return (
     <>
       <DragDropContext onDragEnd={handleDragEnd}>
-        <div className="h-full text-black">
+        <div className="h-full ">
           <div className="grid gap-8 rounded-xl rounded-tl-none pt-4 md:grid-cols-3 ">
             {Object.values(PROGRESS).map((status) => {
               return (
@@ -199,7 +199,7 @@ const Tasks = ({
                       key={status}
                       ref={provided.innerRef}
                       {...provided.droppableProps}
-                      className="flex flex-col gap-3 rounded-xl bg-[#f1f2f4] p-3 shadow-md outline outline-1 outline-[#dcdfe4]"
+                      className="flex flex-col gap-3 rounded-xl bg-base-100 p-3 shadow-md outline outline-1 outline-base-300"
                     >
                       <div className="flex items-center gap-1 px-2 text-xl font-bold">
                         <div>{status}</div>

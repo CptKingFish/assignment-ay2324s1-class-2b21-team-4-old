@@ -86,7 +86,7 @@ const TeamChat = () => {
         };
       })
     );
-  }, [isLoading, chatroomData, userRaw]);
+  }, [isLoading, chatroomData, userRaw,admin]);
 
   const channelCode = React.useMemo(() => {
     return "presence-" + (router.query.id as string);

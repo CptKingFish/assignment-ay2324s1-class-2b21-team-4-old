@@ -1,7 +1,6 @@
 import React from "react";
 import TaskCard from "./TaskCard";
 import IconButton from "./IconButton";
-import axios from "axios";
 import CustomModal from "./Modal";
 import { type IUser } from "@/models/User";
 import { type IScrum } from "@/models/Scrum";

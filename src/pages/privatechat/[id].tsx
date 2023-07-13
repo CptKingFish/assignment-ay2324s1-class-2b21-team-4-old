@@ -260,7 +260,7 @@ export default function PrivateChat() {
 
   return (
     <>
-      <div className="drawer-mobile drawer drawer-end">
+      <div className="drawer drawer-mobile drawer-end">
         <input id="my-drawer-4" type="checkbox" className="drawer-toggle" />
 
         <div className="flex-no-wrap drawer-content flex">
@@ -290,6 +290,7 @@ export default function PrivateChat() {
             <ChatInput
               channelCode={channelCode}
               replyTo={replyTo}
+              messages={messages}
               setReplyTo={setReplyTo}
               addPendingMessage={addPendingMessage}
               setPendingMessageHasFailed={setPendingMessageHasFailed}

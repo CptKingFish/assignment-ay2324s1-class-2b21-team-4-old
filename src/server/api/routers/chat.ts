@@ -19,6 +19,7 @@ import { ChatRoom } from "@/utils/chat";
 import Scrum from "@/models/Scrum";
 import { redis } from "@/utils/redis";
 import { cloudConfig } from "@/utils/cloudconfig";
+import { autoComplete } from "@/lib/vertex";
 
 export const chatRouter = createTRPCRouter({
   getMessagesAndChatroomInfo: privateProcedure
@@ -981,10 +982,10 @@ export const chatRouter = createTRPCRouter({
       );
       return updatedChatroom;
     }),
-    clientChangeGroupIcon: privateProcedure
+  clientChangeGroupIcon: privateProcedure
     .input(z.object({ chatRoomID: z.string(), groupIcon: z.string().url() }))
     .mutation(async ({ input }) => {
-      try{
+      try {
         const response = await Chatroom.findById(input.chatRoomID);
         if (!response) {
           throw new TRPCError({
@@ -1000,7 +1001,7 @@ export const chatRouter = createTRPCRouter({
           { new: true }
         );
         return updatedChatroom;
-      }catch(error){
+      } catch (error) {
         console.log(error);
         throw new TRPCError({
           code: "BAD_REQUEST",
@@ -1008,5 +1009,23 @@ export const chatRouter = createTRPCRouter({
         });
       }
     }),
-
+  getAutoCompleteTexts: privateProcedure
+    .input(
+      z.object({
+        history: z.array(z.object({ text: z.string(), user: z.string() })),
+        output_user: z.string(),
+      })
+    )
+    .mutation(async ({ input }) => {
+      try {
+        const response = await autoComplete(input.history, input.output_user);
+        return response;
+      } catch (error) {
+        console.log(error);
+        throw new TRPCError({
+          code: "BAD_REQUEST",
+          message: "Error getting autocomplete texts",
+        });
+      }
+    }),
 });

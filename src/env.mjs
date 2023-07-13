@@ -19,9 +19,13 @@ export const env = createEnv({
     NODEMAIL_EMAIL: z.string().min(1),
     NODEMAIL_PW: z.string().min(1),
     CLOUDINARY_CLOUD_NAME: z.string(),
-    CLOUDINARY_API_SECRET:  z.string(),
+    CLOUDINARY_API_SECRET: z.string(),
     CLOUDINARY_API_KEY: z.string(),
-    
+    VERTEX_API_KEY: z.string(),
+    GOOGLE_CLIENT_ID: z.string(),
+    GOOGLE_CLIENT_EMAIL: z.string(),
+    GOOGLE_PRIVATE_KEY: z.string(),
+    GOOGLE_TOKEN_URL: z.string(),
   },
 
   /**
@@ -52,7 +56,11 @@ export const env = createEnv({
     CLOUDINARY_CLOUD_NAME: process.env.CLOUDINARY_CLOUD_NAME,
     CLOUDINARY_API_SECRET: process.env.CLOUDINARY_API_SECRET,
     CLOUDINARY_API_KEY: process.env.CLOUDINARY_API_KEY,
-  
+    VERTEX_API_KEY: process.env.VERTEX_API_KEY,
+    GOOGLE_CLIENT_ID: process.env.GOOGLE_CLIENT_ID,
+    GOOGLE_CLIENT_EMAIL: process.env.GOOGLE_CLIENT_EMAIL,
+    GOOGLE_PRIVATE_KEY: process.env.GOOGLE_PRIVATE_KEY,
+    GOOGLE_TOKEN_URL: process.env.GOOGLE_TOKEN_URL,
     // NEXT_PUBLIC_CLIENTVAR: process.env.NEXT_PUBLIC_CLIENTVAR,
   },
 });

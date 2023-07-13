@@ -7,33 +7,12 @@ import { javascript } from "@codemirror/lang-javascript";
 import CodeMirror from "@uiw/react-codemirror";
 import { type ITask } from "@/models/Task";
 import { api } from "@/utils/api";
-
-const SNIPPETS = [
-  {
-    id: 1,
-    name: "index.html",
-    language: "html",
-    content: `<!DOCTYPE html>
-<html lang="en">
-<head>
-  <meta charset="UTF-8">
-  <title>Document</title>
-  </head
-<body>
-</body>
-</html>`,
-  },
-  {
-    id: 2,
-    language: "css",
-    name: "index.css",
-    content: `body {
-  background-color: red;
-}`,
-  },
-];
+import { useAtom } from "jotai";
+import { chatAtom } from "@/pages/scrum/[id]";
 
 const TaskCodeSnippets = ({ task }: { task: ITask }) => {
+  const utils = api.useContext();
+  const [chat_id] = useAtom(chatAtom);
   const { mutate: createSnippet, isLoading: isCreatingSnippet } =
     api.scrum.createCodeSnippet.useMutation();
   const { mutate: deleteSnippet } = api.scrum.deleteCodeSnippet.useMutation();
@@ -123,6 +102,9 @@ const TaskCodeSnippets = ({ task }: { task: ITask }) => {
                         task.snippets = task.snippets.filter(
                           (snippet) => snippet._id !== activeSnippet._id
                         );
+                        utils.scrum.getScrumByChatId
+                          .refetch({ chat_id })
+                          .catch(console.error);
                       },
                     }
                   );
@@ -169,6 +151,10 @@ const TaskCodeSnippets = ({ task }: { task: ITask }) => {
           className="flex flex-col gap-3"
           onSubmit={(e) => {
             e.preventDefault();
+            if (!formData.content) {
+              toast.error("Snippet content is required");
+              return;
+            }
             createSnippet(
               {
                 code: formData.content,
@@ -194,6 +180,9 @@ const TaskCodeSnippets = ({ task }: { task: ITask }) => {
                     content: "",
                     description: "",
                   });
+                  utils.scrum.getScrumByChatId
+                    .refetch({ chat_id })
+                    .catch(console.error);
                 },
                 onError: (err) => {
                   toast.error(err.message);

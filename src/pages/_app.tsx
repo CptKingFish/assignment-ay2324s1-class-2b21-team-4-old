@@ -61,12 +61,12 @@ const MyApp: AppType = ({ Component, pageProps }) => {
         <ThemeProvider>
           <div>
             <SidebarWrapper pathname={router.pathname}>
-              <Toaster />
               <Component {...pageProps} />
             </SidebarWrapper>
           </div>
         </ThemeProvider>
       </AuthProvider>
+      <Toaster />
     </WrappedApp>
   );
 };

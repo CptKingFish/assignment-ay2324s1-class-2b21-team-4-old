@@ -175,7 +175,9 @@ const TaskCard = ({
                             >
                               <ArchiveBoxIcon className="h-6 w-6 text-black" />
                               <span className="whitespace-nowrap font-semibold text-black">
-                                {backlog ? "Move to sprint" : "Move to backlog"}
+                                {backlog
+                                  ? "Move back to sprint"
+                                  : "Move to backlog"}
                               </span>
                             </button>
                           )}

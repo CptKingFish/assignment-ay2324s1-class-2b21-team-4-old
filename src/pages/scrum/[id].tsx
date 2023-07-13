@@ -4,11 +4,15 @@ import ActiveTasks from "@/components/ActiveTasks";
 import Backlog from "@/components/Backlog";
 import ProjectFiles from "@/components/ProjectFiles";
 import { api } from "@/utils/api";
-import useLogger from "@/hooks/useChangeLog";
+// import useLogger from "@/hooks/useChangeLog";
+import { atom, useAtom } from "jotai";
+
+export const chatAtom = atom("");
 
 const Scrum = () => {
   const router = useRouter();
   const [activeTab, setActiveTab] = React.useState(0);
+  const [_, setChatId] = useAtom(chatAtom);
   const { data: users } = api.user.getAllUsersByChatId.useQuery(
     { chat_id: router.query.id as string },
     { enabled: !!router.query.id }
@@ -24,7 +28,11 @@ const Scrum = () => {
   if (!isLoading && !scrum) {
     router.push("/chat").catch(console.error);
   }
-  useLogger(scrum, "scrum");
+  React.useEffect(() => {
+    if (!router.query.id) return;
+    setChatId(router.query.id as string);
+  }, [router.query.id, setChatId]);
+  // useLogger(scrum, "scrum");
   return (
     <div className="relative h-full w-full bg-base">
       <div className="mx-auto p-8 md:max-w-5xl">

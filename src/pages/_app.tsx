@@ -26,8 +26,6 @@ const WrappedApp = ({ children }: { children: React.ReactNode }) => {
   return <>{children}</>;
 };
 
-
-
 const isPageWithSidebar = (pathname: string) => {
   const pagesWithSidebar = [
     "/chat",
@@ -59,15 +57,13 @@ const MyApp: AppType = ({ Component, pageProps }) => {
     <ThemeProvider>
       <WrappedApp>
         <AuthProvider>
-
           <div>
             <SidebarWrapper pathname={router.pathname}>
-              <Toaster />
               <Component {...pageProps} />
             </SidebarWrapper>
           </div>
-
         </AuthProvider>
+        <Toaster />
       </WrappedApp>
     </ThemeProvider>
   );

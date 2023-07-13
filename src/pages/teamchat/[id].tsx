@@ -86,7 +86,7 @@ const TeamChat = () => {
         };
       })
     );
-  }, [isLoading, chatroomData, userRaw,admin]);
+  }, [isLoading, chatroomData, userRaw, admin]);
 
   const channelCode = React.useMemo(() => {
     return "presence-" + (router.query.id as string);
@@ -291,6 +291,7 @@ const TeamChat = () => {
             </div>
             <ChatInput
               replyTo={replyTo}
+              messages={messages}
               setReplyTo={setReplyTo}
               channelCode={channelCode}
               addPendingMessage={addPendingMessage}

@@ -8,13 +8,17 @@ interface GroupChangeIconProps {
     chatRoomAvatar: string;
 }
 
+interface CloudinaryResponse{
+    url?: string;
+}
+
 const GroupChangeIcon: React.FC<GroupChangeIconProps> = ({ chatRoomID, chatRoomAvatar }) => {
     const utils = api.useContext();
-    const [groupIcon, setgroupIcon] = React.useState<string | null>(null);
+    const [groupIcon, setGroupIcon] = React.useState<File | null>(null);
     const [previewUrl, setPreviewUrl] = React.useState<string | null>(chatRoomAvatar || null);
     const [isLoading, setIsLoading] = React.useState(false);
     const fileInputRef = React.useRef<HTMLInputElement>(null);
-    const { mutate: changeGroupIcon } = api.chat.changeGroupIcon.useMutation();
+    const { mutate: clientChangeGroupIcon } = api.chat.clientChangeGroupIcon.useMutation();
     const { mutate: deleteGroupIcon } = api.chat.removeChatroomIcon.useMutation();
 
     const handlegroupIconChange = (e: React.ChangeEvent<HTMLInputElement>) => {
@@ -24,7 +28,7 @@ const GroupChangeIcon: React.FC<GroupChangeIconProps> = ({ chatRoomID, chatRoomA
             if (validate == "") {
                 const reader = new FileReader();
                 reader.onload = () => {
-                    setgroupIcon(reader.result as string);
+                    setGroupIcon(file);
                     setPreviewUrl(reader.result as string);
                 };
                 reader.readAsDataURL(file);
@@ -34,6 +38,7 @@ const GroupChangeIcon: React.FC<GroupChangeIconProps> = ({ chatRoomID, chatRoomA
             }
         }
     };
+
 
     const validateFile = (file: File) => {
         const allowedExtensions = ["jpg", "jpeg", "png"];
@@ -52,33 +57,54 @@ const GroupChangeIcon: React.FC<GroupChangeIconProps> = ({ chatRoomID, chatRoomA
 
     const handlegroupIconUpload = () => {
         if (groupIcon) {
-            setIsLoading(true);
-            changeGroupIcon({ chatRoomID, groupIcon }, { // Pass the profile picture as an object with groupIcon field
+          setIsLoading(true);
+      
+          const formData = new FormData();
+          formData.append("file", groupIcon);
+          formData.append("upload_preset", process.env.NEXT_PUBLIC_CLOUDINARY_UPLOAD_PRESET || "");
+      
+          fetch(`https://api.cloudinary.com/v1_1/${process.env.NEXT_PUBLIC_CLOUDINARY_CLOUD_NAME}/image/upload`, {
+            method: "POST",
+            body: formData,
+          })
+          .then(response => response.json())
+          .then((data:CloudinaryResponse) => {
+            if (data.url) {
+              clientChangeGroupIcon({ chatRoomID, groupIcon: data.url }, {
                 onSuccess: (data) => {
-                    setIsLoading(false);
-                    toast.success("Profile picture changed successfully!");
-                    utils.chat.getMessagesAndChatroomInfo.invalidate()
-                    utils.chat.getChatrooms.invalidate()
-                    setPreviewUrl(groupIcon);
+                  setIsLoading(false);
+                  toast.success("Group icon changed successfully!");
+                  utils.chat.getMessagesAndChatroomInfo.invalidate();
+                  utils.chat.getChatrooms.invalidate();
                 },
                 onError: (error) => {
-                    setIsLoading(false);
-                    toast.error("Failed to change profile picture!");
+                  setIsLoading(false);
+                  toast.error("Failed to change group icon!");
                 },
-            });
-
+              });
+            } else {
+              setIsLoading(false);
+              toast.error("Failed to upload image!");
+            }
+          })
+          .catch((error) => {
+            setIsLoading(false);
+            toast.error("Failed to upload image!");
+          });
+      
+        } else {
+          toast.error("No group icon selected!");
         }
-    };
-
+      };
+      
     const handleRemoveFile = () => {
         if (chatRoomAvatar != "/Profile.png") {
-            console.log(chatRoomAvatar)
             deleteGroupIcon({ chatRoomID }, {
                 onSuccess: (data) => {
                     toast.success("Profile picture removed successfully!");
                     utils.chat.getMessagesAndChatroomInfo.invalidate()
                     utils.chat.getChatrooms.invalidate()
-                    setgroupIcon(null);
+                    setGroupIcon(null);
                     setPreviewUrl(null);
                 },
                 onError: (error) => {
@@ -86,7 +112,7 @@ const GroupChangeIcon: React.FC<GroupChangeIconProps> = ({ chatRoomID, chatRoomA
                 }
             });
         } else {
-            setgroupIcon(null);
+            setGroupIcon(null);
             setPreviewUrl(null);
         }
     };
@@ -96,7 +122,7 @@ const GroupChangeIcon: React.FC<GroupChangeIconProps> = ({ chatRoomID, chatRoomA
     };
 
     const handleCancelClick = () => {
-        setgroupIcon(null);
+        setGroupIcon(null);
         setPreviewUrl(chatRoomAvatar || null);
     };
 

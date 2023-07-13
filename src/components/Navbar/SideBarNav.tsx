@@ -17,6 +17,7 @@ import NotificationList from "./NotificationList";
 import { Message } from "@/utils/chat";
 import { ObjectId } from "mongoose";
 import { useRouter } from "next/router";
+import { ThemeContext } from "../ThemeProvider";
 
 export interface ChatroomInfoWithParticipantNames {
   _id: ObjectId;
@@ -50,14 +51,14 @@ export default function SideBarNav({
     isLoading,
     refetch: refetchChatrooms,
   } = api.chat.getChatrooms.useQuery();
-
+  const { theme } = React.useContext(ThemeContext);
   const [openAddChatroomModal, setOpenAddChatroomModal] = React.useState(false);
 
   React.useEffect(() => {
     if (isLoading || !chatroomsData) return;
     setChatrooms(chatroomsData);
   }, [isLoading, chatroomsData]);
-
+  const bgClass = theme === "business" ? "bg-neutral-focus" : "bg-neutral-content";
   // get chatrooms with the type of team
   const teamChatrooms: IChatroom[] = React.useMemo(() => {
     return chatrooms.filter((chatroom: IChatroom) => chatroom.type === "team");
@@ -109,7 +110,7 @@ export default function SideBarNav({
         {/* <label
           htmlFor="my-drawer-2"
           className="btn-primary drawer-button btn lg:hidden"
-        >
+        > 
           Open drawer
         </label> */}
       </div>
@@ -118,7 +119,7 @@ export default function SideBarNav({
       </style>
       <div className="drawer-side">
         <label htmlFor="my-drawer-2" className="drawer-overlay"></label>
-        <ul className="base-200 menu w-80 bg-neutral-content p-4 pt-0">
+        <ul className={`base-200 menu w-80 ${bgClass} p-4 pt-0`}>
           <div className="-mx-4 flex flex-wrap justify-between">
             <div className="avatar my-2 ms-5">
               <div className="w-16 content-center rounded-full ring ring-primary ring-offset-2 ring-offset-base-100">

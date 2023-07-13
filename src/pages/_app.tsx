@@ -5,7 +5,6 @@ import { useRouter } from "next/router";
 import React from "react";
 
 import { api } from "@/utils/api";
-
 import "@/styles/globals.css";
 import { setCookie, deleteCookie } from "cookies-next";
 import SideBarNav from "@/components/Navbar/SideBarNav";
@@ -26,6 +25,8 @@ const WrappedApp = ({ children }: { children: React.ReactNode }) => {
 
   return <>{children}</>;
 };
+
+
 
 const isPageWithSidebar = (pathname: string) => {
   const pagesWithSidebar = [
@@ -54,20 +55,21 @@ const SidebarWrapper = ({
 
 const MyApp: AppType = ({ Component, pageProps }) => {
   const router = useRouter();
-
   return (
-    <WrappedApp>
-      <AuthProvider>
-        <ThemeProvider>
+    <ThemeProvider>
+      <WrappedApp>
+        <AuthProvider>
+
           <div>
             <SidebarWrapper pathname={router.pathname}>
               <Toaster />
               <Component {...pageProps} />
             </SidebarWrapper>
           </div>
-        </ThemeProvider>
-      </AuthProvider>
-    </WrappedApp>
+
+        </AuthProvider>
+      </WrappedApp>
+    </ThemeProvider>
   );
 };
 

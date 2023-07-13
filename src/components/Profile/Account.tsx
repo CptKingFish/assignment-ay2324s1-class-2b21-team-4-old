@@ -6,8 +6,11 @@ import AccountChangeProfile from "./AccountChangeProfile";
 import AccountChangeUsername from "./AccountChangeUsername";
 import AccountDelete from "./AccountDelete";
 
+
 export default function Account() {
   const { user } = useGlobalContext();
+
+  
 
   return (
     <>

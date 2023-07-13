@@ -11,12 +11,12 @@ const AccountChangeProfile: React.FC<AccountChangeProfileProps> = ({ }) => {
 
   const utils = api.useContext();
   const { user } = useGlobalContext();
-  const [profilePic, setProfilePic] = React.useState<string | null>(null);
+  const [profilePic, setProfilePic] = React.useState<File | null>(null);
   const [previewUrl, setPreviewUrl] = React.useState<string | null>(user?.avatar || null);
   const [isLoading, setIsLoading] = React.useState(false);
   const fileInputRef = useRef<HTMLInputElement>(null);
 
-  const { mutate: changeProfilePicture } = api.user.changeProfilePicture.useMutation();
+  const { mutate: clientChangeProfilePicture } = api.user.clientChangeProfilePicture.useMutation();
   const { mutate: deleteProfilePicture } = api.user.removeAvatar.useMutation();
 
   React.useEffect(() => {
@@ -24,24 +24,24 @@ const AccountChangeProfile: React.FC<AccountChangeProfileProps> = ({ }) => {
   }
     , [user]);
 
-  const handleProfilePicChange = (e: React.ChangeEvent<HTMLInputElement>) => {
-    if (e.target.files && e.target.files.length > 0 && e.target.files[0] !== undefined) {
-      const file = e.target.files[0];
-      let validate = validateFile(file);
-      if (validate == "") {
-        const reader = new FileReader();
-        reader.onload = () => {
-          setProfilePic(reader.result as string);
-          setPreviewUrl(reader.result as string);
-
-        };
-        reader.readAsDataURL(file);
-      } else {
-        e.target.value = ""; // Clear the file input
-        toast.error(validate); // Show the error toast message
+    const handleProfilePicChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+      if (e.target.files && e.target.files.length > 0 && e.target.files[0] !== undefined) {
+        const file = e.target.files[0];
+        let validate = validateFile(file);
+        if (validate == "") {
+          const reader = new FileReader();
+          reader.onload = () => {
+            setProfilePic(file);
+            setPreviewUrl(reader.result as string);
+          };
+          reader.readAsDataURL(file);
+        } else {
+          e.target.value = "";
+          toast.error(validate);
+        }
       }
-    }
-  };
+    };
+    
 
   const validateFile = (file: File) => {
 
@@ -62,22 +62,46 @@ const AccountChangeProfile: React.FC<AccountChangeProfileProps> = ({ }) => {
   const handleProfilePicUpload = () => {
     if (profilePic) {
       setIsLoading(true);
-      changeProfilePicture({ profilePic }, { // Pass the profile picture as an object with profilePic field
-        onSuccess: (data) => {
+  
+      const formData = new FormData();
+      formData.append("file", profilePic);
+      formData.append("upload_preset", process.env.NEXT_PUBLIC_CLOUDINARY_UPLOAD_PRESET || "");
+  
+      fetch(`https://api.cloudinary.com/v1_1/${process.env.NEXT_PUBLIC_CLOUDINARY_CLOUD_NAME}/image/upload`, {
+        method: "POST",
+        body: formData,
+      })
+      .then(response => response.json())
+      .then(data => {
+        if (data) {
+          clientChangeProfilePicture({ profilePic: data.url }, {
+            onSuccess: (data) => {
+              setIsLoading(false);
+              toast.success("Profile picture changed successfully!");
+              utils.user.getMe.invalidate();
+              handleCancelClick();
+            },
+            onError: (error) => {
+              setIsLoading(false);
+              toast.error("Failed to change profile picture!");
+            },
+          });
+        } else {
           setIsLoading(false);
-          toast.success("Profile picture changed successfully!");
-          utils.user.getMe.invalidate();
-          handleCancelClick();
-        },
-        onError: (error) => {
-          setIsLoading(false);
-          toast.error("Failed to change profile picture!");
-        },
+          toast.error("Failed to upload image!");
+        }
+      })
+      .catch((error) => {
+        setIsLoading(false);
+        toast.error("Failed to upload image!");
       });
+  
     } else {
       toast.error("No profile picture selected!");
     }
   };
+  
+  
 
   const handleRemoveFile = () => {
     if (user?.avatar) {
@@ -130,12 +154,12 @@ const AccountChangeProfile: React.FC<AccountChangeProfileProps> = ({ }) => {
                   className=""
                   onChange={handleProfilePicChange}
                 />
-                <button onClick={handleEditImage} className = "w-full h-full">
+                <button onClick={handleEditImage} className="w-full h-full">
                   Edit Profile Image
                 </button>
               </div>
               <div className="ms-5 btn btn-outline border-none">
-                <button onClick={handleRemoveFile} className = "w-full h-full">
+                <button onClick={handleRemoveFile} className="w-full h-full">
                   Remove Profile
                 </button>
               </div>

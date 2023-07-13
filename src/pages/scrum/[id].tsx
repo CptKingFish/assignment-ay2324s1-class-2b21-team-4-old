@@ -26,7 +26,7 @@ const Scrum = () => {
   }
   useLogger(scrum, "scrum");
   return (
-    <div className="relative h-full w-full bg-white">
+    <div className="relative h-full w-full bg-base">
       <div className="mx-auto p-8 md:max-w-5xl">
         <div className="flex items-center gap-4">
           <h2 className="font-bold">Project Swifty </h2>

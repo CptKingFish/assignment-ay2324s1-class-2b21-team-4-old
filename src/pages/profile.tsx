@@ -1,9 +1,28 @@
 import Account from "@/components/Profile/Account";
 import Appearance from "@/components/Profile/Appearance";
-import React from "react";
+import React, { useEffect } from "react";
 
 const profile = () => {
     const [activeTab, setActiveTab] = React.useState(0);
+
+    const back = () => {
+        window.history.back();
+      };
+    
+      useEffect(() => {
+        const keyDownHandler = (event:KeyboardEvent) => {
+          if (event.key === 'Escape') {
+            event.preventDefault();
+            back();
+          }
+        };
+    
+        document.addEventListener('keydown', keyDownHandler);
+    
+        return () => {
+          document.removeEventListener('keydown', keyDownHandler);
+        };
+      }, []);
 
     const handleTabChange = (index: number) => {
         setActiveTab(index);
@@ -18,7 +37,7 @@ const profile = () => {
 
                 <div className="drawer-side">
                     <label htmlFor="my-drawer-2" className="drawer-overlay"></label>
-                    <ul className="menu p-4 w-80 bg-base-100 text-base-content border border-b-base-200">
+                    <ul className="menu p-4 w-80 bg-base-100 text-base-content border border-base-200">
                         <li className="font-bold">Settings</li>
                         <div className="divider"></div>
                         <div className="">

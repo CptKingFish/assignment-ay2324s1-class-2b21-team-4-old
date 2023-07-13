@@ -981,4 +981,32 @@ export const chatRouter = createTRPCRouter({
       );
       return updatedChatroom;
     }),
+    clientChangeGroupIcon: privateProcedure
+    .input(z.object({ chatRoomID: z.string(), groupIcon: z.string().url() }))
+    .mutation(async ({ input }) => {
+      try{
+        const response = await Chatroom.findById(input.chatRoomID);
+        if (!response) {
+          throw new TRPCError({
+            code: "BAD_REQUEST",
+            message: "User not found",
+          });
+        }
+        const updatedChatroom = await Chatroom.findByIdAndUpdate(
+          input.chatRoomID,
+          {
+            avatarUrl: input.groupIcon,
+          },
+          { new: true }
+        );
+        return updatedChatroom;
+      }catch(error){
+        console.log(error);
+        throw new TRPCError({
+          code: "BAD_REQUEST",
+          message: "Error uploading Group Icon",
+        });
+      }
+    }),
+
 });

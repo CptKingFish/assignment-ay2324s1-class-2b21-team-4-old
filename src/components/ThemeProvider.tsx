@@ -1,4 +1,5 @@
-import React, { createContext, useState } from 'react';
+import React, { createContext, useEffect, useState } from 'react';
+import { setCookie, parseCookies } from "nookies";
 
 interface ThemeContextProps {
   theme: string;
@@ -15,23 +16,26 @@ interface ThemeProviderProps {
 }
 
 export const ThemeProvider: React.FC<ThemeProviderProps> = ({ children }) => {
-    const [theme, setTheme] = useState('corporate');
-    const [dataTheme, setDataTheme] = useState('corporate');
-  
-    React.useEffect(() => {
-      setDataTheme(theme);
-    }, [theme]);
-  
-    const changeTheme = (newTheme: string) => {
-      setTheme(newTheme);
-    };
-  
-    return (
-      <ThemeContext.Provider value={{ theme, changeTheme }}>
-        <div data-theme={dataTheme}>
-          {children}
-        </div>
-      </ThemeContext.Provider>
-    );
+  const [theme, setTheme] = useState('corporate');
+
+  useEffect(() => {
+    const cookies = parseCookies();
+    setTheme(cookies.theme || 'corporate');
+  }, []);
+
+  const changeTheme = (newTheme: string) => {
+    setTheme(newTheme);
+    setCookie(null, 'theme', newTheme, {
+      maxAge: 30 * 24 * 60 * 60,
+      path: '/',
+    });
   };
-  
+
+  const clientTheme = theme || 'corporate';
+
+  return (
+    <ThemeContext.Provider value={{ theme: clientTheme, changeTheme }}>
+      <div data-theme={clientTheme}>{children}</div>
+    </ThemeContext.Provider>
+  );
+};

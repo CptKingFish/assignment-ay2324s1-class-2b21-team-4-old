@@ -5,7 +5,6 @@ import { useRouter } from "next/router";
 import React from "react";
 
 import { api } from "@/utils/api";
-
 import "@/styles/globals.css";
 import { setCookie, deleteCookie } from "cookies-next";
 import SideBarNav from "@/components/Navbar/SideBarNav";
@@ -54,20 +53,19 @@ const SidebarWrapper = ({
 
 const MyApp: AppType = ({ Component, pageProps }) => {
   const router = useRouter();
-
   return (
-    <WrappedApp>
-      <AuthProvider>
-        <ThemeProvider>
+    <ThemeProvider>
+      <WrappedApp>
+        <AuthProvider>
           <div>
             <SidebarWrapper pathname={router.pathname}>
               <Component {...pageProps} />
             </SidebarWrapper>
           </div>
-        </ThemeProvider>
-      </AuthProvider>
-      <Toaster />
-    </WrappedApp>
+        </AuthProvider>
+        <Toaster />
+      </WrappedApp>
+    </ThemeProvider>
   );
 };
 

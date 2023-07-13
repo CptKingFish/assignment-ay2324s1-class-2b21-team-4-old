@@ -61,12 +61,13 @@ const GroupParticipants: React.FC<GroupParticipantsProps> = ({
       {
         onSuccess: (data) => {
           toast.success("Made Admin successfully!");
-          utils.chat.getUsernamesFromChatroom.invalidate({
-            chatroom_id: router.query.id as string,
-          });
           utils.chat.getAdminFromChatroom.invalidate({
             chatroom_id: router.query.id as string,
           });
+          utils.chat.getUsernamesFromChatroom.invalidate({
+            chatroom_id: router.query.id as string,
+          });
+          
         },
         onError: (error) => {
           toast.error("Error when making Admin!");
@@ -81,12 +82,13 @@ const GroupParticipants: React.FC<GroupParticipantsProps> = ({
       {
         onSuccess: (data) => {
           toast.success("Removed Admin successfully!");
-          utils.chat.getUsernamesFromChatroom.invalidate({
-            chatroom_id: router.query.id as string,
-          });
           utils.chat.getAdminFromChatroom.invalidate({
             chatroom_id: router.query.id as string,
           });
+          utils.chat.getUsernamesFromChatroom.invalidate({
+            chatroom_id: router.query.id as string,
+          });
+          
         },
         onError: (error) => {
           toast.error("Error when removing Admin!");

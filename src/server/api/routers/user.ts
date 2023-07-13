@@ -269,7 +269,7 @@ export const userRouter = createTRPCRouter({
         message: "User not found",
       });
     }
-    if(!response.avatar) {
+    if (!response.avatar) {
       throw new TRPCError({
         code: "BAD_REQUEST",
         message: "User has no avatar",
@@ -295,60 +295,94 @@ export const userRouter = createTRPCRouter({
   }),
 
   deleteUser: privateProcedure
-  .input(z.object({ password: z.string() }))
-  .mutation(async ({ input,ctx }) => {
-    //If user password input is incorrect throw error
-    const response = await User.findById(ctx.user._id);
-    if (!response) {
-      throw new TRPCError({
-        code: "BAD_REQUEST",
-        message: "User not found",
-      });
-    }
-    const isPasswordValid = await bcrypt.compare(
-      input.password,
-      response.password
-    );
-    if (!isPasswordValid) {
-      throw new TRPCError({
-        code: "BAD_REQUEST",
-        message: "Invalid credentials",
-      });
-    }
+    .input(z.object({ password: z.string() }))
+    .mutation(async ({ input, ctx }) => {
+      //If user password input is incorrect throw error
+      const response = await User.findById(ctx.user._id);
+      if (!response) {
+        throw new TRPCError({
+          code: "BAD_REQUEST",
+          message: "User not found",
+        });
+      }
+      const isPasswordValid = await bcrypt.compare(
+        input.password,
+        response.password
+      );
+      if (!isPasswordValid) {
+        throw new TRPCError({
+          code: "BAD_REQUEST",
+          message: "Invalid credentials",
+        });
+      }
 
 
-    const promises = [];
+      const promises = [];
 
-    // Remove userid from redis
-    promises.push(redis.srem("users", ctx.user._id));
-    
-    // Remove userid from chatroom array
-    promises.push(
-      Chatroom.updateMany({}, { $pull: { users: { user_id: ctx.user._id } } })
-    );
-    
-    // If the chatroom has no users left, delete it
-    promises.push(Chatroom.deleteMany({ users: { $size: 0 } }));
-    
-    // Delete user
-    promises.push(User.findByIdAndDelete(ctx.user._id));
-    
-    await Promise.all(promises);
-    
-    
-    //Invalidate the user's jwt token
-    ctx.res.setHeader(
-      "Set-Cookie",
-      `token=;expires=${new Date(
-        Date.now() - 1000 * 60 * 60 * 24
-      ).toUTCString()};sameSite=Strict;path=/;secure`
-    );
+      // Remove userid from redis
+      promises.push(redis.srem("users", ctx.user._id));
 
-    return {
-      message: "Deleted account successfully!",
-      code: "SUCCESS",
-    };
-  }),
+      // Remove userid from chatroom array
+      promises.push(
+        Chatroom.updateMany({}, { $pull: { users: { user_id: ctx.user._id } } })
+      );
+
+      // If the chatroom has no users left, delete it
+      promises.push(Chatroom.deleteMany({ users: { $size: 0 } }));
+
+      // Delete user
+      promises.push(User.findByIdAndDelete(ctx.user._id));
+
+      await Promise.all(promises);
+
+
+      //Invalidate the user's jwt token
+      ctx.res.setHeader(
+        "Set-Cookie",
+        `token=;expires=${new Date(
+          Date.now() - 1000 * 60 * 60 * 24
+        ).toUTCString()};sameSite=Strict;path=/;secure`
+      );
+
+      return {
+        message: "Deleted account successfully!",
+        code: "SUCCESS",
+      };
+    }),
+  clientChangeProfilePicture: privateProcedure
+    .input(z.object({ profilePic: z.string().url() }))
+    .mutation(async ({ input, ctx }) => {
+      try {
+        const response = await User.findById(ctx.user._id);
+        if (!response) {
+          throw new TRPCError({
+            code: "BAD_REQUEST",
+            message: "User not found",
+          });
+        }
+
+        if (response.avatar) {
+          await cloudConfig.uploader.destroy(response.avatar);
+        }
+
+        const updatedUser = await User.findByIdAndUpdate(
+          ctx.user._id,
+          {
+            avatar: input.profilePic,
+          },
+          { new: true }
+        );
+        return updatedUser;
+      } catch (error) {
+        console.log(error);
+        throw new TRPCError({
+          code: "BAD_REQUEST",
+          message: "Error uploading profile picture",
+        });
+      }
+    }),
+
+
 
 
 

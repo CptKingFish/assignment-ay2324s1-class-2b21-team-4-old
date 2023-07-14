@@ -37,16 +37,8 @@ interface Message {
     text: string;
     timestamp: number;
   };
+  hiddenTo?: ObjectId[];
 }
-
-// interface ChatRoom {
-//   id: string;
-//   name: string;
-//   avatarUrl?: string;
-//   type: "personal" | "team";
-//   messages: Message[];
-//   participants: string[];
-// }
 
 interface ChatRoom {
   _id: ObjectId;

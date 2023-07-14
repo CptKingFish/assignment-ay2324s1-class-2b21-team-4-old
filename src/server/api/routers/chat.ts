@@ -498,6 +498,71 @@ export const chatRouter = createTRPCRouter({
         message_id: message_id,
       });
     }),
+  hideMessage: privateProcedure
+    .input(
+      z.object({
+        message_id: z.string(),
+        chatroom_id: z.string(),
+      })
+    )
+    .mutation(async ({ input, ctx }) => {
+      const { message_id, chatroom_id } = input;
+      const { user } = ctx;
+
+      const chatroom = await Chatroom.findById(chatroom_id);
+
+      if (!chatroom) {
+        throw new TRPCError({
+          code: "NOT_FOUND",
+          message: "Chatroom not found",
+        });
+      }
+
+      if (!chatroom.participants.includes(user._id)) {
+        throw new TRPCError({
+          code: "UNAUTHORIZED",
+          message: "Unauthorized",
+        });
+      }
+
+      const messageIndex = chatroom.messages.findIndex(
+        (message) => message._id.toString() === message_id
+      );
+
+      if (messageIndex === -1) {
+        throw new TRPCError({
+          code: "NOT_FOUND",
+          message: "Message not found",
+        });
+      }
+
+      if (
+        chatroom.messages[messageIndex]?.hiddenTo &&
+        chatroom?.messages[messageIndex]?.hiddenTo.includes(
+          new mongoose.Schema.Types.ObjectId(user._id)
+        )
+      ) {
+        throw new TRPCError({
+          code: "BAD_REQUEST",
+          message: "Message already hidden",
+        });
+      }
+
+      const message = chatroom.messages[messageIndex];
+
+      if (message === undefined) return;
+
+      message.hiddenTo = [
+        ...(message.hiddenTo || []),
+        new mongoose.Schema.Types.ObjectId(user._id),
+      ];
+
+      await chatroom.save();
+      await pusherServer.sendToUser(user._id, "message-hidden", {
+        message_id: message_id,
+        chatroom_id: chatroom_id,
+      });
+    }),
   getFriends: privateProcedure.query(async ({ ctx }) => {
     const { user } = ctx;
 

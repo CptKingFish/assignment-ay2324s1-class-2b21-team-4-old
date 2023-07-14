@@ -58,7 +58,8 @@ export default function SideBarNav({
     if (isLoading || !chatroomsData) return;
     setChatrooms(chatroomsData);
   }, [isLoading, chatroomsData]);
-  const bgClass = theme === "business" ? "bg-neutral-focus" : "bg-neutral-content";
+  const bgClass =
+    theme === "business" ? "bg-neutral-focus" : "bg-neutral-content";
   // get chatrooms with the type of team
   const teamChatrooms: IChatroom[] = React.useMemo(() => {
     return chatrooms.filter((chatroom: IChatroom) => chatroom.type === "team");
@@ -120,14 +121,23 @@ export default function SideBarNav({
       <div className="drawer-side">
         <label htmlFor="my-drawer-2" className="drawer-overlay"></label>
         <ul className={`base-200 menu w-80 ${bgClass} p-4 pt-0`}>
-          <div className="-mx-4 flex flex-wrap justify-between">
-            <div className="avatar my-2 ms-5">
-              <div className="w-16 content-center rounded-full ring ring-primary ring-offset-2 ring-offset-base-100">
-                <Link href="/profile">
-                  <img src={user?.avatar || "/Profile.png"} />
-                </Link>
+          <div className="-mx-4 mt-3 flex flex-wrap justify-between">
+            <div className="flex flex-row items-center">
+              <div className="avatar my-2 ms-5">
+                <div className="w-16 content-center rounded-full ring ring-primary ring-offset-1 ring-offset-base-100">
+                  <Link href="/profile">
+                    <img src={user?.avatar || "/Profile.png"} />
+                  </Link>
+                </div>
+              </div>
+              <div className="ms-5">
+                <div className="text-lg font-bold">{user?.displayName}</div>
+                <div className="text-sm text-neutral-content">
+                  {user?.username}
+                </div>
               </div>
             </div>
+
             <div className="me-5 mt-5">
               <div
                 className="float-right ms-5 cursor-pointer"
@@ -248,13 +258,53 @@ export default function SideBarNav({
             </a>
           </div>
           {activeTab !== 2 && (
-            <input
-              type="text"
-              placeholder="Search chat"
-              className="input w-full max-w-xs"
-              value={searchValue}
-              onChange={(e) => setSearchValue(e.target.value)}
-            />
+            <div className="flex flex-row">
+              <input
+                type="text"
+                placeholder="Search chat"
+                className="input w-3/4 max-w-xs"
+                value={searchValue}
+                onChange={(e) => setSearchValue(e.target.value)}
+              />
+              <button
+                className="btn-square btn w-1/4"
+                onClick={() => {
+                  setOpenAddChatroomModal(true);
+                }}
+              >
+                {activeTab === 0 ? (
+                  <svg
+                    xmlns="http://www.w3.org/2000/svg"
+                    fill="none"
+                    viewBox="0 0 24 24"
+                    stroke-width="1.5"
+                    stroke="currentColor"
+                    className="h-6 w-6"
+                  >
+                    <path
+                      stroke-linecap="round"
+                      stroke-linejoin="round"
+                      d="M19 7.5v3m0 0v3m0-3h3m-3 0h-3m-2.25-4.125a3.375 3.375 0 11-6.75 0 3.375 3.375 0 016.75 0zM4 19.235v-.11a6.375 6.375 0 0112.75 0v.109A12.318 12.318 0 0110.374 21c-2.331 0-4.512-.645-6.374-1.766z"
+                    />
+                  </svg>
+                ) : (
+                  <svg
+                    xmlns="http://www.w3.org/2000/svg"
+                    fill="none"
+                    viewBox="0 0 24 24"
+                    stroke-width="1.5"
+                    stroke="currentColor"
+                    className="h-6 w-6"
+                  >
+                    <path
+                      stroke-linecap="round"
+                      stroke-linejoin="round"
+                      d="M18 18.72a9.094 9.094 0 003.741-.479 3 3 0 00-4.682-2.72m.94 3.198l.001.031c0 .225-.012.447-.037.666A11.944 11.944 0 0112 21c-2.17 0-4.207-.576-5.963-1.584A6.062 6.062 0 016 18.719m12 0a5.971 5.971 0 00-.941-3.197m0 0A5.995 5.995 0 0012 12.75a5.995 5.995 0 00-5.058 2.772m0 0a3 3 0 00-4.681 2.72 8.986 8.986 0 003.74.477m.94-3.197a5.971 5.971 0 00-.94 3.197M15 6.75a3 3 0 11-6 0 3 3 0 016 0zm6 3a2.25 2.25 0 11-4.5 0 2.25 2.25 0 014.5 0zm-13.5 0a2.25 2.25 0 11-4.5 0 2.25 2.25 0 014.5 0z"
+                    />
+                  </svg>
+                )}
+              </button>
+            </div>
           )}
 
           <div className="flex-1">
@@ -275,7 +325,7 @@ export default function SideBarNav({
               display={activeTab === 2}
             />
           </div>
-          {activeTab !== 2 && (
+          {/* {activeTab !== 2 && (
             <button
               className="btn-outline glass btn-circle btn-lg btn sticky bottom-10"
               onClick={() => {
@@ -297,7 +347,7 @@ export default function SideBarNav({
                 />
               </svg>
             </button>
-          )}
+          )} */}
         </ul>
       </div>
     </div>
